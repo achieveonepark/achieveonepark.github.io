@@ -20,7 +20,7 @@ header {
     align-items: center;
     padding: 2rem;
     background-color: rgba(40, 40, 40, 0.8);
-    border-bottom: 1px solid #ffcc00;
+    border-bottom: 1px solid #98FB98;
     position: relative;
     z-index: 1;
 }
@@ -40,9 +40,9 @@ header {
 
 h1 {
     margin: 0;
-    color: #ffcc00;
+    color: #98FB98;
     font-size: 2.5rem;
-    text-shadow: 0 0 10px #ffcc00, 0 0 20px #ffcc00, 0 0 30px #ffcc00;
+    text-shadow: 0 0 10px #98FB98, 0 0 20px #98FB98, 0 0 30px #98FB98;
 }
 
 .social-icon {
@@ -53,7 +53,7 @@ h1 {
 
 .social-icon:hover {
     transform: scale(1.2);
-    filter: drop-shadow(0 0 10px #ffcc00);
+    filter: drop-shadow(0 0 10px #98FB98);
 }
 
 section {
@@ -77,12 +77,12 @@ section {
 }
 
 .profile:hover, .project:hover {
-    box-shadow: 0 0 15px #ffcc00;
+    box-shadow: 0 0 15px #98FB98;
 }
 
 .profile h2, .project h3 {
-    color: #ffcc00;
-    text-shadow: 0 0 5px #ffcc00;
+    color: #98FB98;
+    text-shadow: 0 0 5px #98FB98;
 }
 
 .profile img {
@@ -117,7 +117,7 @@ section {
 .skills button {
     background-color: #444;
     border: none;
-    color: #ffcc00;
+    color: #98FB98;
     padding: 10px 20px;
     font-size: 1rem;
     border-radius: 5px;
@@ -126,9 +126,9 @@ section {
 }
 
 .skills button:hover {
-    background-color: #ffcc00;
+    background-color: #98FB98;
     color: #1e1e1e;
-    box-shadow: 0 0 10px #ffcc00;
+    box-shadow: 0 0 10px #98FB98;
 }
 
 .profile-content {
@@ -187,7 +187,7 @@ section {
 }
 
 .project-left a {
-    color: #ffcc00;
+    color: #98FB98;
     text-decoration: none;
 }
 
@@ -211,7 +211,7 @@ section {
 .binary {
     position: fixed;
     font-size: 1.5rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: rgba(0, 255, 76, 0.8);
     pointer-events: none;
     animation: binaryMove 10s linear infinite;
 }
@@ -221,8 +221,8 @@ section {
     text-align: center;
     margin-top: 2rem;
     font-size: 1.8rem;
-    color: #ffcc00;
-    text-shadow: 0 0 10px #ffcc00;
+    color: #98FB98;
+    text-shadow: 0 0 10px #98FB98;
 }
 
 /* 기술 스택 아이콘 스타일 */
@@ -247,14 +247,14 @@ section {
 .scroll-indicator {
     text-align: center;
     margin-top: 2rem;
-    color: #ffcc00;
+    color: #98FB98;
 }
 
 .scroll-arrow {
     width: 20px;
     height: 20px;
-    border-right: 2px solid #ffcc00;
-    border-bottom: 2px solid #ffcc00;
+    border-right: 2px solid #98FB98;
+    border-bottom: 2px solid #98FB98;
     transform: rotate(45deg);
     margin: 0 auto;
     animation: arrowBounce 1.5s infinite;
