@@ -210,3 +210,47 @@ section {
     pointer-events: none;
     animation: binaryMove 10s linear infinite;
 }
+
+@media only screen and (max-width: 768px) {
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem;
+    }
+
+    h1 {
+        font-size: 2rem;  /* 작은 화면에서는 제목 크기 줄이기 */
+    }
+
+    .header-right {
+        gap: 10px;  /* 소셜 아이콘 간격 줄이기 */
+    }
+
+    section {
+        padding: 0 1rem; /* 모바일 화면에서의 패딩 조정 */
+    }
+
+    .project {
+        flex-direction: column; /* 모바일에서 프로젝트 섹션이 위아래로 나열되도록 변경 */
+    }
+
+    .project-left, .project-right {
+        max-width: 100%; /* 양쪽 모두 100% 너비 사용 */
+    }
+
+    .project-left {
+        margin-bottom: 1rem; /* 모바일에서 왼쪽 로고와 오른쪽 텍스트 간격 */
+    }
+
+    .profile-content {
+        flex-direction: column; /* 프로필 섹션도 세로로 나열 */
+    }
+
+    .profile-left {
+        margin-bottom: 1rem; /* 프로필 이미지와 텍스트 사이에 간격 추가 */
+    }
+
+    .profile-right {
+        width: 100%; /* 프로필 텍스트도 전체 너비 사용 */
+    }
+}
