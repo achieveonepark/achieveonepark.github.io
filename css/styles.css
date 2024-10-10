@@ -96,7 +96,6 @@ section {
     transform: scale(1.1);
 }
 
-/* Featured Projects 섹션 이미지 스타일 */
 .project img {
     width: 30%;
     height: auto;
@@ -154,7 +153,6 @@ section {
     flex-grow: 1;
 }
 
-/* 프로젝트 섹션을 좌우로 나누는 Flexbox 스타일 */
 .project {
     display: flex;
     justify-content: space-between;
@@ -170,7 +168,7 @@ section {
     max-width: 30%;
 }
 
-.project-right {
+.project-details {
     flex: 2;
     max-width: 70%;
 }
@@ -182,7 +180,7 @@ section {
     margin-bottom: 1rem;
 }
 
-.project-right p {
+.project-details p {
     margin: 0.5rem 0;
 }
 
@@ -195,7 +193,6 @@ section {
     text-decoration: underline;
 }
 
-/* 이진수 애니메이션 정의 */
 @keyframes binaryMove {
     0% {
         transform: translateY(0) translateX(0);
@@ -207,7 +204,6 @@ section {
     }
 }
 
-/* 이진수 스타일 */
 .binary {
     position: fixed;
     font-size: 1.5rem;
@@ -216,7 +212,6 @@ section {
     animation: binaryMove 10s linear infinite;
 }
 
-/* 비전 문구 스타일 */
 .vision-statement {
     text-align: center;
     margin-top: 2rem;
@@ -225,7 +220,6 @@ section {
     text-shadow: 0 0 10px #98FB98;
 }
 
-/* 기술 스택 아이콘 스타일 */
 .tech-stack {
     display: flex;
     justify-content: center;
@@ -258,6 +252,42 @@ section {
     transform: rotate(45deg);
     margin: 0 auto;
     animation: arrowBounce 1.5s infinite;
+}
+
+
+.project-details a {
+    color: yellow;
+}
+
+.project-details p {
+margin-bottom: 5px;
+padding: 3px;
+}
+
+.project-details .main-topic {
+font-style: bold;
+font-size: 15px;
+}
+
+.project-details .sub-topic {
+margin-left: 20px;
+font-size: 13px;
+}
+
+.project-details .detail {
+margin-left: 40px;
+}
+
+.black-box {
+    display: inline-block; /* 요소를 인라인 블록으로 만들어 줄 바꿈 없이 텍스트와 같은 라인에 표시 */
+    padding: 10px 20px; /* 상하, 좌우 패딩 */
+    background-color: white; /* 배경색을 검은색으로 */
+    color: black; /* 텍스트 색상을 흰색으로 */
+    text-align: center; /* 텍스트를 가운데 정렬 */
+    border: none; /* 테두리 없음 */
+    cursor: pointer; /* 마우스 오버 시 포인터로 변경 */
+    font-weight: bold; /* 텍스트를 굵게 */
+    border-radius: 5px; /* 모서리를 둥글게 */
 }
 
 @keyframes arrowBounce {
@@ -293,7 +323,7 @@ section {
         flex-direction: column;
     }
 
-    .project-left, .project-right {
+    .project-left, .project-details {
         max-width: 100%;
     }
 
