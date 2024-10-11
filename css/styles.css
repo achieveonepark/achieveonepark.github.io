@@ -1,7 +1,7 @@
 /* 기본 스타일 */
 @font-face {
-    font-family: 'SCDream';
-    src: url('../fonts/SCDream4.otf') format('truetype'); /* 폰트 파일 경로 */
+    font-family: 'D2Coding';
+    src: url('../fonts/D2CodingBold.ttf') format('truetype'); /* 폰트 파일 경로 */
 }
 
 html, body {
