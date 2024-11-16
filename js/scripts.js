@@ -24,3 +24,11 @@ function createBinary() {
 
 // 500ms마다 새로운 이진수를 생성
 setInterval(createBinary, 500);
+
+document.querySelector('.dropdown-btn').addEventListener('click', function() {
+    const content = document.querySelector('.dropdown-content');
+    const isVisible = content.style.display === 'block';
+    
+    content.style.display = isVisible ? 'none' : 'block';
+    this.classList.toggle('active'); // 버튼 아이콘 변경
+  });

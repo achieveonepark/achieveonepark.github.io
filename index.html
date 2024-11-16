@@ -17,11 +17,11 @@
         <a href="https://github.com/achieveonepark" target="_blank">
             <img src="images/github-logo.png" alt="GitHub" class="social-icon">
         </a>
-        <a href="https://instagram.com/parkachieveone" target="_blank">
-            <img src="images/Instagram-logo.png" alt="Instagram" class="social-icon">
-        </a>
         <a href="http://achieveonepark.github.io/cording-library" target="_blank">
             <img src="images/docs-logo.png" alt="Documentation" class="social-icon">
+        </a>
+        <a href="https://instagram.com/parkachieveone" target="_blank">
+            <img src="images/Instagram-logo.png" alt="Instagram" class="social-icon">
         </a>
         <a href="mailto:park_achieveone@naver.com" target="_blank">
             <img src="images/email-logo.png" alt="Email" class="social-icon">
@@ -29,23 +29,17 @@
     </div>
 </header>
 
-
+<main>
     <!-- 기술 스택 아이콘 추가 -->
-    <div class="tech-stack">
-        <img src="images/unity.png" alt="Unity" class="tech-icon">
-        <img src="images/csharp.png" alt="C#" class="tech-icon">
-        <img src="images/android.png" alt="Android" class="tech-icon">
-        <img src="images/ios.png" alt="iOS" class="tech-icon">
-    </div>
+
 
     <!-- Scroll Down Indicator 추가 -->
     <div class="scroll-indicator">
-        <p>Scroll Down</p>
         <div class="scroll-arrow"></div>
     </div>
 
     <section>
-        <h2>About...</h2>
+        <div class="header2">About...</div>
         <div class="profile">
             <div class="profile-content">
                 <div class="profile-left">
@@ -59,18 +53,20 @@
                     <p>협업 시 공동의 목표를 향해 나아가기 위해 많은 커뮤니케이션이 중요하다고 생각합니다. 팀원들과 긴밀히 소통하며 같은 목표를 공유하는 과정이 가장 큰 효율을 낼 수 있는 방법이라고 믿습니다.</p>
                 </div>
             </div>
-            <div class="skills">
-                <button>Unity</button>
-                <button>C# Programming</button>
-                <button>Game Mechanics Design</button>
-                <button>Android Development</button>
-                <button>iOS Development</button>
+        <h3 class="header-title">My Links</h3>
+            <div class="tech-stack">
+                <img src="https://skillicons.dev/icons?i=unity" alt="Unity" class="tech-icon">
+                <img src="https://skillicons.dev/icons?i=cs" alt="C#" class="tech-icon">
+                <img src="https://skillicons.dev/icons?i=github" alt="GitHub" class="tech-icon">
+                <img src="https://skillicons.dev/icons?i=rider" alt="Rider" class="tech-icon">
+                <img src="https://skillicons.dev/icons?i=md" alt="md" class="tech-icon">
+                <img src="https://skillicons.dev/icons?i=firebase" alt="Firebase" class="tech-icon">
             </div>
         </div>
     </section>
 
     <section>
-        <h2>Professional Experience</h2>
+        <div class="header2">Professional Experience</div>
 
         <div class="project">
             <div class="project-left">
@@ -195,8 +191,31 @@
                 
             </div>
         </div>
-    </section>
 
+         <!-- 드롭다운 버튼 -->
+
+
+  <button class="dropdown-btn">영상 기록</button>
+  
+  <!-- 드롭다운 내용 -->
+  <div class="dropdown-content">
+        <div class="main-topic">World of Warcraft (신입 포트폴리오)</div>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/4ouEoG2jaqc" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <div class="sub-topic">제작 기간 : 18.09.15 ~ 18.11.01</div>
+        <div class="sub-topic">사용 한 엔진 : Unity, UGUI</div>
+        <div class="main-topic" style="margin-top: 40px;">Pokemon Tower Defense (신입 포트폴리오)</div>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/6KC87N8RTr8" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <div class="sub-topic">제작 기간 : 18.08.01 ~ 18.08.20</div>
+        <div class="sub-topic">사용 한 엔진 : Unity, NGUI</div>
+        <div class="sub-topic">기획 모티브 : <a href="https://www.youtube.com/watch?v=OQe6-TR2DLY">Cursed Treasure 2</a></div>
+        <div class="main-topic" style="margin-top: 40px;">말달리ZOOAAAAA (2017 KOCCA Gamejam 2등상 수상)</div>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/9vsGBhge9N0" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        <div class="sub-topic">제작 기간 : 17.12.15 ~ 17.12.17</div>
+        <div class="sub-topic">사용 한 엔진 : Unity, NGUI</div>
+        <div class="sub-topic">참고 자료 : <a href="https://onoffmix.com/event/120191?srsltid=AfmBOorPqfrZIHe5b6zRsMTDzCnsOo5_J5e_ObqlwfBwjG8Eyvgi-9dw">KOCCA 2017 GameJam 정보</a>, <a href="https://m.inven.co.kr/webzine/wznews.php?idx=191226&iskin=webzine">2등상 수상 기사</a> </div>
+  </div>
+</section>
+</main>
     <script src="js/scripts.js"></script>
 </body>
 </html>
