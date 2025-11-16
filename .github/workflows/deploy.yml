@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [ main ]  # 또는 master
+    branches: [ main ]
   workflow_dispatch:
 
 permissions:
@@ -10,9 +10,16 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
+    environment:                    # ← 이 부분이 있어야 함!
+      name: github-pages            # ← 이 부분이 있어야 함!
+      url: ${{ steps.deployment.outputs.page_url }}  # ← 이 부분이 있어야 함!
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,16 +30,8 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'  # 루트 디렉토리 전체 업로드 (또는 특정 폴더 예: './public')
+          path: '.'
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
