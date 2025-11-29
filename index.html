@@ -1,211 +1,408 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unity Game Developer Portfolio</title>
-    <link rel="stylesheet" href="css/styles.css"> <!-- CSS 파일 경로 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .tech-badge {
+            transition: all 0.2s ease;
+        }
+        .tech-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+    </style>
 </head>
-<body>
+<body class="antialiased">
 
-    <!-- 헤더 구성 -->
-    <header>
-    <div class="vision-statement">
-        <h2>Let's keep up and stay ahead of the game.</h2>
+<!-- Navigation -->
+<nav class="fixed w-full z-50 glass-panel border-b border-slate-700">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex-shrink-0 font-mono font-bold text-xl text-sky-400">
+                &lt;Dev.Park /&gt;
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-4 font-mono text-sm">
+                    <a href="#about" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">About</a>
+                    <a href="#skills" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">Skills</a>
+                    <a href="#experience" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">Experience</a>
+                    <a href="#projects" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">Projects</a>
+                </div>
+            </div>
+        </div>
     </div>
-    <div class="header-right">
-        <a href="https://github.com/achieveonepark" target="_blank">
-            <img src="images/github-logo.png" alt="GitHub" class="social-icon">
-        </a>
-        <a href="http://achieveonepark.github.io/cording-library" target="_blank">
-            <img src="images/docs-logo.png" alt="Documentation" class="social-icon">
-        </a>
-        <a href="https://instagram.com/parkachieveone" target="_blank">
-            <img src="images/Instagram-logo.png" alt="Instagram" class="social-icon">
-        </a>
-        <a href="mailto:park_achieveone@naver.com" target="_blank">
-            <img src="images/email-logo.png" alt="Email" class="social-icon">
-        </a>
+</nav>
+
+<!-- Hero Section -->
+<header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <div class="inline-block mb-4 px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 text-sm font-mono border border-sky-500/20">
+            Unity Game Developer
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+            Let's keep up and<br/>stay ahead of the game.
+        </h1>
+        <p class="mt-4 text-lg text-slate-400 max-w-2xl mx-auto mb-10">
+            효율적인 개발 환경을 구축하고, 사용자에게 즐거움을 주는 게임을 만듭니다.
+        </p>
+
+        <!-- Social Links -->
+        <div class="flex justify-center space-x-6">
+            <a href="https://github.com/achieveonepark" target="_blank" class="text-slate-400 hover:text-white transition-colors transform hover:scale-110">
+                <i class="fab fa-github fa-2x"></i>
+            </a>
+            <a href="http://achieveonepark.github.io/cording-library" target="_blank" class="text-slate-400 hover:text-white transition-colors transform hover:scale-110">
+                <i class="fas fa-book fa-2x"></i> <!-- Using Book icon for docs -->
+            </a>
+            <a href="https://instagram.com/parkachieveone" target="_blank" class="text-slate-400 hover:text-pink-500 transition-colors transform hover:scale-110">
+                <i class="fab fa-instagram fa-2x"></i>
+            </a>
+            <a href="mailto:park_achieveone@naver.com" class="text-slate-400 hover:text-sky-400 transition-colors transform hover:scale-110">
+                <i class="fas fa-envelope fa-2x"></i>
+            </a>
+        </div>
+
+        <div class="mt-20 animate-bounce text-slate-500">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+
+    <!-- Background Decoration -->
+    <div class="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 opacity-20 pointer-events-none">
+        <div class="absolute top-20 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div class="absolute top-20 right-1/4 w-72 h-72 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
     </div>
 </header>
 
-<main>
-    <!-- 기술 스택 아이콘 추가 -->
+<main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-32 pb-20">
 
+    <!-- About Me (Terminal Style) -->
+    <section id="about" class="scroll-mt-24">
+        <div class="flex items-center gap-4 mb-8">
+            <div class="h-px bg-slate-700 flex-1"></div>
+            <h2 class="text-2xl font-bold text-sky-400 font-mono">01. About Me</h2>
+            <div class="h-px bg-slate-700 flex-1"></div>
+        </div>
 
-    <!-- Scroll Down Indicator 추가 -->
-    <div class="scroll-indicator">
-        <div class="scroll-arrow"></div>
-    </div>
-
-    <section>
-        <div class="header2">About...</div>
-        <div class="profile">
-            <div class="profile-content">
-                <div class="profile-left">
-                    <img src="images/profile.png" alt="Profile Picture">
-                </div>
-                <div class="profile-right">
-                    <p>안녕하세요! 🙇‍♂️ </p> 
-                    <p>6년간 유니티를 활용한 게임 개발에 종사하고 있으며, PC와 모바일 게임 앱의 개발 및 런칭을 담당해 왔습니다. 최근에는 콘텐츠 개발자들이 더 효율적으로 작업할 수 있도록 기술 지원을 제공하는 조직에서 활동하고 있습니다.</p>
-                    <p>주력 언어는 C#이며, 네이티브 기능이 필요할 때는 Android Studio에서 Java를, xCode에서는 Swift를 활용하고 있습니다. 저는 특히 협업 도중 불편한 점을 발견하고 이를 개선하는 작업을 즐기며, 이를 통해 사용자들이 만족할 때 큰 보람을 느낍니다.</p>
-                    <p>게임 개발도 저에게는 재미 요소 중 하나입니다. 어렸을 때부터 RPG 게임에 관심이 많아 당시 서비스되던 게임들을 거의 모두 즐겼고, 이러한 경험이 자연스럽게 개발에 대한 열정으로 이어졌습니다.</p>
-                    <p>협업 시 공동의 목표를 향해 나아가기 위해 많은 커뮤니케이션이 중요하다고 생각합니다. 팀원들과 긴밀히 소통하며 같은 목표를 공유하는 과정이 가장 큰 효율을 낼 수 있는 방법이라고 믿습니다.</p>
-                </div>
+        <div class="bg-[#1e293b] rounded-lg shadow-xl overflow-hidden border border-slate-700">
+            <!-- Terminal Header -->
+            <div class="bg-slate-800 px-4 py-2 flex items-center space-x-2 border-b border-slate-700">
+                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                <span class="ml-4 text-xs text-slate-400 font-mono">profile.cs — -bash</span>
             </div>
-        <h3 class="header-title">My Links</h3>
-            <div class="tech-stack">
-                <img src="https://skillicons.dev/icons?i=unity" alt="Unity" class="tech-icon">
-                <img src="https://skillicons.dev/icons?i=cs" alt="C#" class="tech-icon">
-                <img src="https://skillicons.dev/icons?i=github" alt="GitHub" class="tech-icon">
-                <img src="https://skillicons.dev/icons?i=rider" alt="Rider" class="tech-icon">
-                <img src="https://skillicons.dev/icons?i=md" alt="md" class="tech-icon">
-                <img src="https://skillicons.dev/icons?i=firebase" alt="Firebase" class="tech-icon">
+            <!-- Terminal Body -->
+            <div class="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start">
+                <div class="flex-shrink-0">
+                    <!-- Profile Image Placeholder/Fallback -->
+                    <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-slate-700 shadow-lg relative bg-slate-800 flex items-center justify-center">
+                        <!-- 실제 이미지가 있다면 아래 src를 사용, 없다면 아이콘 -->
+                        <img src="images/profile.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'" alt="Profile" class="w-full h-full object-cover">
+                        <i class="fas fa-user-astronaut text-5xl text-slate-600 hidden"></i>
+                    </div>
+                </div>
+                <div class="flex-1 space-y-4 text-slate-300 leading-relaxed">
+                    <p class="font-bold text-white text-xl">안녕하세요! 🙇‍♂️</p>
+                    <p>
+                        6년간 유니티를 활용한 게임 개발에 종사하고 있으며, PC와 모바일 게임 앱의 개발 및 런칭을 담당해 왔습니다.
+                        최근에는 <span class="text-sky-400">콘텐츠 개발자들의 효율</span>을 높이는 기술 지원 조직에서 활동하고 있습니다.
+                    </p>
+                    <p>
+                        주력 언어는 <span class="text-yellow-400 font-mono">C#</span>이며, 네이티브 기능이 필요할 때는 Java와 Swift를 활용합니다.
+                        특히 협업 도중 불편한 점을 발견하고 이를 개선하는 작업(Tool Development)을 즐깁니다.
+                    </p>
+                    <p>
+                        RPG 게임 매니아에서 시작된 열정이 개발자로 이어졌습니다.
+                        팀원들과의 긴밀한 소통과 공동의 목표 공유가 최고의 효율을 낸다고 믿습니다.
+                    </p>
+                </div>
             </div>
         </div>
     </section>
 
-    <section>
-        <div class="header2">Professional Experience</div>
-
-        <div class="project">
-            <div class="project-left">
-                <img src="images/111percent.png" alt="111% Logo">
-                <p>근무 기간: 2023.10 - NOW</p>
-                <a href="https://www.111percent.net" target="_blank">https://www.111percent.net</a>
+    <!-- Tech Stack -->
+    <section id="skills" class="scroll-mt-24">
+        <h3 class="text-xl font-bold text-slate-200 mb-6 font-mono text-center">Tech Stack</h3>
+        <div class="flex flex-wrap justify-center gap-4">
+            <!-- Using stylized divs instead of images for better consistent look, but referencing the original icons -->
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fab fa-unity text-2xl text-white"></i> <span class="font-bold">Unity</span>
             </div>
-            <div class="project-details">
-                <p class="black-box">C#</p>
-                <p class="black-box">Unity</p>
-                <p class="black-box">gitlab</p>
-                <p class="black-box">Android</p>
-                <p class="black-box">iOS</p>
-                <p class="black-box">JAVA</p>
-                <p class="black-box">Jenkins</p>
-                <p class="black-box">Verdaccio</p>
-                <p class="main-topic">- Table, IAP, Login, Save/Load 등의 핵심 모듈 및 프레임워크 개발</p>
-                <p class="main-topic">- 빌드 대응 및 제품을 만드는 개발자들의 편의 제공</p>
-                <p class="main-topic"></p>
-                <p class="sub-topic">- Firebase 제품 활용</p>
-                <p class="sub-topic">  - <b>Cloud Fuctions + Firebase Authentication</b>: Custom Authentication 시스템 구축</p>
-                <p class="sub-topic">  - <b>Firestore DB</b>: Unity에서 저장 매체로 사용할 수 있는 시스템 제작</p>
-                <p class="sub-topic">  - <b>Firebase Cloud Storage</b>: Resource Upload</p>
-                <p class="sub-topic">- Ranking</p>
-                <p class="sub-topic">- <a href="https://docs.unity3d.com/Packages/com.unity.mobile.notifications@2.3/manual/index.html">Mobile Notification</a>을 기반한 모듈</p>
-                <p class="sub-topic">- Google SpreadSheet를 연계한 Code Generator, Table Loader</p>
-                <p class="sub-topic">- <a href="https://docs.unity3d.com/Packages/com.unity.purchasing@4.12/manual/index.html">Unity IAP</a>를 기반한 결제 모듈(서버 영수증 검증 처리)</p>
-                <p class="sub-topic">- Google, Apple, <a href="https://developers.facebook.com/products/facebook-login/">Facebook</a>, <a href="https://gamecenter.kakao.com/login">KakaoGames</a> 로그인 모듈 및 지원</p>
-                <p class="sub-topic">- <a href="https://docs.unity3d.com/Packages/com.unity.addressables@2.3/manual/index.html">Addressables</a>를 기반한 Resource 관리 모듈</p>
-                <p class="sub-topic">- <a href="https://doc.photonengine.com/quantum/current/quantum-intro#">Photon Quantum3</a> 매치메이킹, Session 관리를 포함한 샘플 제작 (간단한 타워 디펜스)</p>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fas fa-code text-2xl text-purple-400"></i> <span class="font-bold">C#</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fab fa-github text-2xl text-white"></i> <span class="font-bold">GitHub</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fas fa-laptop-code text-2xl text-red-400"></i> <span class="font-bold">Rider</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fab fa-markdown text-2xl text-blue-400"></i> <span class="font-bold">Markdown</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fas fa-fire text-2xl text-yellow-500"></i> <span class="font-bold">Firebase</span>
             </div>
         </div>
+    </section>
 
-        <div class="project">
-            <div class="project-left">
-                <img src="images/snowpipe.png" alt="Snowpipe Logo">
-                <p>근무 기간: 2023.06 - 2023.10</p>
-                <a href="https://www.snowpipe.co.kr" target="_blank">https://www.snowpipe.co.kr</a>
-            </div>
-            <div class="project-details">
-                <p class="black-box">C#</p>
-                <p class="black-box">Unity</p>
-                <p class="black-box">Git</p>
-                <p class="main-topic">- 신규 게임 개발</p>
-            </div>
+    <!-- Experience -->
+    <section id="experience" class="scroll-mt-24">
+        <div class="flex items-center gap-4 mb-12">
+            <div class="h-px bg-slate-700 flex-1"></div>
+            <h2 class="text-2xl font-bold text-sky-400 font-mono">02. Professional Experience</h2>
+            <div class="h-px bg-slate-700 flex-1"></div>
         </div>
 
-        <div class="project">
-            <div class="project-left">
-                <img src="images/gridinc.png" alt="Gridinc Logo">
-                <p>근무 기간: 2022.05 - 2023.06</p>
-                <a href="https://www.gridinc.com" target="_blank">https://www.gridinc.com</a>
+        <div class="space-y-12 border-l-2 border-slate-700 ml-4 pl-8 relative">
+
+            <!-- 111% -->
+            <div class="relative">
+                <span class="absolute -left-11 top-0 w-6 h-6 rounded-full bg-sky-500 ring-4 ring-[#0f172a]"></span>
+                <div class="glass-panel rounded-lg p-6 hover:border-sky-500/50 transition-colors">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between mb-4">
+                        <!-- 111% Layout Change: Flex-col to stack logo on top -->
+                        <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                            <!-- Logo Container: Adjusted for wider aspect ratio -->
+                            <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                <img src="images/111percent.png" alt="111% Logo" class="h-full w-auto object-contain">
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-bold text-white">111% (111퍼센트)</h3>
+                                <a href="https://www.111percent.net" target="_blank" class="text-sm text-sky-400 hover:underline">www.111percent.net <i class="fas fa-external-link-alt text-xs"></i></a>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center">2023.10 - NOW</span>
+                    </div>
+
+                    <!-- Removed left margin indentation since logo is now on top -->
+                    <div class="flex flex-wrap gap-2 mb-6 ml-0">
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">C#</span>
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Unity</span>
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Android/iOS</span>
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Jenkins</span>
+                    </div>
+
+                    <ul class="space-y-3 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 ml-0">
+                        <li><span class="text-white font-medium">핵심 모듈 및 프레임워크 개발:</span> Table, IAP, Login, Save/Load 시스템 구축</li>
+                        <li><span class="text-white font-medium">DevOps & Tools:</span> 빌드 대응 및 개발자 편의 툴(Code Generator) 제공</li>
+                        <li>
+                            <span class="text-white font-medium">Firebase Integration:</span>
+                            <ul class="pl-6 mt-1 space-y-1 text-slate-400 list-circle">
+                                <li>Cloud Functions + Auth를 이용한 커스텀 인증 시스템</li>
+                                <li>Firestore DB 연동 및 Cloud Storage 리소스 업로드</li>
+                            </ul>
+                        </li>
+                        <li><span class="text-white font-medium">Module Development:</span> Mobile Notification, Ranking, Addressables 리소스 관리</li>
+                        <li><span class="text-white font-medium">Login & IAP:</span> Google, Apple, FB, Kakao 로그인 및 서버 검증 결제 모듈</li>
+                        <li><span class="text-white font-medium">R&D:</span> Photon Quantum3 매치메이킹 및 세션 관리 샘플 제작</li>
+                    </ul>
+                </div>
             </div>
-            <div class="project-details">
-                <p class="black-box">C#</p>
-                <p class="black-box">Unity</p>
-                <p class="black-box">Git</p>
-                <p class="black-box">Android</p>
-                <p class="black-box">iOS</p>
-                <p class="black-box">Macos</p>
-                <p class="black-box">Windows</p>
-                <p class="black-box">Jenkins</p>
-                <p class="main-topic">- 메타버스 앱 신규 개발 런칭 및 유지 보수<br/></p>
-                <p class="main-topic">- <a href="https://assetstore.unity.com/packages/tools/gui/3d-webview-for-windows-and-macos-web-browser-154144">3D WebView</a>를 이용하여 Desktop WebView 개발<br/></p>
-                <p class="main-topic">- 캐릭터 이동 동기화 (<a href="https://assetstore.unity.com/packages/tools/game-toolkits/ultimate-character-controller-233710">Ultimate Character Controller</a>)<br/></p>
-                <p class="main-topic">- <a href="https://assetstore.unity.com/packages/tools/video/avpro-video-v3-core-desktop-edition-278895">AVPro</a>를 이용하여 동영상 스트리밍 출력<br/></p>
-                <p class="main-topic">- Android, iOS, Windows, MAC 크로스 플랫폼 대응<br/></p>
-                <p class="main-topic">- Google, Apple 로그인 개발 (Android, iOS, Windows, Macos)<br/></p>
-                <p class="sub-topic">  - Windows, Macos는 <a href="https://assetstore.unity.com/packages/tools/integration/legacy-universal-deep-linking-pro-seamless-deep-link-and-web-lin-135654">Deep-Link</a>를 통한 개발</p>
-                <p class="main-topic">- 아트팀 협업 간 편리화 작업<br/></p>
+
+            <!-- Snowpipe -->
+            <div class="relative">
+                <span class="absolute -left-11 top-0 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a]"></span>
+                <div class="glass-panel rounded-lg p-6">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between mb-4">
+                        <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                            <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                <img src="images/snowpipe.png" alt="Snowpipe Logo" class="h-full w-auto object-contain">
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Snowpipe (스노우파이프)</h3>
+                                <a href="https://www.snowpipe.co.kr" target="_blank" class="text-sm text-sky-400 hover:underline">www.snowpipe.co.kr</a>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center">2023.06 - 2023.10</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-4 ml-0">
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300 font-mono">New Game Dev</span>
+                    </div>
+                    <p class="text-slate-300 text-sm ml-0">- 신규 게임 프로젝트 개발 (C#, Unity, Git 활용)</p>
+                </div>
             </div>
+
+            <!-- Gridinc -->
+            <div class="relative">
+                <span class="absolute -left-11 top-0 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a]"></span>
+                <div class="glass-panel rounded-lg p-6">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between mb-4">
+                        <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                            <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                <img src="images/gridinc.png" alt="Gridinc Logo" class="h-full w-auto object-contain">
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Gridinc (그리드)</h3>
+                                <a href="https://www.gridinc.com" target="_blank" class="text-sm text-sky-400 hover:underline">www.gridinc.com</a>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center">2022.05 - 2023.06</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mb-6 ml-0">
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Metaverse</span>
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Cross-Platform</span>
+                    </div>
+
+                    <ul class="space-y-2 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 ml-0">
+                        <li>메타버스 앱 신규 개발 런칭 및 유지 보수 (Android, iOS, Win, Mac)</li>
+                        <li><span class="text-white">Desktop WebView:</span> 3D WebView 활용 개발</li>
+                        <li><span class="text-white">Media:</span> AVPro Video 스트리밍, Ultimate Character Controller 동기화</li>
+                        <li><span class="text-white">Platform:</span> Deep-Link 활용 PC/Mac 로그인, 소셜 로그인 연동</li>
+                        <li>아트팀 협업 파이프라인 효율화 작업</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Snowballs -->
+            <div class="relative">
+                <span class="absolute -left-11 top-0 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a]"></span>
+                <div class="glass-panel rounded-lg p-6">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between mb-4">
+                        <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                            <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                <img src="images/snowballs.png" alt="Snowballs Logo" class="h-full w-auto object-contain">
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Snowballs (스노우볼스)</h3>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center">2021.09 - 2022.04</span>
+                    </div>
+                    <p class="text-slate-300 text-sm mb-2 font-medium ml-0">'기사 키우기 : 데미갓' 런칭 및 라이브 서비스</p>
+                    <ul class="space-y-2 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 ml-0">
+                        <li>퍼즐 게임 신규 개발 및 인게임 스테이지 제작 툴(Level Editor) 개발</li>
+                        <li>전체 프로젝트 Android/iOS 빌드 파이프라인 관리</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Dalcomsoft -->
+            <div class="relative">
+                <span class="absolute -left-11 top-0 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a]"></span>
+                <div class="glass-panel rounded-lg p-6">
+                    <div class="flex flex-col md:flex-row md:items-start justify-between mb-4">
+                        <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                            <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                <img src="images/dalcomsoft.png" alt="Dalcomsoft Logo" class="h-full w-auto object-contain">
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white">Dalcomsoft (달콤소프트)</h3>
+                                <a href="https://www.dalcomsoft.com" target="_blank" class="text-sm text-sky-400 hover:underline">www.dalcomsoft.com</a>
+                            </div>
+                        </div>
+                        <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center">2018.12 - 2021.08</span>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2 mb-6 ml-0">
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Rhythm Game</span>
+                        <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">SDK Integration</span>
+                    </div>
+
+                    <ul class="space-y-2 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 ml-0">
+                        <li><span class="text-white">신규 개발:</span> SuperStar YG, SuperStar KangDaniel 런칭</li>
+                        <li><span class="text-white">라이브 서비스:</span> Superstar BTS, Superstar JYP 유지 보수</li>
+                        <li><span class="text-white">SDK 연동:</span> AdManager, Tapjoy, AudienceNetwork 등 광고 SDK 및 Firebase 연동</li>
+                        <li>인게임 UI 폴리싱 및 컨텐츠 구현 (Native Java/Obj-C 활용)</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Video Projects -->
+    <section id="projects" class="scroll-mt-24">
+        <div class="flex items-center gap-4 mb-12">
+            <div class="h-px bg-slate-700 flex-1"></div>
+            <h2 class="text-2xl font-bold text-sky-400 font-mono">03. Video Records</h2>
+            <div class="h-px bg-slate-700 flex-1"></div>
         </div>
 
-        <div class="project">
-            <div class="project-left">
-                <img src="images/snowballs.png" alt="Snowballs Logo">
-                <p>근무 기간: 2021.09 - 2022.04</p>
-                <p></p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Video Item 1 -->
+            <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                <div class="aspect-video w-full">
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/4ouEoG2jaqc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="p-5">
+                    <h4 class="text-lg font-bold text-white mb-2">World of Warcraft (Copy Portfolio)</h4>
+                    <div class="text-xs text-slate-400 font-mono mb-4">2018.09 - 2018.11 | Unity, UGUI</div>
+                </div>
             </div>
-            <div class="project-details">
-                <p class="black-box">C#</p>
-                <p class="black-box">Unity</p>
-                <p class="black-box">Git</p>
-                <p class="black-box">Android</p>
-                <p class="black-box">Teams</p>
-                <p class="main-topic">- 주요 업무 : 신규 프로젝트 개발<br/></p>
-                <p class="main-topic">- <a href="https://www.youtube.com/watch?v=fQEuVIj7ksY">기사 키우기 : 데미갓</a> 런칭<br/></p>
-                <p class="main-topic">- 퍼즐 게임 인게임 스테이지를 제작하는 툴 제작
-                <p class="main-topic">- 퍼즐 게임 신규 개발
-                <p class="main-topic">- 모든 프로젝트의 Android, iOS 빌드 관리<br/></p>
-            </div>
-        </div>
 
-        <div class="project">
-            <div class="project-left">
-                <img src="images/dalcomsoft.png" alt="Dalcomsoft Logo">
-                <p>근무 기간: 2018.12 - 2021.08</p>
-                <a href="https://www.dalcomsoft.com" target="_blank">https://www.dalcomsoft.com</a>
+            <!-- Video Item 2 -->
+            <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                <div class="aspect-video w-full">
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/6KC87N8RTr8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="p-5">
+                    <h4 class="text-lg font-bold text-white mb-2">Pokemon Tower Defense</h4>
+                    <div class="text-xs text-slate-400 font-mono mb-2">2018.08 | Unity, NGUI</div>
+                    <p class="text-xs text-slate-500">Motif: Cursed Treasure 2</p>
+                </div>
             </div>
-            <div class="project-details">
-                <p class="black-box">C#</p>
-                <p class="black-box">Unity</p>
-                <p class="black-box">SVN</p>
-                <p class="black-box">Android</p>
-                <p class="black-box">iOS</p>
-                <p class="black-box">JAVA</p>
-                <p class="black-box">Object-C</p>
-                <p class="main-topic">- 주요 업무1 : 신규 프로젝트 개발 및 런칭 (<a href="https://play.google.com/store/apps/details?id=com.dalcomsoft.ssyg">SuperStar YG</a>, SuperStar KangDaniel)</p>
-                <p class="main-topic">- 주요 업무2 : 라이브 프로젝트 유지 및 보수(Superstar BTS, <a href="https://play.google.com/store/search?q=superstar+jyp&c=apps">Superstar JYP</a>)</p>
-                <p class="main-topic">- 타사의 Third-Party SDK 도입</p>
-                <p class="sub-topic"><b>광고</b>: <a href="https://admanager.google.com/intl/ko/home/">AdManager</a>, <a href="https://dev.tapjoy.com/kr">Tapjoy</a>, <a href="https://www.facebook.com/business/marketing/audience-network/">AudienceNetwork</a>, <a href="https://www.adxcorp.kr/">Ad(X)</a><br/></p>
-                <p class="sub-topic"></b>그 외</b> : <a href="firebase.com">Firebase</a>(Analytics, Crashlytics, FCM)</p>
-                <p class="main-topic">- 모든 프로젝트의 Android, iOS 빌드 관리<br/></p>
-                <p class="main-topic">- 인게임 UI 폴리싱, 컨텐츠 구현<br/></p>
+
+            <!-- Video Item 3 -->
+            <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700 md:col-span-2 lg:col-span-1 lg:col-start-1 lg:col-end-3 mx-auto w-full lg:w-1/2">
+                <div class="aspect-video w-full">
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/9vsGBhge9N0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="p-5">
+                    <h4 class="text-lg font-bold text-white mb-2">말달리ZOOAAAAA (GameJam)</h4>
+                    <div class="text-xs text-slate-400 font-mono mb-2">2017 KOCCA Gamejam 2등상 수상</div>
+                </div>
             </div>
         </div>
-        
-  <!-- 드롭다운 버튼 -->
-  <button class="dropdown-btn">영상 기록</button>
-  
-  <!-- 드롭다운 내용 -->
-  <div class="dropdown-content">
-        <div class="main-topic">World of Warcraft (신입 포트폴리오)</div>
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/4ouEoG2jaqc" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        <div class="sub-topic">제작 기간 : 18.09.15 ~ 18.11.01</div>
-        <div class="sub-topic">사용 한 엔진 : Unity, UGUI</div>
-        <div class="main-topic" style="margin-top: 40px;">Pokemon Tower Defense (신입 포트폴리오)</div>
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/6KC87N8RTr8" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        <div class="sub-topic">제작 기간 : 18.08.01 ~ 18.08.20</div>
-        <div class="sub-topic">사용 한 엔진 : Unity, NGUI</div>
-        <div class="sub-topic">기획 모티브 : <a href="https://www.youtube.com/watch?v=OQe6-TR2DLY">Cursed Treasure 2</a></div>
-        <div class="main-topic" style="margin-top: 40px;">말달리ZOOAAAAA (2017 KOCCA Gamejam 2등상 수상)</div>
-        <iframe width="560" height="315" src="https://www.youtube.com/embed/9vsGBhge9N0" frameborder="0" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        <div class="sub-topic">제작 기간 : 17.12.15 ~ 17.12.17</div>
-        <div class="sub-topic">사용 한 엔진 : Unity, NGUI</div>
-        <div class="sub-topic">참고 자료 : <a href="https://onoffmix.com/event/120191?srsltid=AfmBOorPqfrZIHe5b6zRsMTDzCnsOo5_J5e_ObqlwfBwjG8Eyvgi-9dw">KOCCA 2017 GameJam 정보</a>, <a href="https://m.inven.co.kr/webzine/wznews.php?idx=191226&iskin=webzine">2등상 수상 기사</a> </div>
-  </div>
-</section>
+    </section>
+
 </main>
-    <script src="js/scripts.js"></script>
+
+<footer class="border-t border-slate-800 py-8 bg-[#0b1120]">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <p class="text-slate-500 text-sm font-mono">
+            © <span id="year"></span> Park Achieveone. All rights reserved.<br>
+            Built with HTML & Tailwind CSS
+        </p>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+</script>
 </body>
 </html>
