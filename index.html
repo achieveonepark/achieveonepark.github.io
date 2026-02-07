@@ -6,15 +6,28 @@
     <title>Unity Game Developer Portfolio</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
     <style>
+        @font-face {
+            font-family: 'RoundedFixedsys';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+            font-weight: normal;
+            font-display: swap;
+        }
+
+        html,
         body {
-            font-family: 'Noto Sans KR', sans-serif;
+            font-family: 'RoundedFixedsys', sans-serif !important;
             background-color: #0f172a; /* Slate 900 */
             color: #e2e8f0; /* Slate 200 */
         }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
+
+        .font-mono,
+        .font-sans,
+        .font-serif,
+        .font-display,
+        h1, h2, h3, h4, h5, h6,
+        p, span, a, li, button {
+            font-family: 'RoundedFixedsys', sans-serif !important;
         }
         .glass-panel {
             background: rgba(30, 41, 59, 0.7);
@@ -182,6 +195,15 @@
 </header>
 
 <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-32 pb-20">
+
+    <section class="scroll-mt-24">
+        <div class="flex justify-center">
+            <a id="play-game-btn" href="./game/dist/" class="inline-flex items-center gap-3 px-8 py-4 rounded-lg border border-sky-500/50 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(14,165,233,0.2)]">
+                <i class="fas fa-gamepad"></i>
+                <span class="text-lg font-bold tracking-wide">Play Game</span>
+            </a>
+        </div>
+    </section>
 
     <!-- About Me (Terminal Style) -->
     <section id="about" class="scroll-mt-24">
@@ -573,6 +595,14 @@
 
 <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+
+    const playGameBtn = document.getElementById('play-game-btn');
+    if (playGameBtn) {
+        playGameBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            window.location.href = './game/dist/?t=' + Date.now();
+        });
+    }
 
     function toggleWindow(id, action) {
         const el = document.getElementById(id);

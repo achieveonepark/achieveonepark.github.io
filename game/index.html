@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Project Hades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @font-face {
+        font-family: 'RoundedFixedsys';
+        src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+        font-weight: normal;
+        font-display: swap;
+      }
+      
+      body {
+        font-family: 'RoundedFixedsys', sans-serif;
+        background-color: #0f172a;
+        color: #e2e8f0;
+        overflow: hidden; /* Prevent scrolling, handled by game pager */
+        touch-action: none;
+      }
+      
+      h1, h2, h3, h4, h5, h6, .font-display {
+        font-family: 'RoundedFixedsys', sans-serif;
+      }
+
+      .font-sans,
+      .font-serif,
+      .font-mono,
+      .font-display {
+        font-family: 'RoundedFixedsys', sans-serif !important;
+      }
+
+      /* Pager Transitions */
+      .page-enter {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      .page-enter-active {
+        opacity: 1;
+        transform: translateY(0);
+        transition: opacity 300ms, transform 300ms;
+      }
+      .page-exit {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .page-exit-active {
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 300ms, transform 300ms;
+      }
+      
+      /* CRT Scanline effect overlay */
+      .scanlines {
+        background: linear-gradient(
+          to bottom,
+          rgba(255,255,255,0),
+          rgba(255,255,255,0) 50%,
+          rgba(0,0,0,0.1) 50%,
+          rgba(0,0,0,0.1)
+        );
+        background-size: 100% 4px;
+        pointer-events: none;
+      }
+    </style>
+<link rel="stylesheet" href="./index.css">
+</head>
+  <body>
+    <div id="root">
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#e2e8f0;background:#0f172a;text-align:center;padding:24px;box-sizing:border-box;">
+        <div>
+          <h1 style="margin:0 0 8px 0;font-size:24px;">Loading game...</h1>
+          <p style="margin:0;opacity:.8;">If this stays, open browser console and refresh.</p>
+        </div>
+      </div>
+    </div>
+    <script>
+      window.addEventListener('error', function (event) {
+        const root = document.getElementById('root');
+        if (!root) return;
+        root.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fecaca;background:#0f172a;text-align:center;padding:24px;box-sizing:border-box;"><div><h1 style="margin:0 0 8px 0;font-size:24px;">Game startup error</h1><p style="margin:0;opacity:.9;">' + (event.message || 'Unknown error') + '</p></div></div>';
+      });
+      window.addEventListener('unhandledrejection', function (event) {
+        const root = document.getElementById('root');
+        if (!root) return;
+        const reason = event.reason && event.reason.message ? event.reason.message : String(event.reason || 'Unknown promise error');
+        root.innerHTML = '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#fecaca;background:#0f172a;text-align:center;padding:24px;box-sizing:border-box;"><div><h1 style="margin:0 0 8px 0;font-size:24px;">Game startup error</h1><p style="margin:0;opacity:.9;">' + reason + '</p></div></div>';
+      });
+    </script>
+  <script type="module" src="./index.tsx"></script>
+</body>
+</html>

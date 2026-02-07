@@ -4,10 +4,17 @@
     src: url('../fonts/D2CodingBold.ttf') format('truetype'); /* 폰트 파일 경로 */
 }
 
+@font-face {
+    font-family: 'RoundedFixedsys';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+}
+
 html, body {
     margin: 0;
     padding: 0;
-    font-family: 'SCDream', sans-serif;
+    font-family: 'RoundedFixedsys', sans-serif;
     background: #0d0d0d;
     color: #ffffff;
     overflow: hidden; /* 전체 페이지 스크롤 비활성화 */
