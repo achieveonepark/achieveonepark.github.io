@@ -1,17 +1,46 @@
-import React, { useState, useContext } from 'react';
+import React, { useMemo, useState, useContext } from 'react';
 import {
     HardDrive,
     LayoutGrid,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { FileObject } from '../../types';
 import { OSContext } from '../../context';
-import { FILE_SYSTEM } from '../../constants';
 
 export const Finder: React.FC = () => {
-    const { openFile } = useContext(OSContext);
+    const { openFile, fileSystem } = useContext(OSContext);
     // Default path
     const [activePath, setActivePath] = useState('parkachieveone');
+    const [pathHistory, setPathHistory] = useState<string[]>(['parkachieveone']);
+    const [historyIndex, setHistoryIndex] = useState(0);
+
+    const navigateTo = (path: string) => {
+        if (!fileSystem[path] || path === activePath) return;
+
+        const nextHistory = [...pathHistory.slice(0, historyIndex + 1), path];
+        setPathHistory(nextHistory);
+        setHistoryIndex(nextHistory.length - 1);
+        setActivePath(path);
+    };
+
+    const goBack = () => {
+        if (historyIndex <= 0) return;
+        const nextIndex = historyIndex - 1;
+        setHistoryIndex(nextIndex);
+        setActivePath(pathHistory[nextIndex]);
+    };
+
+    const goForward = () => {
+        if (historyIndex >= pathHistory.length - 1) return;
+        const nextIndex = historyIndex + 1;
+        setHistoryIndex(nextIndex);
+        setActivePath(pathHistory[nextIndex]);
+    };
+
+    const canGoBack = historyIndex > 0;
+    const canGoForward = historyIndex < pathHistory.length - 1;
 
     // Sidebar Configuration: Grouping items clearly
     const sidebarGroups = [
@@ -30,12 +59,14 @@ export const Finder: React.FC = () => {
     ];
 
     // Retrieve files for current path
-    const currentFiles = FILE_SYSTEM[activePath] || [];
+    const currentFiles = fileSystem[activePath] || [];
+    const pathLabel = useMemo(() => activePath.split('/').join(' / ').toUpperCase(), [activePath]);
 
-    const handleDoubleClick = (file: FileObject) => {
+    const handleFileOpen = (file: FileObject) => {
         if (file.type === 'folder') {
-            if (FILE_SYSTEM[file.name]) {
-                setActivePath(file.name);
+            const folderPath = file.content || file.name;
+            if (folderPath && fileSystem[folderPath]) {
+                navigateTo(folderPath);
             } else {
                 alert(`ACCESS DENIED: ${file.name} is encrypted.`);
             }
@@ -57,7 +88,7 @@ export const Finder: React.FC = () => {
                         {group.items.map((item) => (
                             <div
                                 key={item.name}
-                                onClick={() => setActivePath(item.path)}
+                                onClick={() => navigateTo(item.path)}
                                 className={`
                     px-3 py-2 rounded-md cursor-pointer flex items-center space-x-3 transition-all duration-200
                     ${activePath === item.path
@@ -77,8 +108,26 @@ export const Finder: React.FC = () => {
             {/* Main Content */}
             <div className="flex-1 flex flex-col h-full overflow-hidden bg-black/20">
                 {/* Path Bar */}
-                <div className="h-9 border-b border-white/10 flex items-center px-4 bg-black/10 text-xs font-mono text-cyan-500/70">
-                    ROOT / {activePath.toUpperCase()}
+                <div className="h-9 border-b border-white/10 flex items-center px-3 bg-black/10 text-xs font-mono text-cyan-500/70 gap-2">
+                    <button
+                        type="button"
+                        onClick={goBack}
+                        disabled={!canGoBack}
+                        className="w-6 h-6 rounded border border-white/10 flex items-center justify-center text-cyan-300 enabled:hover:bg-cyan-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Go back"
+                    >
+                        <ChevronLeft size={14} />
+                    </button>
+                    <button
+                        type="button"
+                        onClick={goForward}
+                        disabled={!canGoForward}
+                        className="w-6 h-6 rounded border border-white/10 flex items-center justify-center text-cyan-300 enabled:hover:bg-cyan-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                        aria-label="Go forward"
+                    >
+                        <ChevronRight size={14} />
+                    </button>
+                    <div className="ml-1">ROOT / {pathLabel}</div>
                 </div>
 
                 <div className="flex-1 p-4 overflow-y-auto" onClick={() => {}}>
@@ -106,13 +155,25 @@ export const Finder: React.FC = () => {
                                     <div
                                         key={i}
                                         className="flex flex-col items-center p-3 rounded-lg hover:bg-white/10 cursor-pointer group transition-all duration-200 border border-transparent hover:border-cyan-500/20 active:scale-95"
-                                        onDoubleClick={() => handleDoubleClick(file)}
+                                        onClick={() => handleFileOpen(file)}
                                     >
-                                        <file.icon
-                                            size={42}
-                                            strokeWidth={1}
-                                            className={`${file.color} mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300`}
-                                        />
+                                        {file.thumbnail || file.type === 'image' ? (
+                                            <div className="w-[42px] h-[42px] mb-3 rounded-md overflow-hidden border border-white/20 bg-black/30 shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300">
+                                                <img
+                                                    src={file.thumbnail || file.content}
+                                                    alt={file.name}
+                                                    className="w-full h-full object-contain"
+                                                    loading="lazy"
+                                                    draggable={false}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <file.icon
+                                                size={42}
+                                                strokeWidth={1}
+                                                className={`${file.color} mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300`}
+                                            />
+                                        )}
                                         <span className="text-center text-[11px] text-gray-400 group-hover:text-cyan-300 leading-tight line-clamp-2 w-full break-words px-1 font-mono font-medium">
                                 {file.name}
                             </span>

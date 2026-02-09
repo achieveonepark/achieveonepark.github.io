@@ -1,0 +1,45 @@
+{
+  "files": [
+    {
+      "path": "introduce.md"
+    },
+    {
+      "path": "portfolio/about.md"
+    },
+    {
+      "path": "portfolio/experience.md"
+    },
+    {
+      "path": "portfolio/experience/111percent.md",
+      "thumbnail": "/achieveone-os/images/111percent.png"
+    },
+    {
+      "path": "portfolio/experience/dalcomsoft.md",
+      "thumbnail": "/achieveone-os/images/dalcomsoft.png"
+    },
+    {
+      "path": "portfolio/experience/gridinc.md",
+      "thumbnail": "/achieveone-os/images/gridinc.png"
+    },
+    {
+      "path": "portfolio/experience/snowballs.md",
+      "thumbnail": "/achieveone-os/images/snowballs.png"
+    },
+    {
+      "path": "portfolio/experience/snowpipe.md",
+      "thumbnail": "/achieveone-os/images/snowpipe.png"
+    },
+    {
+      "path": "portfolio/links.md"
+    },
+    {
+      "path": "portfolio/portfolio_full.md"
+    },
+    {
+      "path": "portfolio/projects.md"
+    },
+    {
+      "path": "portfolio/skills.md"
+    }
+  ]
+}

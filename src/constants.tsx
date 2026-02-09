@@ -8,8 +8,22 @@ import {
     Eye,
     AppWindow,
     Code,
+    Gamepad2,
     Image as ImageIcon // Renamed to avoid conflict if needed, or just Image
 } from 'lucide-react';
+
+const normalizeBaseUrl = (baseUrl: string) => {
+    if (!baseUrl) return '/';
+    return baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+};
+
+export const BASE_URL = normalizeBaseUrl(import.meta.env.BASE_URL || '/');
+
+export const withBasePath = (path: string) => {
+    if (/^https?:\/\//i.test(path)) return path;
+    const normalizedPath = path.replace(/^\/+/, '');
+    return `${BASE_URL}${normalizedPath}`;
+};
 
 // Using a simple component mapping for demonstration
 export const INITIAL_APPS: AppDefinition[] = [
@@ -61,6 +75,15 @@ export const INITIAL_APPS: AppDefinition[] = [
         type: 'system',
         color: 'bg-pink-600',
         pinned: false, // Removed from dock by default
+    },
+    {
+        id: 'gameplayer',
+        title: 'GAME',
+        icon: Gamepad2,
+        type: 'browser',
+        url: withBasePath('applications/game/Escape%20Dungeon/dist/index.html'),
+        color: 'bg-indigo-600',
+        pinned: false,
     }
 ];
 
@@ -71,44 +94,10 @@ export const WALLPAPER_URL = "https://images.unsplash.com/photo-1555680202-c86f0
 // FILE SYSTEM CONFIGURATION
 // ==================================================================================
 
-// 1. Welcome Message Content (Inline fallback)
-const introduceContent = `# WELCOME TO ACHIEVEONE_OS
-
-## GREETINGS, USER
-System initialization complete. Access level: **ADMINISTRATOR**.
-
-This interface is a React-based simulation designed to showcase web capabilities in a desktop environment.
-
-## NAVIGATION
-- **[My Portfolio](https://github.com)** : Check out my source codes.
-- **[React Docs](https://react.dev)** : Built with React 18.
-- **[Tailwind CSS](https://tailwindcss.com)** : Styled for performance.
-
-## GETTING STARTED
-1. Open 'parkachieveone' to view your files.
-2. Go to 'Applications' to access system modules like NetLink.
-3. Add files to the public folder to see them here.
-
-> "The future is already here, it's just not evenly distributed."
-`;
-
 /**
- * =================================================================
- * [USER MANUAL] HOW TO ADD FILES
- * =================================================================
- * 1. Put your files (.md, .png, .jpg) in the `public/` folder of your project.
- * 2. Add the filename to the `USER_FILES` list below.
- * =================================================================
+ * Helper to determine file type and icon based on extension.
  */
-const USER_FILES = [
-    // Example: 'photo.jpg', 
-    // Example: 'about.md',
-];
-
-/**
- * Helper to determine file type and icon based on extension
- */
-const getFileInfo = (filename: string) => {
+export const getFileInfo = (filename: string) => {
     const ext = filename.split('.').pop()?.toLowerCase();
 
     if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(ext || '')) {
@@ -124,53 +113,92 @@ const getFileInfo = (filename: string) => {
 };
 
 /**
- * Generates file objects pointing to the root public folder
+ * Creates a file object that points to a static file under public.
  */
-const generateUserFiles = (): FileObject[] => {
-    return USER_FILES.map(filename => {
-        const info = getFileInfo(filename);
-        return {
-            name: filename,
-            icon: info.icon,
-            color: info.color,
-            type: info.type,
-            content: `/${filename}` // Files are now expected in public root
-        };
-    });
+export const createPublicFileObject = (filename: string, basePath: string): FileObject => {
+    const info = getFileInfo(filename);
+    return {
+        name: filename,
+        icon: info.icon,
+        color: info.color,
+        type: info.type,
+        content: `${basePath}/${filename}`
+    };
 };
 
-// Fallback Manual Content
-const manualContent = `# SYSTEM MANUAL V2.4
+export const PARK_ROOT_PUBLIC_PATH = withBasePath('parkachieveone');
+export const PARK_FILES_MANIFEST_PATH = `${PARK_ROOT_PUBLIC_PATH}/files.json`;
 
-## OVERVIEW
-Welcome to AchieveOne OS. This interface is designed for high-efficiency data processing and web module injection.
+type ManifestEntry = {
+    path: string;
+    thumbnail?: string;
+};
 
-## COMMANDS (SHELL)
-- /help : List available commands
-- /clear : Purge visual logs
-- /whoami : Identify user session
+const addFolderIfMissing = (
+    fsMap: Record<string, FileObject[]>,
+    parentPath: string,
+    folderName: string,
+    folderPath: string,
+) => {
+    const parentItems = fsMap[parentPath] || [];
+    const alreadyExists = parentItems.some(item => item.type === 'folder' && item.content === folderPath);
 
----
-© 2024 ACHIEVEONE_CORP. ALL RIGHTS RESERVED.`;
+    if (!alreadyExists) {
+        parentItems.push({
+            name: folderName,
+            icon: Folder,
+            color: 'text-cyan-400',
+            type: 'folder',
+            content: folderPath,
+        });
+    }
+
+    fsMap[parentPath] = parentItems;
+
+    if (!fsMap[folderPath]) {
+        fsMap[folderPath] = [];
+    }
+};
+
+export const buildParkFileSystem = (entries: ManifestEntry[]): Record<string, FileObject[]> => {
+    const fileSystemMap: Record<string, FileObject[]> = {
+        parkachieveone: [],
+    };
+
+    for (const entry of entries) {
+        const normalized = entry.path.replace(/\\/g, '/').replace(/^\/+|\/+$/g, '');
+        if (!normalized) continue;
+
+        const segments = normalized.split('/').filter(Boolean);
+        const fileName = segments[segments.length - 1];
+
+        let parentPath = 'parkachieveone';
+        let absoluteFolderPath = PARK_ROOT_PUBLIC_PATH;
+        const folderSegments = segments.slice(0, -1);
+
+        for (const segment of folderSegments) {
+            const nextFolderPath = parentPath === 'parkachieveone' ? segment : `${parentPath}/${segment}`;
+            addFolderIfMissing(fileSystemMap, parentPath, segment, nextFolderPath);
+
+            parentPath = nextFolderPath;
+            absoluteFolderPath = `${absoluteFolderPath}/${segment}`;
+        }
+
+        const fileObject = createPublicFileObject(fileName, absoluteFolderPath);
+        if (entry.thumbnail) {
+            fileObject.thumbnail = entry.thumbnail;
+        }
+
+        fileSystemMap[parentPath] = [...(fileSystemMap[parentPath] || []), fileObject];
+    }
+
+    return fileSystemMap;
+};
 
 // Export the File System
 export const FILE_SYSTEM: Record<string, FileObject[]> = {
     'parkachieveone': [
-        // 1. The Default Intro File (Inline)
-        { name: 'introduce.md', icon: FileText, color: 'text-yellow-400', type: 'markdown', content: introduceContent },
-
-        // 2. Your Custom Files (from public/)
-        ...generateUserFiles(),
-
-        // 3. Examples
-        { name: 'Manual.md', icon: FileText, color: 'text-emerald-400', type: 'markdown', content: manualContent },
-        {
-            name: 'React_Readme.md',
-            icon: FileText,
-            color: 'text-blue-300',
-            type: 'markdown',
-            content: 'https://raw.githubusercontent.com/facebook/react/main/README.md'
-        },
+        createPublicFileObject('introduce.md', PARK_ROOT_PUBLIC_PATH),
     ],
     'Applications': [
         { name: 'NetLink', icon: Globe, color: 'text-blue-500', type: 'app', content: 'safari' },

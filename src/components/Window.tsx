@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useEffect, useRef } from 'react';
 import { X, Minus, Maximize2, Square } from 'lucide-react';
 import { OSContext } from '../context';
 import type { WindowState } from '../types';
@@ -8,12 +8,42 @@ interface WindowProps {
   window: WindowState;
   children: React.ReactNode;
   constraintsRef?: React.RefObject<HTMLDivElement>;
+  topOffset?: number;
+  dockOffset?: number;
 }
 
-export const Window: React.FC<WindowProps> = ({ window: winState, children, constraintsRef }) => {
-  const { focusWindow, moveWindow, closeWindow, minimizeWindow, maximizeWindow } = useContext(OSContext);
+export const Window: React.FC<WindowProps> = ({ window: winState, children, constraintsRef, topOffset = 20, dockOffset = 150 }) => {
+  const { focusWindow, moveWindow, resizeWindow, closeWindow, minimizeWindow, maximizeWindow } = useContext(OSContext);
   const dragControls = useDragControls();
   const windowRef = useRef<HTMLDivElement>(null);
+  const resizeSessionRef = useRef<{
+    edge: string;
+    startX: number;
+    startY: number;
+    startWidth: number;
+    startHeight: number;
+    startLeft: number;
+    startTop: number;
+  } | null>(null);
+
+  const MIN_WIDTH = 320;
+  const MIN_HEIGHT = 220;
+
+  const [viewportSize, setViewportSize] = React.useState({
+    width: typeof window !== 'undefined' ? window.innerWidth : 1280,
+    height: typeof window !== 'undefined' ? window.innerHeight : 720,
+  });
+
+  useEffect(() => {
+    const onResize = () => {
+      setViewportSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const maximizedHeight = Math.max(MIN_HEIGHT, viewportSize.height - topOffset - dockOffset);
 
   // Animation Variants
   const variants: Variants = {
@@ -30,16 +60,15 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       y: winState.y,
       width: winState.width,
       height: winState.height,
-      transition: { type: "spring", stiffness: 300, damping: 25 }
+      transition: { type: "tween", duration: 0.08, ease: 'linear' }
     },
     maximized: {
       scale: 1,
       opacity: 1,
       x: 0,
-      // Increased offset to 80px to safely clear the floating menu bar (top-4 + h-10 + extra padding)
-      y: 80,
-      width: "100%",
-      height: "calc(100% - 80px)",
+      y: topOffset,
+      width: viewportSize.width,
+      height: maximizedHeight,
       borderRadius: 0,
       transition: { type: "spring", stiffness: 300, damping: 30 }
     },
@@ -61,15 +90,10 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
   if (winState.isMinimized) currentState = "minimized";
   else if (winState.isMaximized) currentState = "maximized";
 
-  const handleDragEnd = () => {
+  const handleDragEnd = (_event: MouseEvent | TouchEvent | PointerEvent, info: { offset: { x: number; y: number } }) => {
     if (winState.isMaximized) return;
 
-    // Calculate position based on the actual DOM rect after drag constraints
-    // This ensures we save the constrained position (at the wall), not where the mouse went
-    if (windowRef.current) {
-      const rect = windowRef.current.getBoundingClientRect();
-      moveWindow(winState.id, rect.x, rect.y);
-    }
+    moveWindow(winState.id, winState.x + info.offset.x, winState.y + info.offset.y);
   };
 
   const startDrag = (e: React.PointerEvent) => {
@@ -78,6 +102,101 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       focusWindow(winState.id);
     }
   };
+
+  const handleResizeMove = (e: MouseEvent) => {
+    const session = resizeSessionRef.current;
+    if (!session || winState.isMaximized) return;
+
+    const dx = e.clientX - session.startX;
+    const dy = e.clientY - session.startY;
+    const edge = session.edge;
+
+    let nextX = session.startLeft;
+    let nextY = session.startTop;
+    let nextWidth = session.startWidth;
+    let nextHeight = session.startHeight;
+
+    if (edge.includes('e')) {
+      nextWidth = Math.max(MIN_WIDTH, session.startWidth + dx);
+    }
+
+    if (edge.includes('s')) {
+      nextHeight = Math.max(MIN_HEIGHT, session.startHeight + dy);
+    }
+
+    if (edge.includes('w')) {
+      const candidateWidth = session.startWidth - dx;
+      nextWidth = Math.max(MIN_WIDTH, candidateWidth);
+      nextX = session.startLeft + (session.startWidth - nextWidth);
+    }
+
+    if (edge.includes('n')) {
+      const candidateHeight = session.startHeight - dy;
+      nextHeight = Math.max(MIN_HEIGHT, candidateHeight);
+      nextY = session.startTop + (session.startHeight - nextHeight);
+    }
+
+    if (constraintsRef?.current) {
+      const bounds = constraintsRef.current.getBoundingClientRect();
+
+      if (nextX < bounds.left) {
+        const overflow = bounds.left - nextX;
+        nextX = bounds.left;
+        nextWidth = Math.max(MIN_WIDTH, nextWidth - overflow);
+      }
+
+      if (nextY < bounds.top) {
+        const overflow = bounds.top - nextY;
+        nextY = bounds.top;
+        nextHeight = Math.max(MIN_HEIGHT, nextHeight - overflow);
+      }
+
+      if (nextX + nextWidth > bounds.right) {
+        nextWidth = Math.max(MIN_WIDTH, bounds.right - nextX);
+      }
+
+      if (nextY + nextHeight > bounds.bottom) {
+        nextHeight = Math.max(MIN_HEIGHT, bounds.bottom - nextY);
+      }
+    }
+
+    moveWindow(winState.id, nextX, nextY);
+    resizeWindow(winState.id, nextWidth, nextHeight);
+  };
+
+  const stopResize = () => {
+    resizeSessionRef.current = null;
+    window.removeEventListener('mousemove', handleResizeMove);
+    window.removeEventListener('mouseup', stopResize);
+  };
+
+  const startResize = (edge: string, e: React.MouseEvent) => {
+    if (winState.isMaximized) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    focusWindow(winState.id);
+
+    resizeSessionRef.current = {
+      edge,
+      startX: e.clientX,
+      startY: e.clientY,
+      startWidth: winState.width,
+      startHeight: winState.height,
+      startLeft: winState.x,
+      startTop: winState.y,
+    };
+
+    window.addEventListener('mousemove', handleResizeMove);
+    window.addEventListener('mouseup', stopResize);
+  };
+
+  useEffect(() => {
+    return () => {
+      window.removeEventListener('mousemove', handleResizeMove);
+      window.removeEventListener('mouseup', stopResize);
+    };
+  }, []);
 
   return (
       <motion.div
@@ -106,6 +225,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
         <div
             className="h-9 bg-cyan-950/30 border-b border-cyan-500/20 flex items-center justify-between px-3 cursor-default select-none flex-shrink-0"
             onPointerDown={startDrag}
+            onDoubleClick={() => maximizeWindow(winState.id)}
         >
           <div className="text-cyan-400 text-xs tracking-widest font-bold uppercase flex items-center">
             <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2 animate-pulse"></span>
@@ -138,6 +258,19 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
         <div className="flex-1 overflow-hidden relative" onPointerDown={(e) => e.stopPropagation()}>
           {children}
         </div>
+
+        {!winState.isMaximized && (
+          <>
+            <div className="absolute top-0 left-2 right-2 h-1 cursor-n-resize" onMouseDown={(e) => startResize('n', e)} />
+            <div className="absolute bottom-0 left-2 right-2 h-1 cursor-s-resize" onMouseDown={(e) => startResize('s', e)} />
+            <div className="absolute top-2 bottom-2 left-0 w-1 cursor-w-resize" onMouseDown={(e) => startResize('w', e)} />
+            <div className="absolute top-2 bottom-2 right-0 w-1 cursor-e-resize" onMouseDown={(e) => startResize('e', e)} />
+            <div className="absolute top-0 left-0 w-2 h-2 cursor-nw-resize" onMouseDown={(e) => startResize('nw', e)} />
+            <div className="absolute top-0 right-0 w-2 h-2 cursor-ne-resize" onMouseDown={(e) => startResize('ne', e)} />
+            <div className="absolute bottom-0 left-0 w-2 h-2 cursor-sw-resize" onMouseDown={(e) => startResize('sw', e)} />
+            <div className="absolute bottom-0 right-0 w-2 h-2 cursor-se-resize" onMouseDown={(e) => startResize('se', e)} />
+          </>
+        )}
       </motion.div>
   );
 };

@@ -3,7 +3,13 @@ import { MenuBar } from './components/MenuBar';
 import { Dock } from './components/Dock';
 import { Window } from './components/Window';
 import type { AppDefinition, WindowState, FileObject } from './types';
-import { INITIAL_APPS, WALLPAPER_URL, FILE_SYSTEM } from './constants';
+import {
+    INITIAL_APPS,
+    WALLPAPER_URL,
+    FILE_SYSTEM,
+    PARK_FILES_MANIFEST_PATH,
+    buildParkFileSystem
+} from './constants';
 import { Browser } from './components/apps/Browser';
 import { Finder } from './components/apps/Finder';
 import { AppStore } from './components/apps/AppStore';
@@ -11,6 +17,7 @@ import { Preview } from './components/apps/Preview';
 import { TextEdit } from './components/apps/TextEdit';
 import { Terminal } from './components/apps/Terminal';
 import { DocReader } from './components/apps/DocReader';
+import { DesktopSkillsWidget } from './components/DesktopSkillsWidget';
 import { Globe, HardDrive, FileText } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { OSContext } from './context';
@@ -20,10 +27,11 @@ const generateId = () => Math.random().toString(36).substr(2, 9);
 
 const App: React.FC = () => {
     const [apps, setApps] = useState<AppDefinition[]>(INITIAL_APPS);
+    const [fileSystem, setFileSystem] = useState<Record<string, FileObject[]>>(FILE_SYSTEM);
     const [windows, setWindows] = useState<WindowState[]>([]);
     const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
     const [zIndexCounter, setZIndexCounter] = useState(10);
-    const [isInitialized, setIsInitialized] = useState(false);
+    const hasAutoOpenedIntro = useRef(false);
 
     // Ref to track the allowed desktop area (excluding menu bar)
     const desktopAreaRef = useRef<HTMLDivElement>(null);
@@ -72,7 +80,7 @@ const App: React.FC = () => {
             width,
             height,
             isMinimized: false,
-            isMaximized: false,
+            isMaximized: app.id === 'gameplayer',
             zIndex: zIndexCounter + 1
         };
 
@@ -93,7 +101,7 @@ const App: React.FC = () => {
         } else if (file.type === 'text') {
             targetAppId = 'textedit';
         } else if (file.type === 'pdf') {
-            targetAppId = 'safari';
+            targetAppId = file.content?.includes('/applications/game/') || file.content?.includes('applications/game/') ? 'gameplayer' : 'safari';
         } else if (file.type === 'markdown') {
             targetAppId = 'docreader';
             fileAppDefinition = readerApp;
@@ -109,46 +117,159 @@ const App: React.FC = () => {
 
         const width = Math.min(window.innerWidth * 0.6, 600);
         const height = Math.min(window.innerHeight * 0.7, 500);
-        const x = Math.max(0, (window.innerWidth - width) / 2) + (windows.length * 20);
-        const y = Math.max(40, (window.innerHeight - height) / 2) + (windows.length * 20);
+        const newWindowId = generateId();
 
-        const newWindow: WindowState = {
-            id: generateId(),
+        const newWindowBase: Omit<WindowState, 'x' | 'y' | 'zIndex'> = {
+            id: newWindowId,
             appId: targetApp.id,
             title: file.type === 'app' ? targetApp.title : file.name,
-            x,
-            y,
             width,
             height,
             isMinimized: false,
             isMaximized: false,
-            zIndex: zIndexCounter + 1,
             content: file.content // Pass the file content (url, text, or markdown) to the window
         };
 
         setZIndexCounter(prev => prev + 1);
-        setWindows(prev => [...prev, newWindow]);
-        setActiveWindowId(newWindow.id);
+        setWindows(prev => {
+            const reorderedWindows = [...prev]
+                .sort((a, b) => a.zIndex - b.zIndex)
+                .map((existing, index) => ({ ...existing, zIndex: index + 10 }));
 
-    }, [apps, windows, zIndexCounter]);
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const minY = 40;
+            const maxX = Math.max(0, viewportWidth - width);
+            const maxY = Math.max(minY, viewportHeight - height - 120);
+            const centerX = (viewportWidth - width) / 2;
+            const centerY = Math.max(minY, (viewportHeight - height) / 2);
+            const gap = 16;
+            const step = 36;
+
+            const sidePlacement = file.preferredWindowSide || 'center';
+            const preferredX =
+                sidePlacement === 'left'
+                    ? Math.max(0, Math.floor(viewportWidth * 0.16))
+                    : sidePlacement === 'right'
+                        ? Math.min(maxX, Math.floor(viewportWidth * 0.84 - width))
+                        : centerX;
+            const preferredY = centerY;
+
+            const overlaps = (x: number, y: number) => {
+                return reorderedWindows.some(existing => {
+                    if (existing.isMinimized) return false;
+
+                    const separated =
+                        x + width + gap <= existing.x ||
+                        existing.x + existing.width + gap <= x ||
+                        y + height + gap <= existing.y ||
+                        existing.y + existing.height + gap <= y;
+
+                    return !separated;
+                });
+            };
+
+            type Candidate = { x: number; y: number; score: number };
+            const candidates: Candidate[] = [];
+
+            for (let y = minY; y <= maxY; y += step) {
+                for (let x = 0; x <= maxX; x += step) {
+                    const score = Math.abs(x - centerX) + Math.abs(y - centerY);
+                    candidates.push({ x, y, score });
+                }
+            }
+
+            candidates.sort((a, b) => {
+                const aPreferred = Math.abs(a.x - preferredX) + Math.abs(a.y - preferredY);
+                const bPreferred = Math.abs(b.x - preferredX) + Math.abs(b.y - preferredY);
+                if (aPreferred !== bPreferred) return aPreferred - bPreferred;
+                if (a.score !== b.score) return a.score - b.score;
+                return Math.abs(a.x - centerX) - Math.abs(b.x - centerX);
+            });
+
+            const openSpot = candidates.find(candidate => !overlaps(candidate.x, candidate.y));
+            const targetX = openSpot ? openSpot.x : Math.max(0, centerX);
+            const targetY = openSpot ? openSpot.y : centerY;
+
+            const newWindow: WindowState = {
+                ...newWindowBase,
+                x: targetX,
+                y: targetY,
+                isMaximized: targetApp.id === 'gameplayer',
+                zIndex: reorderedWindows.length + 10,
+            };
+
+            return [...reorderedWindows, newWindow];
+        });
+        setActiveWindowId(newWindowId);
+
+    }, [apps]);
+
+    useEffect(() => {
+        let isCancelled = false;
+
+        const syncParkFiles = async () => {
+            try {
+                const response = await fetch(PARK_FILES_MANIFEST_PATH);
+                if (!response.ok) return;
+
+                const manifest = await response.json();
+                const rawFiles: unknown[] = Array.isArray(manifest?.files) ? manifest.files : [];
+                const entries = rawFiles
+                    .map((entry: unknown) => {
+                        if (typeof entry === 'string') {
+                            return { path: entry };
+                        }
+
+                        if (entry && typeof entry === 'object' && 'path' in entry && typeof (entry as { path?: unknown }).path === 'string') {
+                            const typedEntry = entry as { path: string; thumbnail?: unknown };
+                            return {
+                                path: typedEntry.path,
+                                thumbnail: typeof typedEntry.thumbnail === 'string' ? typedEntry.thumbnail : undefined,
+                            };
+                        }
+
+                        return null;
+                    })
+                    .filter((entry: { path: string; thumbnail?: string } | null): entry is { path: string; thumbnail?: string } => entry !== null && entry.path.length > 0);
+
+                if (entries.length === 0 || isCancelled) return;
+
+                const dynamicParkFileSystem = buildParkFileSystem(entries);
+
+                setFileSystem(prev => ({
+                    Applications: prev.Applications,
+                    ...dynamicParkFileSystem,
+                }));
+            } catch (error) {
+                console.error('Failed to sync parkachieveone files from manifest:', error);
+            }
+        };
+
+        syncParkFiles();
+
+        return () => {
+            isCancelled = true;
+        };
+    }, []);
 
     // AUTO-STARTUP LOGIC
     useEffect(() => {
-        if (!isInitialized) {
-            // Attempt to find introduce.md in parkachieveone
-            const rootFolder = FILE_SYSTEM['parkachieveone'];
-            // We look for the exact file name defined in constants
-            const introFile = rootFolder?.find(f => f.name === 'introduce.md');
+        if (hasAutoOpenedIntro.current) return;
+        hasAutoOpenedIntro.current = true;
 
-            if (introFile) {
-                // Small delay to ensure smooth entry animation
-                setTimeout(() => {
-                    openFile(introFile);
-                }, 800);
-            }
-            setIsInitialized(true);
+        // Attempt to find introduce.md in parkachieveone
+        const rootFolder = fileSystem['parkachieveone'];
+        // We look for the exact file name defined in constants
+        const introFile = rootFolder?.find(f => f.name === 'introduce.md');
+
+        if (introFile) {
+            // Small delay to ensure smooth entry animation
+            window.setTimeout(() => {
+                openFile(introFile);
+            }, 800);
         }
-    }, [isInitialized, openFile]);
+    }, [fileSystem, openFile]);
 
     const closeWindow = useCallback((id: string) => {
         setWindows(prev => prev.filter(w => w.id !== id));
@@ -179,7 +300,7 @@ const App: React.FC = () => {
         setWindows(prev => prev.map(w => w.id === id ? { ...w, width, height } : w));
     }, []);
 
-    const installApp = useCallback((title: string, url: string, iconStr: string, color: string) => {
+    const installApp = useCallback((title: string, url: string, _iconStr: string, color: string) => {
         const newApp: AppDefinition = {
             id: `custom-${generateId()}`,
             title,
@@ -216,6 +337,7 @@ const App: React.FC = () => {
     return (
         <OSContext.Provider value={{
             apps,
+            fileSystem,
             windows,
             activeWindowId,
             launchApp,
@@ -244,13 +366,15 @@ const App: React.FC = () => {
                     className="absolute top-16 left-0 right-0 bottom-0 pointer-events-none z-0"
                 />
 
+                <DesktopSkillsWidget />
+
                 {/* Desktop Icons Area */}
                 {/* Adjusted top-24 to clear the floating menu bar */}
                 <div className="absolute top-24 right-6 flex flex-col items-end space-y-6 z-0">
                     {/* parkachieveone */}
                     <div
                         className="flex flex-col items-center group cursor-pointer w-24"
-                        onDoubleClick={() => launchApp(apps.find(a => a.id === 'finder')!)}
+                        onClick={() => launchApp(apps.find(a => a.id === 'finder')!)}
                     >
                         <div className="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center border border-white/20 backdrop-blur-sm shadow-sm group-hover:bg-white/20 transition-colors">
                             <HardDrive size={42} className="text-gray-200" strokeWidth={1.5} />
@@ -268,6 +392,8 @@ const App: React.FC = () => {
                             key={win.id}
                             window={win}
                             constraintsRef={desktopAreaRef} // Pass the restricted area ref
+                            topOffset={20}
+                            dockOffset={150}
                         >
                             {renderAppContent(win)}
                         </Window>

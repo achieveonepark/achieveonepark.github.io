@@ -1,0 +1,12 @@
+{
+  "games": [
+    {
+      "name": "Escape Dungeon",
+      "path": "applications/game/Escape%20Dungeon/dist/index.html"
+    },
+    {
+      "name": "Slot Defense",
+      "path": "applications/game/Slot%20Defense/dist/index.html"
+    }
+  ]
+}

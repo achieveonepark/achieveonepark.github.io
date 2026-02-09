@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Wifi, Battery, Search, Command, Activity } from 'lucide-react';
+import { Wifi, Battery, Search, Activity } from 'lucide-react';
 import { format } from 'date-fns';
+import githubLogo from '../../images/github-logo.png';
+import docsLogo from '../../images/docs-logo.png';
+import instagramLogo from '../../images/Instagram-logo.png';
+import emailLogo from '../../images/email-logo.png';
 
 interface MenuStructure {
   [key: string]: (string | { type: 'separator' })[];
@@ -9,7 +13,14 @@ interface MenuStructure {
 export const MenuBar: React.FC = () => {
   const [time, setTime] = useState(new Date());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const [linkUrls, setLinkUrls] = useState<Record<string, string>>({});
   const menuRef = useRef<HTMLDivElement>(null);
+  const defaultLinks: Record<string, string> = {
+    github: 'https://github.com/achieveonepark',
+    'coding library': 'http://achieveonepark.github.io/cording-library',
+    instagram: 'https://instagram.com/parkachieveone',
+    email: 'mailto:park_achieveone@naver.com',
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -24,6 +35,44 @@ export const MenuBar: React.FC = () => {
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    const parseLinksMarkdown = (markdown: string): Record<string, string> => {
+      const result: Record<string, string> = {};
+      const lines = markdown.split('\n');
+
+      for (const line of lines) {
+        const match = line.match(/^\s*-\s*([^:]+):\s*(.+)\s*$/);
+        if (!match) continue;
+
+        const key = match[1].trim().toLowerCase();
+        const value = match[2].trim();
+
+        if (value.includes('@') && !value.startsWith('http') && !value.startsWith('mailto:')) {
+          result[key] = `mailto:${value}`;
+        } else {
+          result[key] = value;
+        }
+      }
+
+      return result;
+    };
+
+    const loadLinks = async () => {
+      try {
+        const linksPath = `${import.meta.env.BASE_URL}parkachieveone/portfolio/links.md`;
+        const response = await fetch(linksPath);
+        if (!response.ok) return;
+
+        const markdown = await response.text();
+        setLinkUrls(parseLinksMarkdown(markdown));
+      } catch (error) {
+        console.error('Failed to load links.md:', error);
+      }
+    };
+
+    loadLinks();
   }, []);
 
   const menuItems: MenuStructure = {
@@ -50,8 +99,35 @@ export const MenuBar: React.FC = () => {
     </div>
   );
 
+  const quickLinks = [
+    {
+      label: 'Github',
+      href: linkUrls.github || defaultLinks.github,
+      logo: githubLogo,
+      hoverClass: 'hover:text-white',
+    },
+    {
+      label: 'Coding Library',
+      href: linkUrls['coding library'] || defaultLinks['coding library'],
+      logo: docsLogo,
+      hoverClass: 'hover:text-green-400',
+    },
+    {
+      label: 'Instagram',
+      href: linkUrls.instagram || defaultLinks.instagram,
+      logo: instagramLogo,
+      hoverClass: 'hover:text-purple-400',
+    },
+    {
+      label: 'Email',
+      href: linkUrls.email || defaultLinks.email,
+      logo: emailLogo,
+      hoverClass: 'hover:text-blue-400',
+    },
+  ];
+
   return (
-    <div className="fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg">
+    <div className="fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg relative">
       <div className="flex items-center space-x-2 h-full" ref={menuRef}>
         <div className="relative h-full flex items-center mr-4">
             <button 
@@ -73,6 +149,22 @@ export const MenuBar: React.FC = () => {
             </button>
             {activeMenu === key && renderDropdown(items)}
           </div>
+        ))}
+      </div>
+
+      <div className="absolute left-1/2 -translate-x-1/2 h-full items-center gap-3 hidden md:flex">
+        {quickLinks.map((link) => (
+          <a
+            key={link.label}
+            href={link.href}
+            target={link.href.startsWith('mailto:') || link.href === '#' ? undefined : '_blank'}
+            rel={link.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'}
+            className={`h-7 px-2 rounded-md border border-white/10 bg-black/30 text-cyan-100/80 flex items-center gap-1.5 transition-colors ${link.hoverClass}`}
+            title={link.label}
+          >
+            <img src={link.logo} alt={link.label} className="w-4 h-4 object-contain" draggable={false} />
+            <span className="text-[10px] uppercase tracking-wider font-semibold">{link.label}</span>
+          </a>
         ))}
       </div>
 

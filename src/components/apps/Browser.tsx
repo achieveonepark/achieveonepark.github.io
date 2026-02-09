@@ -6,6 +6,11 @@ interface BrowserProps {
 }
 
 export const Browser: React.FC<BrowserProps> = ({ url }) => {
+  const isYouTube = /youtube\.com|youtu\.be/i.test(url);
+  const iframeClassName = isYouTube
+    ? 'w-full flex-1 border-none bg-black'
+    : 'w-full flex-1 border-none bg-white';
+
   return (
     <div className="w-full h-full flex flex-col bg-gray-900">
       {/* Browser Toolbar */}
@@ -20,9 +25,11 @@ export const Browser: React.FC<BrowserProps> = ({ url }) => {
       </div>
       <iframe
         src={url}
-        className="w-full flex-1 border-none bg-white opacity-90 invert-[.9]" // Quick hack to make white websites less blinding in dark mode, though strictly it inverts colors
+        className={iframeClassName}
         title="browser"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+        allowFullScreen
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-presentation"
       />
     </div>
   );

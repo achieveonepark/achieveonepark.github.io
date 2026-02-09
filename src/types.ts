@@ -32,10 +32,13 @@ export interface FileObject {
   color: string;
   type: 'image' | 'text' | 'app' | 'folder' | 'pdf' | 'markdown';
   content?: string; // URL for images, text string for text files, appId for apps
+  thumbnail?: string;
+  preferredWindowSide?: 'left' | 'right' | 'center';
 }
 
 export interface OSContextType {
   apps: AppDefinition[];
+  fileSystem: Record<string, FileObject[]>;
   windows: WindowState[];
   activeWindowId: string | null;
   launchApp: (app: AppDefinition) => void;

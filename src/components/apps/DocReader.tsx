@@ -1,14 +1,67 @@
-import React, { useEffect, useState } from 'react';
-import { FileText, Loader, AlertTriangle, ExternalLink } from 'lucide-react';
+import React, { useContext, useEffect, useMemo, useState } from 'react';
+import { Loader, AlertTriangle, ExternalLink } from 'lucide-react';
+import { OSContext } from '../../context';
+import { getFileInfo } from '../../constants';
+import type { FileObject } from '../../types';
 
 interface DocReaderProps {
   content?: string;
 }
 
 export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
+  const { openFile } = useContext(OSContext);
   const [text, setText] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+
+  const sourceUrl = useMemo(() => {
+    if (!content.startsWith('http') && !content.startsWith('/')) return '';
+
+    try {
+      return new URL(content, window.location.origin).toString();
+    } catch {
+      return '';
+    }
+  }, [content]);
+
+  const resolveLink = (href: string): URL | null => {
+    try {
+      const base = sourceUrl || window.location.href;
+      return new URL(href, base);
+    } catch {
+      return null;
+    }
+  };
+
+  const toOpenableFile = (targetUrl: URL): FileObject | null => {
+    if (targetUrl.origin !== window.location.origin) return null;
+
+    const pathname = decodeURIComponent(targetUrl.pathname);
+    const fileName = pathname.split('/').pop();
+    if (!fileName) return null;
+
+    const { type, icon, color } = getFileInfo(fileName);
+    if (!['markdown', 'pdf', 'image', 'text'].includes(type)) return null;
+
+    return {
+      name: fileName,
+      type,
+      icon,
+      color,
+      content: `${targetUrl.pathname}${targetUrl.search}`,
+    };
+  };
+
+  const handleLinkClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    const targetUrl = resolveLink(href);
+    if (!targetUrl) return;
+
+    const file = toOpenableFile(targetUrl);
+    if (!file) return;
+
+    event.preventDefault();
+    openFile(file);
+  };
 
   useEffect(() => {
     // Check if content looks like a URL (http or local path /)
@@ -43,9 +96,6 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
   const parseInline = (text: string) => {
     // Regex for [text](url)
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
-    // Regex for **text**
-    const boldRegex = /\*\*([^*]+)\*\*/g;
-
     const parts = [];
     
     // We will do a simple pass for links first as they are most complex
@@ -73,9 +123,10 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
             parts.push(
                 <a 
                     key={`link-${i}`} 
-                    href={linkUrl} 
+                    href={resolveLink(linkUrl)?.toString() || linkUrl}
                     target="_blank" 
                     rel="noopener noreferrer"
+                    onClick={(event) => handleLinkClick(event, linkUrl)}
                     className="text-blue-400 hover:text-blue-300 underline decoration-blue-500/30 hover:decoration-blue-300 inline-flex items-center gap-0.5 transition-colors mx-1"
                 >
                     {linkText}

@@ -1,0 +1,5 @@
+{
+  "name": "운빨 디펜스 AI (Lucky Defense AI)",
+  "description": "운과 전략이 필요한 타워 디펜스 게임입니다. 유닛을 뽑고 강화하여 적을 막아내세요. Gemini가 당신의 운을 평가합니다.",
+  "requestFramePermissions": []
+}
