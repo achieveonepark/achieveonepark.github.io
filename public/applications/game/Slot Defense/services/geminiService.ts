@@ -2,15 +2,18 @@ import { GoogleGenAI } from "@google/genai";
 import { Tower, Rarity, GameState } from '../types';
 import { MAX_ENEMIES } from '../constants';
 
-// Fix: Initialize GoogleGenAI client directly as per guidelines
-// The API key must be obtained exclusively from the environment variable process.env.API_KEY.
-const aiClient = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const apiKey = process.env.API_KEY;
+const aiClient = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const getGameCommentary = async (
   towers: Tower[],
   gameState: GameState,
   enemyCount: number
 ): Promise<string> => {
+  if (!aiClient) {
+    return "AI 해설 비활성화 상태입니다.";
+  }
+
   const towerCounts = towers.reduce((acc, t) => {
     acc[t.type.rarity] = (acc[t.type.rarity] || 0) + 1;
     return acc;
