@@ -1,0 +1,5 @@
+{
+  "name": "MacOS React Simulator",
+  "description": "A fully functional macOS desktop simulation allowing users to add custom web content as apps via a virtual App Store.",
+  "requestFramePermissions": []
+}

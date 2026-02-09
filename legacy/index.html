@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ko" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unity Game Developer Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @font-face {
+            font-family: 'RoundedFixedsys';
+            src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_six@1.2/DungGeunMo.woff') format('woff');
+            font-weight: normal;
+            font-display: swap;
+        }
+
+        html,
+        body {
+            font-family: 'RoundedFixedsys', sans-serif !important;
+            background-color: #0f172a; /* Slate 900 */
+            color: #e2e8f0; /* Slate 200 */
+        }
+
+        .font-mono,
+        .font-sans,
+        .font-serif,
+        .font-display,
+        h1, h2, h3, h4, h5, h6,
+        p, span, a, li, button {
+            font-family: 'RoundedFixedsys', sans-serif !important;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Window Panel & Animation */
+        .window-panel {
+            background: #1e293b; /* Solid Slate 800 for active window */
+            border: 1px solid #475569;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+            transition: all 0.6s cubic-bezier(0.25, 0.8, 0.25, 1); /* Smooth expansion */
+            overflow: hidden;
+            position: relative;
+            transform-origin: top left;
+            width: 100%; /* Default full width when open */
+        }
+
+        /* Minimized State (Inactive) */
+        .window-panel.minimized {
+            background: rgba(30, 41, 59, 0.3); /* Subtle background */
+            border-color: transparent;
+            box-shadow: none;
+            transform: scale(0.95);
+            width: fit-content; /* Width matches content */
+            max-width: 90%; /* Prevent overflow on small mobile screens */
+            padding-right: 2rem; /* Add visual balance */
+        }
+
+        .window-panel.minimized:hover {
+            background: rgba(30, 41, 59, 0.6);
+            cursor: pointer;
+        }
+
+        /* Window Header Animation */
+        .window-header {
+            background: #1e293b; /* Match window bg */
+            border-bottom: 1px solid #334155;
+            transition: max-height 0.4s ease, opacity 0.3s ease, padding 0.4s ease;
+            max-height: 50px;
+            opacity: 1;
+            overflow: hidden;
+        }
+
+        .window-panel.minimized .window-header {
+            max-height: 0;
+            opacity: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            border-bottom-color: transparent;
+        }
+
+        /* Content Visibility Transitions */
+        .window-content-details {
+            transition: max-height 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, transform 0.4s ease;
+            max-height: 1000px;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .window-panel.minimized .window-content-details {
+            max-height: 0;
+            opacity: 0;
+            transform: translateY(-10px);
+            overflow: hidden;
+        }
+
+        /* Button Interactions */
+        .win-btn { transition: transform 0.1s; }
+        .win-btn:active { transform: scale(0.9); }
+        .win-btn-close:hover { background-color: #ef4444; opacity: 1; }
+        .win-btn-min:hover { background-color: #eab308; opacity: 1; }
+        .win-btn-max:hover { background-color: #22c55e; opacity: 1; }
+
+        /* Timeline Dot Pulse */
+        .timeline-dot {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7);
+        }
+        .timeline-dot:hover {
+            transform: scale(1.3);
+        }
+        .timeline-dot.active-pulse {
+            animation: pulse-ring 2s infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(14, 165, 233, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
+        }
+
+        .tech-badge:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+    </style>
+</head>
+<body class="antialiased">
+
+<!-- Navigation -->
+<nav class="fixed w-full z-50 glass-panel border-b border-slate-700">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+            <div class="flex-shrink-0 font-mono font-bold text-xl text-sky-400">
+                &lt;Dev.Park /&gt;
+            </div>
+            <div class="hidden md:block">
+                <div class="ml-10 flex items-baseline space-x-4 font-mono text-sm">
+                    <a href="#about" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">About</a>
+                    <a href="#skills" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">Skills</a>
+                    <a href="#experience" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">Experience</a>
+                    <a href="#projects" class="hover:text-sky-400 px-3 py-2 rounded-md transition-colors">Projects</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<header class="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+        <div class="inline-block mb-4 px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 text-sm font-mono border border-sky-500/20">
+            Unity Game Developer
+        </div>
+        <h1 class="text-4xl sm:text-6xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+            Let's keep up and<br/>stay ahead of the game.
+        </h1>
+        <p class="mt-4 text-lg text-slate-400 max-w-2xl mx-auto mb-10">
+            효율적인 개발 환경을 구축하고, 사용자에게 즐거움을 주는 게임을 만듭니다.
+        </p>
+
+        <!-- Social Links -->
+        <div class="flex justify-center space-x-6">
+            <a href="https://github.com/achieveonepark" target="_blank" class="text-slate-400 hover:text-white transition-colors transform hover:scale-110">
+                <i class="fab fa-github fa-2x"></i>
+            </a>
+            <a href="http://achieveonepark.github.io/cording-library" target="_blank" class="text-slate-400 hover:text-white transition-colors transform hover:scale-110">
+                <i class="fas fa-book fa-2x"></i>
+            </a>
+            <a href="https://instagram.com/parkachieveone" target="_blank" class="text-slate-400 hover:text-pink-500 transition-colors transform hover:scale-110">
+                <i class="fab fa-instagram fa-2x"></i>
+            </a>
+            <a href="mailto:park_achieveone@naver.com" class="text-slate-400 hover:text-sky-400 transition-colors transform hover:scale-110">
+                <i class="fas fa-envelope fa-2x"></i>
+            </a>
+        </div>
+
+        <div class="mt-20 animate-bounce text-slate-500">
+            <i class="fas fa-chevron-down"></i>
+        </div>
+    </div>
+
+    <!-- Background Decoration -->
+    <div class="absolute top-0 left-1/2 w-full -translate-x-1/2 h-full z-0 opacity-20 pointer-events-none">
+        <div class="absolute top-20 left-1/4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob"></div>
+        <div class="absolute top-20 right-1/4 w-72 h-72 bg-sky-500 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000"></div>
+    </div>
+</header>
+
+<main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-32 pb-20">
+
+    <section class="scroll-mt-24">
+        <div class="flex justify-center">
+            <a id="play-game-btn" href="./game/dist/" class="inline-flex items-center gap-3 px-8 py-4 rounded-lg border border-sky-500/50 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 hover:text-white transition-all duration-300 shadow-[0_0_20px_rgba(14,165,233,0.2)]">
+                <i class="fas fa-gamepad"></i>
+                <span class="text-lg font-bold tracking-wide">Play Game</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- About Me (Terminal Style) -->
+    <section id="about" class="scroll-mt-24">
+        <div class="flex items-center gap-4 mb-8">
+            <div class="h-px bg-slate-700 flex-1"></div>
+            <h2 class="text-2xl font-bold text-sky-400 font-mono">01. About Me</h2>
+            <div class="h-px bg-slate-700 flex-1"></div>
+        </div>
+
+        <div id="profile-window" class="window-panel rounded-lg shadow-xl overflow-hidden group">
+            <!-- Terminal Header -->
+            <div class="window-header bg-slate-800 px-4 py-2 flex items-center justify-between border-b border-slate-700 select-none">
+                <div class="flex items-center space-x-2">
+                    <button onclick="toggleWindow('profile-window', 'close')" class="win-btn win-btn-close w-3 h-3 rounded-full bg-red-500 cursor-pointer" title="Close (Minimize)"></button>
+                    <div class="win-btn win-btn-min w-3 h-3 rounded-full bg-yellow-500 cursor-default"></div>
+                    <button onclick="toggleWindow('profile-window', 'open')" class="win-btn win-btn-max w-3 h-3 rounded-full bg-green-500 cursor-pointer animate-pulse" title="Expand"></button>
+                </div>
+                <span class="ml-4 text-xs text-slate-400 font-mono">profile.cs — -bash</span>
+                <div class="w-12"></div>
+            </div>
+
+            <!-- Terminal Body -->
+            <div class="p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center md:items-start transition-all"
+                 onclick="if(this.closest('.window-panel').classList.contains('minimized')) toggleWindow('profile-window', 'open')">
+
+                <!-- Profile Image -->
+                <div class="flex-shrink-0">
+                    <div class="w-40 h-40 rounded-full overflow-hidden border-4 border-slate-700 shadow-lg relative bg-slate-800 flex items-center justify-center">
+                        <img src="images/profile.png" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'" alt="Profile" class="w-full h-full object-cover">
+                        <i class="fas fa-user-astronaut text-5xl text-slate-600 hidden"></i>
+                    </div>
+                </div>
+
+                <!-- Text Content -->
+                <div class="flex-1 text-slate-300 leading-relaxed">
+                    <!-- Summary (Always Visible) -->
+                    <div class="mb-2">
+                        <h3 class="text-2xl font-bold text-white mb-1">박성일</h3>
+                        <p class="text-sky-400 font-mono text-sm">유니티 개발자 7년차</p>
+                    </div>
+
+                    <!-- Collapsible Details -->
+                    <div class="window-content-details space-y-4">
+                        <div class="h-px bg-slate-700/50 my-4"></div> <!-- Separator -->
+                        <p class="font-bold text-white text-xl">안녕하세요! 🙇‍♂️</p>
+                        <p>
+                            6년간 유니티를 활용한 게임 개발에 종사하고 있으며, PC와 모바일 게임 앱의 개발 및 런칭을 담당해 왔습니다.
+                            최근에는 <span class="text-sky-400">콘텐츠 개발자들의 효율</span>을 높이는 기술 지원 조직에서 활동하고 있습니다.
+                        </p>
+                        <p>
+                            주력 언어는 <span class="text-yellow-400 font-mono">C#</span>이며, 네이티브 기능이 필요할 때는 Java와 Swift를 활용합니다.
+                            특히 협업 도중 불편한 점을 발견하고 이를 개선하는 작업(Tool Development)을 즐깁니다.
+                        </p>
+                        <p>
+                            RPG 게임 매니아에서 시작된 열정이 개발자로 이어졌습니다.
+                            팀원들과의 긴밀한 소통과 공동의 목표 공유가 최고의 효율을 낸다고 믿습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tech Stack -->
+    <section id="skills" class="scroll-mt-24">
+        <h3 class="text-xl font-bold text-slate-200 mb-6 font-mono text-center">Tech Stack</h3>
+        <div class="flex flex-wrap justify-center gap-4">
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fab fa-unity text-2xl text-white"></i> <span class="font-bold">Unity</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fas fa-code text-2xl text-purple-400"></i> <span class="font-bold">C#</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fab fa-github text-2xl text-white"></i> <span class="font-bold">GitHub</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fas fa-laptop-code text-2xl text-red-400"></i> <span class="font-bold">Rider</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fab fa-markdown text-2xl text-blue-400"></i> <span class="font-bold">Markdown</span>
+            </div>
+            <div class="glass-panel px-4 py-3 rounded-xl flex items-center gap-3 tech-badge cursor-default">
+                <i class="fas fa-fire text-2xl text-yellow-500"></i> <span class="font-bold">Firebase</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience -->
+    <section id="experience" class="scroll-mt-24">
+        <div class="flex items-center gap-4 mb-12">
+            <div class="h-px bg-slate-700 flex-1"></div>
+            <h2 class="text-2xl font-bold text-sky-400 font-mono">02. Professional Experience</h2>
+            <div class="h-px bg-slate-700 flex-1"></div>
+        </div>
+
+        <div class="space-y-12 border-l-2 border-slate-700 ml-4 pl-8 relative">
+
+            <!-- 111% -->
+            <div class="relative">
+                <!-- Timeline Dot Button -->
+                <button onclick="toggleWindow('exp-111', 'open')" class="timeline-dot absolute -left-11 top-6 w-6 h-6 rounded-full bg-sky-500 ring-4 ring-[#0f172a] z-10 active-pulse" aria-label="Open 111% Experience"></button>
+
+                <div id="exp-111" class="window-panel minimized rounded-lg group">
+                    <!-- Window Header (Hidden when minimized) -->
+                    <div class="window-header px-4 py-2 flex items-center justify-between select-none">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleWindow('exp-111', 'close')" class="win-btn win-btn-close w-3 h-3 rounded-full bg-red-500 cursor-pointer" title="Close (Minimize)"></button>
+                            <div class="win-btn win-btn-min w-3 h-3 rounded-full bg-yellow-500 cursor-default"></div>
+                            <div class="win-btn win-btn-max w-3 h-3 rounded-full bg-green-500 cursor-default"></div>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">111percent.cs</span>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <!-- Window Content -->
+                    <div class="p-6 transition-colors duration-300" onclick="if(this.closest('.window-panel').classList.contains('minimized')) toggleWindow('exp-111', 'open')">
+                        <!-- Summary (Always Visible) -->
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-2">
+                            <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                                <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                    <img src="images/111percent.png" alt="111% Logo" class="h-full w-auto object-contain">
+                                </div>
+                                <div>
+                                    <h3 class="text-2xl font-bold text-white">111% (111퍼센트)</h3>
+                                    <a href="https://www.111percent.net" target="_blank" class="text-sm text-sky-400 hover:underline">www.111percent.net <i class="fas fa-external-link-alt text-xs"></i></a>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center whitespace-nowrap">2023.10 - NOW</span>
+                        </div>
+
+                        <!-- Details (Hidden when minimized) -->
+                        <div class="window-content-details space-y-4">
+                            <div class="flex flex-wrap gap-2 pt-2">
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">C#</span>
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Unity</span>
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Android/iOS</span>
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Jenkins</span>
+                            </div>
+
+                            <ul class="space-y-3 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 border-t border-slate-700/50 pt-4">
+                                <li><span class="text-white font-medium">핵심 모듈 및 프레임워크 개발:</span> Table, IAP, Login, Save/Load 시스템 구축</li>
+                                <li><span class="text-white font-medium">DevOps & Tools:</span> 빌드 대응 및 개발자 편의 툴(Code Generator) 제공</li>
+                                <li>
+                                    <span class="text-white font-medium">Firebase Integration:</span>
+                                    <ul class="pl-6 mt-1 space-y-1 text-slate-400 list-circle">
+                                        <li>Cloud Functions + Auth를 이용한 커스텀 인증 시스템</li>
+                                        <li>Firestore DB 연동 및 Cloud Storage 리소스 업로드</li>
+                                    </ul>
+                                </li>
+                                <li><span class="text-white font-medium">Module Development:</span> Mobile Notification, Ranking, Addressables 리소스 관리</li>
+                                <li><span class="text-white font-medium">Login & IAP:</span> Google, Apple, FB, Kakao 로그인 및 서버 검증 결제 모듈</li>
+                                <li><span class="text-white font-medium">R&D:</span> Photon Quantum3 매치메이킹 및 세션 관리 샘플 제작</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Snowpipe -->
+            <div class="relative">
+                <button onclick="toggleWindow('exp-snowpipe', 'open')" class="timeline-dot absolute -left-11 top-6 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a] z-10 hover:bg-slate-500" aria-label="Open Snowpipe Experience"></button>
+
+                <div id="exp-snowpipe" class="window-panel minimized rounded-lg group">
+                    <div class="window-header px-4 py-2 flex items-center justify-between select-none">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleWindow('exp-snowpipe', 'close')" class="win-btn win-btn-close w-3 h-3 rounded-full bg-red-500 cursor-pointer"></button>
+                            <div class="win-btn win-btn-min w-3 h-3 rounded-full bg-yellow-500 cursor-default"></div>
+                            <div class="win-btn win-btn-max w-3 h-3 rounded-full bg-green-500 cursor-default"></div>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">snowpipe.cs</span>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="p-6 transition-colors duration-300" onclick="if(this.closest('.window-panel').classList.contains('minimized')) toggleWindow('exp-snowpipe', 'open')">
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-2">
+                            <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                                <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                    <img src="images/snowpipe.png" alt="Snowpipe Logo" class="h-full w-auto object-contain">
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Snowpipe (스노우파이프)</h3>
+                                    <a href="https://www.snowpipe.co.kr" target="_blank" class="text-sm text-sky-400 hover:underline">www.snowpipe.co.kr</a>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center whitespace-nowrap">2023.06 - 2023.10</span>
+                        </div>
+
+                        <div class="window-content-details space-y-4">
+                            <div class="flex flex-wrap gap-2 pt-2">
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-slate-300 font-mono">New Game Dev</span>
+                            </div>
+                            <p class="text-slate-300 text-sm ml-0 border-t border-slate-700/50 pt-4">- 신규 게임 프로젝트 개발 (C#, Unity, Git 활용)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gridinc -->
+            <div class="relative">
+                <button onclick="toggleWindow('exp-grid', 'open')" class="timeline-dot absolute -left-11 top-6 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a] z-10 hover:bg-slate-500" aria-label="Open Gridinc Experience"></button>
+
+                <div id="exp-grid" class="window-panel minimized rounded-lg group">
+                    <div class="window-header px-4 py-2 flex items-center justify-between select-none">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleWindow('exp-grid', 'close')" class="win-btn win-btn-close w-3 h-3 rounded-full bg-red-500 cursor-pointer"></button>
+                            <div class="win-btn win-btn-min w-3 h-3 rounded-full bg-yellow-500 cursor-default"></div>
+                            <div class="win-btn win-btn-max w-3 h-3 rounded-full bg-green-500 cursor-default"></div>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">gridinc_metaverse.jslib</span>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="p-6 transition-colors duration-300" onclick="if(this.closest('.window-panel').classList.contains('minimized')) toggleWindow('exp-grid', 'open')">
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-2">
+                            <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                                <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                    <img src="images/gridinc.png" alt="Gridinc Logo" class="h-full w-auto object-contain">
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Gridinc (그리드)</h3>
+                                    <a href="https://www.gridinc.com" target="_blank" class="text-sm text-sky-400 hover:underline">www.gridinc.com</a>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center whitespace-nowrap">2022.05 - 2023.06</span>
+                        </div>
+
+                        <div class="window-content-details space-y-4">
+                            <div class="flex flex-wrap gap-2 pt-2">
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Metaverse</span>
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Cross-Platform</span>
+                            </div>
+
+                            <ul class="space-y-2 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 border-t border-slate-700/50 pt-4">
+                                <li>메타버스 앱 신규 개발 런칭 및 유지 보수 (Android, iOS, Win, Mac)</li>
+                                <li><span class="text-white">Desktop WebView:</span> 3D WebView 활용 개발</li>
+                                <li><span class="text-white">Media:</span> AVPro Video 스트리밍, Ultimate Character Controller 동기화</li>
+                                <li><span class="text-white">Platform:</span> Deep-Link 활용 PC/Mac 로그인, 소셜 로그인 연동</li>
+                                <li>아트팀 협업 파이프라인 효율화 작업</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Snowballs -->
+            <div class="relative">
+                <button onclick="toggleWindow('exp-snowballs', 'open')" class="timeline-dot absolute -left-11 top-6 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a] z-10 hover:bg-slate-500" aria-label="Open Snowballs Experience"></button>
+
+                <div id="exp-snowballs" class="window-panel minimized rounded-lg group">
+                    <div class="window-header px-4 py-2 flex items-center justify-between select-none">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleWindow('exp-snowballs', 'close')" class="win-btn win-btn-close w-3 h-3 rounded-full bg-red-500 cursor-pointer"></button>
+                            <div class="win-btn win-btn-min w-3 h-3 rounded-full bg-yellow-500 cursor-default"></div>
+                            <div class="win-btn win-btn-max w-3 h-3 rounded-full bg-green-500 cursor-default"></div>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">snowballs.cs</span>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="p-6 transition-colors duration-300" onclick="if(this.closest('.window-panel').classList.contains('minimized')) toggleWindow('exp-snowballs', 'open')">
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-2">
+                            <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                                <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                    <img src="images/snowballs.png" alt="Snowballs Logo" class="h-full w-auto object-contain">
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Snowballs (스노우볼스)</h3>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center whitespace-nowrap">2021.09 - 2022.04</span>
+                        </div>
+
+                        <div class="window-content-details space-y-4">
+                            <p class="text-slate-300 text-sm mb-2 font-medium ml-0 pt-2">'기사 키우기 : 데미갓' 런칭 및 라이브 서비스</p>
+                            <ul class="space-y-2 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 border-t border-slate-700/50 pt-2">
+                                <li>퍼즐 게임 신규 개발 및 인게임 스테이지 제작 툴(Level Editor) 개발</li>
+                                <li>전체 프로젝트 Android/iOS 빌드 파이프라인 관리</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dalcomsoft -->
+            <div class="relative">
+                <button onclick="toggleWindow('exp-dalcom', 'open')" class="timeline-dot absolute -left-11 top-6 w-6 h-6 rounded-full bg-slate-600 ring-4 ring-[#0f172a] z-10 hover:bg-slate-500" aria-label="Open Dalcomsoft Experience"></button>
+
+                <div id="exp-dalcom" class="window-panel minimized rounded-lg group">
+                    <div class="window-header px-4 py-2 flex items-center justify-between select-none">
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleWindow('exp-dalcom', 'close')" class="win-btn win-btn-close w-3 h-3 rounded-full bg-red-500 cursor-pointer"></button>
+                            <div class="win-btn win-btn-min w-3 h-3 rounded-full bg-yellow-500 cursor-default"></div>
+                            <div class="win-btn win-btn-max w-3 h-3 rounded-full bg-green-500 cursor-default"></div>
+                        </div>
+                        <span class="text-xs text-slate-400 font-mono">dalcomsoft.cs</span>
+                        <div class="w-12"></div>
+                    </div>
+
+                    <div class="p-6 transition-colors duration-300" onclick="if(this.closest('.window-panel').classList.contains('minimized')) toggleWindow('exp-dalcom', 'open')">
+                        <div class="flex flex-col md:flex-row md:items-start justify-between gap-10 mb-2">
+                            <div class="flex flex-col gap-2 mb-2 md:mb-0">
+                                <div class="h-12 w-auto flex-shrink-0 flex items-center justify-start overflow-visible">
+                                    <img src="images/dalcomsoft.png" alt="Dalcomsoft Logo" class="h-full w-auto object-contain">
+                                </div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-white">Dalcomsoft (달콤소프트)</h3>
+                                    <a href="https://www.dalcomsoft.com" target="_blank" class="text-sm text-sky-400 hover:underline">www.dalcomsoft.com</a>
+                                </div>
+                            </div>
+                            <span class="text-slate-400 font-mono text-sm bg-slate-800 px-3 py-1 rounded mt-2 md:mt-0 inline-block self-start md:self-center whitespace-nowrap">2018.12 - 2021.08</span>
+                        </div>
+
+                        <div class="window-content-details space-y-4">
+                            <div class="flex flex-wrap gap-2 pt-2">
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">Rhythm Game</span>
+                                <span class="px-2 py-1 bg-slate-700 rounded text-xs text-sky-300 font-mono">SDK Integration</span>
+                            </div>
+
+                            <ul class="space-y-2 text-slate-300 text-sm list-disc list-inside marker:text-sky-500 border-t border-slate-700/50 pt-4">
+                                <li><span class="text-white">신규 개발:</span> SuperStar YG, SuperStar KangDaniel 런칭</li>
+                                <li><span class="text-white">라이브 서비스:</span> Superstar BTS, Superstar JYP 유지 보수</li>
+                                <li><span class="text-white">SDK 연동:</span> AdManager, Tapjoy, AudienceNetwork 등 광고 SDK 및 Firebase 연동</li>
+                                <li>인게임 UI 폴리싱 및 컨텐츠 구현 (Native Java/Obj-C 활용)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Video Projects -->
+    <section id="projects" class="scroll-mt-24">
+        <div class="flex items-center gap-4 mb-12">
+            <div class="h-px bg-slate-700 flex-1"></div>
+            <h2 class="text-2xl font-bold text-sky-400 font-mono">03. Projects</h2>
+            <div class="h-px bg-slate-700 flex-1"></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Video Item 1 -->
+            <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                <div class="aspect-video w-full">
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/4ouEoG2jaqc" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="p-5">
+                    <h4 class="text-lg font-bold text-white mb-2">World of Warcraft (Copy Portfolio)</h4>
+                    <div class="text-xs text-slate-400 font-mono mb-4">2018.09 - 2018.11 | Unity, UGUI</div>
+                </div>
+            </div>
+
+            <!-- Video Item 2 -->
+            <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700">
+                <div class="aspect-video w-full">
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/6KC87N8RTr8" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="p-5">
+                    <h4 class="text-lg font-bold text-white mb-2">Pokemon Tower Defense</h4>
+                    <div class="text-xs text-slate-400 font-mono mb-2">2018.08 | Unity, NGUI</div>
+                    <p class="text-xs text-slate-500">Motif: Cursed Treasure 2</p>
+                </div>
+            </div>
+
+            <!-- Video Item 3 -->
+            <div class="bg-slate-800 rounded-xl overflow-hidden shadow-lg border border-slate-700 md:col-span-2 lg:col-span-1 lg:col-start-1 lg:col-end-3 mx-auto w-full lg:w-1/2">
+                <div class="aspect-video w-full">
+                    <iframe class="w-full h-full" src="https://www.youtube.com/embed/9vsGBhge9N0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="p-5">
+                    <h4 class="text-lg font-bold text-white mb-2">말달리ZOOAAAAA (GameJam)</h4>
+                    <div class="text-xs text-slate-400 font-mono mb-2">2017 KOCCA Gamejam 2등상 수상</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="border-t border-slate-800 py-8 bg-[#0b1120]">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+        <p class="text-slate-500 text-sm font-mono">
+            © <span id="year"></span> Park Achieveone. All rights reserved.<br>
+            Built with HTML & Tailwind CSS
+        </p>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    const playGameBtn = document.getElementById('play-game-btn');
+    if (playGameBtn) {
+        playGameBtn.addEventListener('click', function (event) {
+            event.preventDefault();
+            window.location.href = './game/dist/?t=' + Date.now();
+        });
+    }
+
+    function toggleWindow(id, action) {
+        const el = document.getElementById(id);
+
+        // Find the timeline dot that corresponds to this window (optional, for Experience section)
+        const dot = el.parentElement.querySelector('.timeline-dot');
+
+        if (action === 'open') {
+            el.classList.remove('minimized');
+            if(dot) {
+                dot.classList.remove('active-pulse');
+                dot.style.transform = "scale(1)";
+            }
+        } else if (action === 'close') {
+            el.classList.add('minimized');
+            if(dot) dot.classList.add('active-pulse');
+        }
+    }
+</script>
+</body>
+</html>
