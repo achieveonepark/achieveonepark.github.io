@@ -31,7 +31,6 @@ const App: React.FC = () => {
     const [windows, setWindows] = useState<WindowState[]>([]);
     const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
     const [zIndexCounter, setZIndexCounter] = useState(10);
-    const hasAutoOpenedIntro = useRef(false);
 
     // Ref to track the allowed desktop area (excluding menu bar)
     const desktopAreaRef = useRef<HTMLDivElement>(null);
@@ -47,6 +46,8 @@ const App: React.FC = () => {
     };
 
     const launchApp = useCallback((app: AppDefinition) => {
+        const shouldStartMaximized = window.innerWidth < 1024 || app.id === 'gameplayer';
+
         // Check if app is already open
         const existingWindow = windows.find(w => w.appId === app.id);
 
@@ -80,7 +81,7 @@ const App: React.FC = () => {
             width,
             height,
             isMinimized: false,
-            isMaximized: app.id === 'gameplayer',
+            isMaximized: shouldStartMaximized,
             zIndex: zIndexCounter + 1
         };
 
@@ -115,6 +116,7 @@ const App: React.FC = () => {
 
         if (!targetApp) return;
 
+        const isMobileViewport = window.innerWidth < 1024;
         const width = Math.min(window.innerWidth * 0.6, 600);
         const height = Math.min(window.innerHeight * 0.7, 500);
         const newWindowId = generateId();
@@ -195,7 +197,7 @@ const App: React.FC = () => {
                 ...newWindowBase,
                 x: targetX,
                 y: targetY,
-                isMaximized: targetApp.id === 'gameplayer',
+                isMaximized: isMobileViewport || targetApp.id === 'gameplayer',
                 zIndex: reorderedWindows.length + 10,
             };
 
@@ -252,24 +254,6 @@ const App: React.FC = () => {
             isCancelled = true;
         };
     }, []);
-
-    // AUTO-STARTUP LOGIC
-    useEffect(() => {
-        if (hasAutoOpenedIntro.current) return;
-        hasAutoOpenedIntro.current = true;
-
-        // Attempt to find introduce.md in parkachieveone
-        const rootFolder = fileSystem['parkachieveone'];
-        // We look for the exact file name defined in constants
-        const introFile = rootFolder?.find(f => f.name === 'introduce.md');
-
-        if (introFile) {
-            // Small delay to ensure smooth entry animation
-            window.setTimeout(() => {
-                openFile(introFile);
-            }, 800);
-        }
-    }, [fileSystem, openFile]);
 
     const closeWindow = useCallback((id: string) => {
         setWindows(prev => prev.filter(w => w.id !== id));

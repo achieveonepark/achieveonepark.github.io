@@ -38,6 +38,7 @@ const companyLogoNameBySlug: Record<string, string> = {
 
 const createParkManifestPlugin = (): Plugin => {
   let rootDir = ''
+  let baseUrl = '/'
 
   const generateManifest = async () => {
     const parkAbsolutePath = path.resolve(rootDir, PARK_ROOT_DIR)
@@ -66,7 +67,8 @@ const createParkManifestPlugin = (): Plugin => {
         const entry: { path: string; thumbnail?: string } = { path: relPath }
         const matchedLogo = companyLogoNameBySlug[fileNameNoExt]
         if (matchedLogo) {
-          entry.thumbnail = `/images/${matchedLogo}.png`
+          const normalizedBase = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`
+          entry.thumbnail = `${normalizedBase}images/${matchedLogo}.png`
         }
 
         return entry
@@ -81,6 +83,7 @@ const createParkManifestPlugin = (): Plugin => {
     name: 'parkachieveone-manifest-plugin',
     configResolved(config) {
       rootDir = config.root
+      baseUrl = config.base || '/'
     },
     async buildStart() {
       await generateManifest()

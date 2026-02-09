@@ -45,6 +45,14 @@ interface WidgetProps {
   children: React.ReactNode;
 }
 
+interface IOSWidgetCardProps {
+  title: string;
+  expanded: boolean;
+  onToggle: () => void;
+  emphasized: boolean;
+  children: React.ReactNode;
+}
+
 const DesktopWidget: React.FC<WidgetProps> = ({
   title,
   x,
@@ -95,6 +103,42 @@ const DesktopWidget: React.FC<WidgetProps> = ({
   );
 };
 
+const IOSWidgetCard: React.FC<IOSWidgetCardProps> = ({ title, expanded, onToggle, emphasized, children }) => {
+  return (
+    <div
+      className={`rounded-[24px] border backdrop-blur-2xl overflow-hidden ${
+        emphasized
+          ? 'border-cyan-200/70 bg-cyan-900/25 shadow-[0_10px_35px_rgba(34,211,238,0.2)]'
+          : 'border-white/25 bg-white/10 shadow-[0_10px_35px_rgba(0,0,0,0.35)]'
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="w-full h-11 px-4 flex items-center justify-between text-cyan-50"
+      >
+        <span className="text-[11px] tracking-[0.16em] uppercase font-semibold">{title}</span>
+        {expanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+      </button>
+
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="ios-content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.24, ease: 'easeInOut' }}
+            className="overflow-hidden"
+          >
+            <div className="px-4 pb-4 max-h-[38vh] overflow-y-auto">{children}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 export const DesktopSkillsWidget: React.FC = () => {
   const { openFile, windows } = useContext(OSContext);
 
@@ -109,22 +153,50 @@ export const DesktopSkillsWidget: React.FC = () => {
   const [focusedWidget, setFocusedWidget] = useState<'profile' | 'experience' | 'projects' | 'skills' | null>(null);
   const [profileWidgetHeight, setProfileWidgetHeight] = useState(0);
   const [experienceWidgetHeight, setExperienceWidgetHeight] = useState(0);
-  const [widgetVerticalGap, setWidgetVerticalGap] = useState(460);
+  const [skillsWidgetHeight, setSkillsWidgetHeight] = useState(0);
+  const widgetVerticalGap = 460;
+  const [viewportWidth, setViewportWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1440,
+  );
 
   const clearFocusTimer = useRef<number | null>(null);
   const profileWidgetRef = useRef<HTMLDivElement>(null);
   const experienceWidgetRef = useRef<HTMLDivElement>(null);
+  const skillsWidgetRef = useRef<HTMLDivElement>(null);
 
-  const PROFILE_X = 20;
+  const isMobile = viewportWidth < 1024;
+
+  const PROFILE_X = isMobile ? 12 : 20;
   const PROFILE_Y = 24;
+  const COLLAPSED_WIDGET_HEIGHT = 36;
   const SECONDARY_WIDGET_CONTENT_HEIGHT = '44vh';
   const PROJECTS_BOTTOM_TRIM = 190;
-  const RIGHT_X = 420;
+  const RIGHT_X = isMobile ? 12 : 420;
   const RIGHT_Y = 24;
 
-  const skillsY = PROFILE_Y + profileWidgetHeight + widgetVerticalGap;
+  const profileAnchorHeight = expanded.profile
+    ? profileWidgetHeight
+    : COLLAPSED_WIDGET_HEIGHT;
 
-  const projectsY = RIGHT_Y + experienceWidgetHeight + widgetVerticalGap;
+  const experienceAnchorHeight = expanded.experience
+    ? experienceWidgetHeight
+    : COLLAPSED_WIDGET_HEIGHT;
+
+  const skillsY = PROFILE_Y + profileAnchorHeight + widgetVerticalGap;
+
+  const skillsAnchorHeight = expanded.skills
+    ? skillsWidgetHeight
+    : COLLAPSED_WIDGET_HEIGHT;
+
+  const experienceY = isMobile
+    ? skillsY + skillsAnchorHeight + widgetVerticalGap
+    : RIGHT_Y;
+
+  const projectsY = isMobile
+    ? experienceY + experienceAnchorHeight + widgetVerticalGap
+    : RIGHT_Y + experienceAnchorHeight + widgetVerticalGap;
+
+  const widgetWidth = isMobile ? Math.max(300, viewportWidth - 24) : 380;
 
   const iconMap = useMemo<Record<string, string>>(
     () => ({
@@ -366,6 +438,12 @@ export const DesktopSkillsWidget: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const onResize = () => setViewportWidth(window.innerWidth);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  useEffect(() => {
     if (!profileWidgetRef.current) return;
 
     const updateHeight = () => {
@@ -389,6 +467,31 @@ export const DesktopSkillsWidget: React.FC = () => {
       setProfileWidgetHeight(profileWidgetRef.current.getBoundingClientRect().height);
     }
   }, [expanded.profile]);
+
+  useEffect(() => {
+    if (!skillsWidgetRef.current) return;
+
+    const updateHeight = () => {
+      if (skillsWidgetRef.current) {
+        setSkillsWidgetHeight(skillsWidgetRef.current.getBoundingClientRect().height);
+      }
+    };
+
+    updateHeight();
+
+    const observer = new ResizeObserver(() => {
+      updateHeight();
+    });
+
+    observer.observe(skillsWidgetRef.current);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (skillsWidgetRef.current) {
+      setSkillsWidgetHeight(skillsWidgetRef.current.getBoundingClientRect().height);
+    }
+  }, [expanded.skills]);
 
   useEffect(() => {
     if (!experienceWidgetRef.current) return;
@@ -441,6 +544,185 @@ export const DesktopSkillsWidget: React.FC = () => {
 
   if (skills.length === 0 && aboutSummary.length === 0 && experienceItems.length === 0 && projectItems.length === 0) return null;
 
+  const profileContent = (
+    <>
+      <div className="flex items-center gap-3 mb-4">
+        <button
+          type="button"
+          onClick={() => setIsProfileZoomed(true)}
+          className="rounded-lg border border-cyan-500/40 overflow-hidden"
+        >
+          <img src={profileImage} alt="Profile" className="w-16 h-16 object-cover" draggable={false} loading="eager" />
+        </button>
+        <div>
+          <div className="text-cyan-100 font-bold text-base">{aboutName || 'Profile'}</div>
+          <div className="text-sm text-cyan-300/90">{aboutCareer || 'Unity Developer'}</div>
+        </div>
+      </div>
+
+      <div className="space-y-2.5">
+        {aboutSummary.map((line, index) => (
+          <p key={`${line}-${index}`} className="text-sm leading-relaxed text-gray-200">
+            {line}
+          </p>
+        ))}
+      </div>
+    </>
+  );
+
+  const experienceContent = (
+    <div className="space-y-2.5">
+      {experienceItems.map((item) => (
+        <button
+          key={item.path}
+          type="button"
+          onClick={() => openMarkdownPath(item.path)}
+          className="w-full text-left rounded-lg border border-white/10 bg-black/50 px-3 py-3 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-colors"
+        >
+          <div className="flex items-start gap-3">
+            {(() => {
+              const slug = item.path.split('/').pop()?.replace('.md', '') || '';
+              const logo = experienceLogoBySlug[slug];
+
+              return logo ? (
+                <img
+                  src={logo}
+                  alt={item.title}
+                  className="h-12 w-auto max-w-[88px] object-contain rounded-sm border border-white/10 bg-black/40 shrink-0"
+                  draggable={false}
+                />
+              ) : (
+                <div className="h-12 min-w-12 px-2 rounded-sm border border-white/10 bg-black/40 shrink-0 flex items-center justify-center text-[10px] text-cyan-200">ETC</div>
+              );
+            })()}
+            <div className="flex-1 min-w-0">
+              <div className="text-sm text-cyan-100 font-semibold leading-snug">{item.title}</div>
+              <div className="text-xs text-cyan-300/75 mt-1">{item.period}</div>
+            </div>
+            <FolderOpen size={14} className="text-cyan-400/80 shrink-0" />
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+
+  const skillsContent = (
+    <div className="grid grid-cols-2 gap-2.5">
+      {skills.map((skill) => {
+        const image = iconMap[skill.toLowerCase()];
+        return (
+          <div key={skill} className="h-12 rounded-lg border border-white/10 bg-black/50 flex items-center gap-2.5 px-2.5">
+            {image ? (
+              <img src={image} alt={skill} className="w-6 h-6 object-contain" draggable={false} />
+            ) : (
+              <div className="w-6 h-6 rounded-md bg-cyan-900/30 text-cyan-200 text-[10px] font-bold flex items-center justify-center">
+                {skill.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <span className="text-sm text-gray-100 font-semibold truncate">{skill}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const projectsContent = (
+    <div className="space-y-3">
+      {projectItems.map((project) => (
+        <button
+          key={project.title}
+          type="button"
+          onClick={() => openVideoInBrowser(project)}
+          className="w-full text-left rounded-lg border border-white/10 bg-black/50 p-2.5 hover:bg-red-500/10 hover:border-red-400/40 transition-colors"
+        >
+          {project.thumbnailUrl ? (
+            <img
+              src={project.thumbnailUrl}
+              alt={project.title}
+              className="w-full h-32 object-cover rounded-md border border-white/10"
+              draggable={false}
+              loading="eager"
+            />
+          ) : (
+            <div className="w-full h-32 rounded-md border border-white/10 bg-black/60 flex items-center justify-center text-sm text-gray-400">
+              NO THUMBNAIL
+            </div>
+          )}
+          <div className="text-sm text-cyan-100 font-semibold mt-2 line-clamp-2">{project.title}</div>
+        </button>
+      ))}
+    </div>
+  );
+
+  if (isMobile) {
+    return (
+      <div className="absolute top-16 left-0 right-0 bottom-24 pointer-events-none z-[1]">
+        <div className="absolute inset-0 px-3 pb-6 overflow-y-auto pointer-events-auto">
+          <div className="w-14 h-1.5 rounded-full bg-white/30 mx-auto mb-3 mt-1" />
+          <div className="space-y-3">
+            <IOSWidgetCard
+              title="Profile"
+              expanded={expanded.profile}
+              onToggle={() => setExpanded(prev => ({ ...prev, profile: !prev.profile }))}
+              emphasized={focusedWidget === 'profile'}
+            >
+              {profileContent}
+            </IOSWidgetCard>
+
+            <IOSWidgetCard
+              title="Skills"
+              expanded={expanded.skills}
+              onToggle={() => setExpanded(prev => ({ ...prev, skills: !prev.skills }))}
+              emphasized={focusedWidget === 'skills'}
+            >
+              {skillsContent}
+            </IOSWidgetCard>
+
+            <IOSWidgetCard
+              title="Experience"
+              expanded={expanded.experience}
+              onToggle={() => setExpanded(prev => ({ ...prev, experience: !prev.experience }))}
+              emphasized={focusedWidget === 'experience'}
+            >
+              {experienceContent}
+            </IOSWidgetCard>
+
+            <IOSWidgetCard
+              title="Projects"
+              expanded={expanded.projects}
+              onToggle={() => setExpanded(prev => ({ ...prev, projects: !prev.projects }))}
+              emphasized={focusedWidget === 'projects'}
+            >
+              {projectsContent}
+            </IOSWidgetCard>
+          </div>
+        </div>
+
+        {isProfileZoomed && (
+          <div
+            className="fixed inset-0 z-[1200] bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 pointer-events-auto"
+            onClick={() => setIsProfileZoomed(false)}
+          >
+            <button
+              type="button"
+              className="absolute top-6 right-6 w-9 h-9 rounded-full border border-white/20 bg-black/60 text-cyan-200 hover:text-white hover:border-cyan-300 transition-colors flex items-center justify-center"
+              onClick={() => setIsProfileZoomed(false)}
+            >
+              <X size={16} />
+            </button>
+            <img
+              src={profileImage}
+              alt="Profile enlarged"
+              className="max-w-[min(90vw,720px)] max-h-[86vh] object-contain rounded-xl border border-cyan-500/40 shadow-[0_0_35px_rgba(6,182,212,0.22)]"
+              draggable={false}
+              onClick={(event) => event.stopPropagation()}
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div className="absolute top-16 left-0 right-0 bottom-24 pointer-events-none z-[1]">
       <div ref={profileWidgetRef} className="absolute" style={{ left: PROFILE_X, top: PROFILE_Y }}>
@@ -448,156 +730,56 @@ export const DesktopSkillsWidget: React.FC = () => {
         title="Profile"
         x={0}
         y={0}
+        width={widgetWidth}
         expanded={expanded.profile}
         onToggle={() => setExpanded(prev => ({ ...prev, profile: !prev.profile }))}
         emphasized={focusedWidget === 'profile'}
       >
-        <div className="flex items-center gap-3 mb-4">
-          <button
-            type="button"
-            onClick={() => setIsProfileZoomed(true)}
-            className="rounded-lg border border-cyan-500/40 overflow-hidden"
-          >
-            <img src={profileImage} alt="Profile" className="w-16 h-16 object-cover" draggable={false} loading="eager" />
-          </button>
-          <div>
-            <div className="text-cyan-100 font-bold text-base">{aboutName || 'Profile'}</div>
-            <div className="text-sm text-cyan-300/90">{aboutCareer || 'Unity Developer'}</div>
-          </div>
-        </div>
-
-        <div className="space-y-2.5">
-          {aboutSummary.map((line, index) => (
-            <p key={`${line}-${index}`} className="text-sm leading-relaxed text-gray-200">
-              {line}
-            </p>
-          ))}
-        </div>
+        {profileContent}
       </DesktopWidget>
       </div>
 
-      <div ref={experienceWidgetRef} className="absolute" style={{ left: RIGHT_X, top: RIGHT_Y }}>
+      <div ref={experienceWidgetRef} className="absolute" style={{ left: RIGHT_X, top: experienceY }}>
       <DesktopWidget
         title="Experience"
         x={0}
         y={0}
+        width={widgetWidth}
         expanded={expanded.experience}
         onToggle={() => setExpanded(prev => ({ ...prev, experience: !prev.experience }))}
         emphasized={focusedWidget === 'experience'}
       >
-        <div className="space-y-2.5">
-          {experienceItems.map((item) => (
-            <button
-              key={item.path}
-              type="button"
-              onClick={() => openMarkdownPath(item.path)}
-              className="w-full text-left rounded-lg border border-white/10 bg-black/50 px-3 py-3 hover:bg-cyan-500/10 hover:border-cyan-500/30 transition-colors"
-            >
-              <div className="flex items-start gap-3">
-                {(() => {
-                  const slug = item.path.split('/').pop()?.replace('.md', '') || '';
-                  const logo = experienceLogoBySlug[slug];
-
-                  return logo ? (
-                    <img
-                      src={logo}
-                      alt={item.title}
-                      className="h-12 w-auto max-w-[88px] object-contain rounded-sm border border-white/10 bg-black/40 shrink-0"
-                      draggable={false}
-                    />
-                  ) : (
-                    <div className="h-12 min-w-12 px-2 rounded-sm border border-white/10 bg-black/40 shrink-0 flex items-center justify-center text-[10px] text-cyan-200">ETC</div>
-                  );
-                })()}
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-cyan-100 font-semibold leading-snug">{item.title}</div>
-                  <div className="text-xs text-cyan-300/75 mt-1">{item.period}</div>
-                </div>
-                <FolderOpen size={14} className="text-cyan-400/80 shrink-0" />
-              </div>
-            </button>
-          ))}
-        </div>
+        {experienceContent}
       </DesktopWidget>
       </div>
 
+      <div ref={skillsWidgetRef} className="absolute" style={{ left: PROFILE_X, top: skillsY }}>
       <DesktopWidget
         title="Skills"
-        x={PROFILE_X}
-        y={skillsY}
-        width={380}
+        x={0}
+        y={0}
+        width={widgetWidth}
         contentMaxHeight={SECONDARY_WIDGET_CONTENT_HEIGHT}
         expanded={expanded.skills}
         onToggle={() => setExpanded(prev => ({ ...prev, skills: !prev.skills }))}
         emphasized={focusedWidget === 'skills'}
       >
-        <div className="grid grid-cols-2 gap-2.5">
-          {skills.map((skill) => {
-            const image = iconMap[skill.toLowerCase()];
-            return (
-              <div key={skill} className="h-12 rounded-lg border border-white/10 bg-black/50 flex items-center gap-2.5 px-2.5">
-                {image ? (
-                  <img src={image} alt={skill} className="w-6 h-6 object-contain" draggable={false} />
-                ) : (
-                  <div className="w-6 h-6 rounded-md bg-cyan-900/30 text-cyan-200 text-[10px] font-bold flex items-center justify-center">
-                    {skill.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <span className="text-sm text-gray-100 font-semibold truncate">{skill}</span>
-              </div>
-            );
-          })}
-        </div>
+        {skillsContent}
       </DesktopWidget>
+      </div>
 
       <DesktopWidget
         title="Projects"
         x={RIGHT_X}
         y={projectsY}
+        width={widgetWidth}
         contentMaxHeight={`calc(${SECONDARY_WIDGET_CONTENT_HEIGHT} - ${PROJECTS_BOTTOM_TRIM}px)`}
         expanded={expanded.projects}
         onToggle={() => setExpanded(prev => ({ ...prev, projects: !prev.projects }))}
         emphasized={focusedWidget === 'projects'}
       >
-        <div className="space-y-3">
-          {projectItems.map((project) => (
-            <button
-              key={project.title}
-              type="button"
-              onClick={() => openVideoInBrowser(project)}
-              className="w-full text-left rounded-lg border border-white/10 bg-black/50 p-2.5 hover:bg-red-500/10 hover:border-red-400/40 transition-colors"
-            >
-              {project.thumbnailUrl ? (
-                <img
-                  src={project.thumbnailUrl}
-                  alt={project.title}
-                  className="w-full h-32 object-cover rounded-md border border-white/10"
-                  draggable={false}
-                  loading="eager"
-                />
-              ) : (
-                <div className="w-full h-32 rounded-md border border-white/10 bg-black/60 flex items-center justify-center text-sm text-gray-400">
-                  NO THUMBNAIL
-                </div>
-              )}
-              <div className="text-sm text-cyan-100 font-semibold mt-2 line-clamp-2">{project.title}</div>
-            </button>
-          ))}
-        </div>
+        {projectsContent}
       </DesktopWidget>
-
-      <div className="fixed right-4 top-20 z-[1100] w-72 rounded-xl border border-cyan-500/30 bg-black/75 backdrop-blur-md p-3 text-cyan-100 pointer-events-auto">
-        <div className="text-[10px] tracking-[0.2em] uppercase text-cyan-300 mb-3">Widget Gap HUD</div>
-        <label className="block text-xs mb-1">Shared Vertical Gap: {widgetVerticalGap}px</label>
-        <input
-          type="range"
-          min={20}
-          max={1000}
-          value={widgetVerticalGap}
-          onChange={(event) => setWidgetVerticalGap(Number(event.target.value))}
-          className="w-full"
-        />
-      </div>
 
       {isProfileZoomed && (
         <div

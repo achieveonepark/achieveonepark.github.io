@@ -197,9 +197,7 @@ export const buildParkFileSystem = (entries: ManifestEntry[]): Record<string, Fi
 
 // Export the File System
 export const FILE_SYSTEM: Record<string, FileObject[]> = {
-    'parkachieveone': [
-        createPublicFileObject('introduce.md', PARK_ROOT_PUBLIC_PATH),
-    ],
+    'parkachieveone': [],
     'Applications': [
         { name: 'NetLink', icon: Globe, color: 'text-blue-500', type: 'app', content: 'safari' },
         { name: 'Shell', icon: Code, color: 'text-gray-400', type: 'app', content: 'terminal' },
