@@ -6,7 +6,6 @@ import {
     Terminal,
     FileText,
     Eye,
-    AppWindow,
     Code,
     Gamepad2,
     Image as ImageIcon // Renamed to avoid conflict if needed, or just Image
