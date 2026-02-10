@@ -34,6 +34,11 @@ const App: React.FC = () => {
     const [showDesktopWidgets, setShowDesktopWidgets] = useState(true);
     const [showDataGrid, setShowDataGrid] = useState(false);
     const [showMetrics, setShowMetrics] = useState(false);
+    const [contextMenu, setContextMenu] = useState({
+        visible: false,
+        x: 0,
+        y: 0,
+    });
 
     // Ref to track the allowed desktop area (excluding menu bar)
     const desktopAreaRef = useRef<HTMLDivElement>(null);
@@ -370,6 +375,119 @@ const App: React.FC = () => {
 
     const hasMaximizedWindow = windows.some(windowState => !windowState.isMinimized && windowState.isMaximized);
 
+    const openContextMenuAt = useCallback((clientX: number, clientY: number) => {
+        const menuWidth = 220;
+        const menuHeight = 260;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+
+        const x = Math.min(clientX, viewportWidth - menuWidth - 8);
+        const y = Math.min(clientY, viewportHeight - menuHeight - 8);
+
+        setContextMenu({
+            visible: true,
+            x: Math.max(8, x),
+            y: Math.max(8, y),
+        });
+    }, []);
+
+    const closeContextMenu = useCallback(() => {
+        setContextMenu(prev => (prev.visible ? { ...prev, visible: false } : prev));
+    }, []);
+
+    const handleDesktopContextMenu = useCallback((event: React.MouseEvent) => {
+        event.preventDefault();
+        openContextMenuAt(event.clientX, event.clientY);
+    }, [openContextMenuAt]);
+
+    const handleDesktopPointerDown = useCallback((event: React.MouseEvent) => {
+        if (event.button === 2) {
+            event.preventDefault();
+            openContextMenuAt(event.clientX, event.clientY);
+        }
+    }, [openContextMenuAt]);
+
+    useEffect(() => {
+        const handleGlobalContextMenu = (event: MouseEvent) => {
+            const target = event.target as HTMLElement | null;
+            if (!target) return;
+
+            const tagName = target.tagName;
+            const isEditable =
+                tagName === 'INPUT' ||
+                tagName === 'TEXTAREA' ||
+                target.isContentEditable;
+
+            // Keep native menu for editable fields.
+            if (isEditable) return;
+
+            event.preventDefault();
+
+            openContextMenuAt(event.clientX, event.clientY);
+        };
+
+        document.addEventListener('contextmenu', handleGlobalContextMenu, true);
+        return () => {
+            document.removeEventListener('contextmenu', handleGlobalContextMenu, true);
+        };
+    }, [openContextMenuAt]);
+
+    const runContextAction = useCallback((action: string) => {
+        if (action === 'open-finder') {
+            const finderApp = apps.find(app => app.id === 'finder');
+            if (finderApp) launchApp(finderApp);
+        }
+
+        if (action === 'new-directory') {
+            window.dispatchEvent(new CustomEvent('os:new-directory'));
+        }
+
+        if (action === 'toggle-widgets') {
+            setShowDesktopWidgets(prev => !prev);
+        }
+
+        if (action === 'toggle-grid') {
+            setShowDataGrid(prev => !prev);
+        }
+
+        if (action === 'toggle-metrics') {
+            setShowMetrics(prev => !prev);
+        }
+
+        if (action === 'close-active' && activeWindowId) {
+            closeWindow(activeWindowId);
+        }
+
+        if (action === 'minimize-all') {
+            setWindows(prev => prev.map(win => ({ ...win, isMinimized: true })));
+            setActiveWindowId(null);
+        }
+
+        if (action === 'restore-all') {
+            setWindows(prev => prev.map(win => ({ ...win, isMinimized: false })));
+        }
+
+        closeContextMenu();
+    }, [activeWindowId, apps, closeContextMenu, closeWindow, launchApp]);
+
+    useEffect(() => {
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                closeContextMenu();
+            }
+        };
+
+        window.addEventListener('keydown', handleEscape);
+        window.addEventListener('resize', closeContextMenu);
+        window.addEventListener('scroll', closeContextMenu, true);
+
+        return () => {
+            window.removeEventListener('keydown', handleEscape);
+            window.removeEventListener('resize', closeContextMenu);
+            window.removeEventListener('scroll', closeContextMenu, true);
+        };
+    }, [closeContextMenu]);
+
     return (
         <OSContext.Provider value={{
             apps,
@@ -389,6 +507,13 @@ const App: React.FC = () => {
             <div
                 className="relative w-full h-screen overflow-hidden bg-cover bg-center select-none"
                 style={{ backgroundImage: `url(${WALLPAPER_URL})` }}
+                onContextMenu={handleDesktopContextMenu}
+                onMouseDownCapture={handleDesktopPointerDown}
+                onMouseDown={(event) => {
+                    if (event.button === 0) {
+                        closeContextMenu();
+                    }
+                }}
             >
                 <MenuBar />
 
@@ -454,6 +579,26 @@ const App: React.FC = () => {
                         </Window>
                     ))}
                 </AnimatePresence>
+
+                {contextMenu.visible && (
+                    <div
+                        className="fixed z-[1400] min-w-[220px] rounded-xl border border-cyan-500/35 bg-black/85 backdrop-blur-xl shadow-[0_0_18px_rgba(34,211,238,0.25)] p-1 text-cyan-100"
+                        style={{ left: contextMenu.x, top: contextMenu.y }}
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <div className="px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-300/90">Desktop Menu</div>
+                        <button type="button" onClick={() => runContextAction('open-finder')} className="w-full text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs">Open Finder</button>
+                        <button type="button" onClick={() => runContextAction('new-directory')} className="w-full text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs">New Directory</button>
+                        <div className="h-px bg-cyan-500/20 my-1 mx-2" />
+                        <button type="button" onClick={() => runContextAction('toggle-widgets')} className="w-full flex items-center justify-between text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs"><span>HUD Mode</span><span>{showDesktopWidgets ? 'ON' : 'OFF'}</span></button>
+                        <button type="button" onClick={() => runContextAction('toggle-grid')} className="w-full flex items-center justify-between text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs"><span>Data Grid</span><span>{showDataGrid ? 'ON' : 'OFF'}</span></button>
+                        <button type="button" onClick={() => runContextAction('toggle-metrics')} className="w-full flex items-center justify-between text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs"><span>Metrics</span><span>{showMetrics ? 'ON' : 'OFF'}</span></button>
+                        <div className="h-px bg-cyan-500/20 my-1 mx-2" />
+                        <button type="button" onClick={() => runContextAction('close-active')} className="w-full text-left px-3 py-2 rounded-md hover:bg-red-500/15 text-xs">Close Active Window</button>
+                        <button type="button" onClick={() => runContextAction('minimize-all')} className="w-full text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs">Minimize All</button>
+                        <button type="button" onClick={() => runContextAction('restore-all')} className="w-full text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs">Restore All</button>
+                    </div>
+                )}
 
                 <Dock isHidden={hasMaximizedWindow} />
             </div>

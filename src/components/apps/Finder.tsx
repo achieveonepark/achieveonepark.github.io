@@ -78,7 +78,7 @@ export const Finder: React.FC = () => {
     return (
         <div className="flex w-full h-full text-cyan-100 text-sm bg-transparent">
             {/* Sidebar */}
-            <div className="w-48 bg-black/40 border-r border-white/10 p-3 pt-5 flex flex-col gap-6 select-none backdrop-blur-md">
+            <div className="hidden lg:flex w-48 bg-black/40 border-r border-white/10 p-3 pt-5 flex-col gap-6 select-none backdrop-blur-md">
 
                 {sidebarGroups.map((group) => (
                     <div key={group.title} className="space-y-1">
@@ -127,7 +127,23 @@ export const Finder: React.FC = () => {
                     >
                         <ChevronRight size={14} />
                     </button>
-                    <div className="ml-1">ROOT / {pathLabel}</div>
+                    <div className="ml-1 truncate">ROOT / {pathLabel}</div>
+                    <div className="ml-auto flex md:hidden gap-1">
+                        <button
+                            type="button"
+                            onClick={() => navigateTo('parkachieveone')}
+                            className={`px-2 py-0.5 rounded text-[10px] border ${activePath === 'parkachieveone' ? 'border-cyan-300/60 text-cyan-200' : 'border-white/15 text-cyan-400/70'}`}
+                        >
+                            ROOT
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => navigateTo('Applications')}
+                            className={`px-2 py-0.5 rounded text-[10px] border ${activePath === 'Applications' ? 'border-cyan-300/60 text-cyan-200' : 'border-white/15 text-cyan-400/70'}`}
+                        >
+                            APPS
+                        </button>
+                    </div>
                 </div>
 
                 <div className="flex-1 p-4 overflow-y-auto" onClick={() => {}}>
@@ -149,7 +165,7 @@ export const Finder: React.FC = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 1.02 }}
                                 transition={{ duration: 0.2 }}
-                                className="grid grid-cols-4 md:grid-cols-5 gap-4 content-start"
+                                className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 content-start"
                             >
                                 {currentFiles.map((file, i) => (
                                     <div
@@ -158,7 +174,7 @@ export const Finder: React.FC = () => {
                                         onClick={() => handleFileOpen(file)}
                                     >
                                         {file.thumbnail || file.type === 'image' ? (
-                                            <div className="w-[42px] h-[42px] mb-3 rounded-md overflow-hidden border border-white/20 bg-black/30 shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300">
+                                            <div className="w-[46px] h-[46px] mb-3 rounded-md overflow-hidden border border-white/20 bg-black/30 shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300">
                                                 <img
                                                     src={file.thumbnail || file.content}
                                                     alt={file.name}
@@ -169,12 +185,12 @@ export const Finder: React.FC = () => {
                                             </div>
                                         ) : (
                                             <file.icon
-                                                size={42}
+                                                size={46}
                                                 strokeWidth={1}
                                                 className={`${file.color} mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300`}
                                             />
                                         )}
-                                        <span className="text-center text-[11px] text-gray-400 group-hover:text-cyan-300 leading-tight line-clamp-2 w-full break-words px-1 font-mono font-medium">
+                                        <span className="text-center text-[13px] text-cyan-100/95 group-hover:text-cyan-200 leading-tight line-clamp-3 w-full break-words px-1 font-mono font-semibold">
                                 {file.name}
                             </span>
                                     </div>
