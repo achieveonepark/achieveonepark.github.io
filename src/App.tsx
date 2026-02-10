@@ -17,6 +17,7 @@ import { Preview } from './components/apps/Preview';
 import { TextEdit } from './components/apps/TextEdit';
 import { Terminal } from './components/apps/Terminal';
 import { DocReader } from './components/apps/DocReader';
+import { Messenger } from './components/apps/Messenger';
 import { DesktopSkillsWidget } from './components/DesktopSkillsWidget';
 import { Globe, HardDrive, FileText, Folder } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
@@ -360,6 +361,7 @@ const App: React.FC = () => {
         if (app.id === 'finder') return <Finder />;
         if (app.id === 'store') return <AppStore />;
         if (app.id === 'terminal') return <Terminal />;
+        if (app.id === 'messenger') return <Messenger />;
         if (app.id === 'preview') return <Preview content={windowState.content} />;
         if (app.id === 'textedit') return <TextEdit content={windowState.content} />;
         if (app.id === 'docreader') return <DocReader content={windowState.content} />;
@@ -515,7 +517,7 @@ const App: React.FC = () => {
                     }
                 }}
             >
-                <MenuBar />
+                {!hasMaximizedWindow && <MenuBar />}
 
                 {/* 
             Desktop Constraints Area:
@@ -572,7 +574,7 @@ const App: React.FC = () => {
                             key={win.id}
                             window={win}
                             constraintsRef={desktopAreaRef} // Pass the restricted area ref
-                            topOffset={20}
+                            topOffset={0}
                             dockOffset={0}
                         >
                             {renderAppContent(win)}

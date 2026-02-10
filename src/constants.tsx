@@ -4,6 +4,7 @@ import {
     Folder,
     PlusCircle,
     Terminal,
+    MessageCircle,
     FileText,
     Eye,
     Code,
@@ -57,6 +58,14 @@ export const INITIAL_APPS: AppDefinition[] = [
         icon: Terminal,
         type: 'system',
         color: 'bg-gray-800',
+        pinned: true,
+    },
+    {
+        id: 'messenger',
+        title: '메신저',
+        icon: MessageCircle,
+        type: 'system',
+        color: 'bg-teal-600',
         pinned: true,
     },
     {
@@ -199,6 +208,7 @@ export const FILE_SYSTEM: Record<string, FileObject[]> = {
     'parkachieveone': [],
     'Applications': [
         { name: 'NetLink', icon: Globe, color: 'text-blue-500', type: 'app', content: 'safari' },
+        { name: '메신저', icon: MessageCircle, color: 'text-teal-400', type: 'app', content: 'messenger' },
         { name: 'Shell', icon: Code, color: 'text-gray-400', type: 'app', content: 'terminal' },
         { name: 'Market', icon: PlusCircle, color: 'text-purple-500', type: 'app', content: 'store' },
     ]

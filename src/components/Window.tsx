@@ -209,6 +209,8 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
           className={`absolute flex flex-col overflow-hidden backdrop-blur-xl bg-black/70 
                  ${winState.isMaximized ? 'rounded-none border-none' : 'rounded-lg border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)]'}`}
           style={{
+            top: 0,
+            left: 0,
             zIndex: winState.zIndex,
             pointerEvents: winState.isMinimized ? 'none' : 'auto',
           }}

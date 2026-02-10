@@ -2,7 +2,8 @@
 
 - Unity
 - C#
-- GitHub
-- Rider
-- Markdown
+- WebGL
+- Steam
+- Android
+- iOS
 - Firebase

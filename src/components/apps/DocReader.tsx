@@ -8,6 +8,8 @@ interface DocReaderProps {
   content?: string;
 }
 
+const VIEWER_FONT_FAMILY = "'Rajdhani', sans-serif";
+
 export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
   const { openFile } = useContext(OSContext);
   const [text, setText] = useState<string>('');
@@ -155,7 +157,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
 
   if (loading) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d0d0d] text-cyan-500 font-mono">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d0d0d] text-cyan-500" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
         <Loader className="animate-spin mb-4" size={32} />
         <div className="text-xs tracking-widest animate-pulse">ESTABLISHING DATALINK...</div>
       </div>
@@ -164,7 +166,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
 
   if (error) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d0d0d] text-red-500 font-mono p-8 text-center">
+      <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d0d0d] text-red-500 p-8 text-center" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
         <AlertTriangle className="mb-4" size={32} />
         <div className="text-xs tracking-widest">CONNECTION FAILED</div>
         <div className="text-[10px] text-red-800 mt-2">UNABLE TO RETRIEVE DOCUMENT OBJECT</div>
@@ -176,13 +178,13 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0d0d0d] text-gray-300 font-sans">
+    <div className="w-full h-full flex flex-col bg-[#0d0d0d] text-gray-300" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
       {/* Header Bar */}
       <div className="h-10 bg-black/40 border-b border-white/10 flex items-center px-4 space-x-3 shrink-0">
         <div className="bg-cyan-900/30 text-cyan-400 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase border border-cyan-500/30">
           READ-ONLY
         </div>
-        <div className="flex-1 text-right text-xs text-gray-600 font-mono">
+        <div className="flex-1 text-right text-xs text-gray-600">
           DOC_VIEWER_V1.3
         </div>
       </div>
@@ -229,7 +231,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
              if (/^\d+\./.test(line.trim())) {
                 return (
                   <div key={idx} className="flex items-start ml-4 text-gray-300 my-1">
-                    <span className="text-purple-500 mr-2 font-mono text-xs">{line.split('.')[0]}.</span>
+                    <span className="text-purple-500 mr-2 text-xs">{line.split('.')[0]}.</span>
                     <span>{parseInline(line.replace(/^\d+\.\s/, ''))}</span>
                   </div>
                 );

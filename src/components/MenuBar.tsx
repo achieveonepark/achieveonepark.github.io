@@ -11,7 +11,11 @@ interface MenuStructure {
   [key: string]: (string | { type: 'separator' })[];
 }
 
-export const MenuBar: React.FC = () => {
+interface MenuBarProps {
+  isHidden?: boolean;
+}
+
+export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false }) => {
   const { apps, windows, activeWindowId, launchApp, closeWindow } = useContext(OSContext);
   const [time, setTime] = useState(new Date());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -242,7 +246,7 @@ export const MenuBar: React.FC = () => {
 
   return (
     <>
-    <div className="fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg relative">
+    <div className={`fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg relative transition-all duration-300 ${isHidden ? '-translate-y-6 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="flex items-center space-x-2 h-full" ref={menuRef}>
         <div className="relative h-full flex items-center mr-4">
             <button 

@@ -1,13 +1,21 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ChevronDown, ChevronRight, FolderOpen, X } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Code,
+  Flame,
+  FolderOpen,
+  Gamepad2,
+  Globe2,
+  Smartphone,
+  Tablet,
+  Triangle,
+  X,
+} from 'lucide-react';
 import { OSContext } from '../context';
 import { getFileInfo, withBasePath } from '../constants';
 import type { FileObject } from '../types';
-import unityLogo from '../../images/unity.png';
-import csharpLogo from '../../images/csharp.png';
-import githubLogo from '../../images/github-logo.png';
-import docsLogo from '../../images/docs-logo.png';
 import profileImage from '../../images/profile.png';
 import logo111percent from '../../images/111percent.png';
 import logoSnowpipe from '../../images/snowpipe.png';
@@ -31,6 +39,12 @@ type ProjectItem = {
   title: string;
   videoUrl: string;
   thumbnailUrl: string;
+};
+
+type SkillIconEntry = {
+  image?: string;
+  icon?: React.ElementType;
+  iconClassName?: string;
 };
 
 interface WidgetProps {
@@ -198,12 +212,15 @@ export const DesktopSkillsWidget: React.FC = () => {
 
   const widgetWidth = isMobile ? Math.max(300, viewportWidth - 24) : 380;
 
-  const iconMap = useMemo<Record<string, string>>(
+  const skillIconMap = useMemo<Record<string, SkillIconEntry>>(
     () => ({
-      unity: unityLogo,
-      'c#': csharpLogo,
-      github: githubLogo,
-      markdown: docsLogo,
+      unity: { icon: Triangle, iconClassName: 'text-slate-100' },
+      'c#': { icon: Code, iconClassName: 'text-cyan-200' },
+      webgl: { icon: Globe2, iconClassName: 'text-sky-300' },
+      steam: { icon: Gamepad2, iconClassName: 'text-indigo-300' },
+      android: { icon: Smartphone, iconClassName: 'text-emerald-300' },
+      ios: { icon: Tablet, iconClassName: 'text-blue-200' },
+      firebase: { icon: Flame, iconClassName: 'text-amber-300' },
     }),
     [],
   );
@@ -609,11 +626,17 @@ export const DesktopSkillsWidget: React.FC = () => {
   const skillsContent = (
     <div className="grid grid-cols-2 gap-2.5">
       {skills.map((skill) => {
-        const image = iconMap[skill.toLowerCase()];
+        const iconEntry = skillIconMap[skill.toLowerCase()];
+        const SkillIcon = iconEntry?.icon;
+
         return (
           <div key={skill} className="h-12 rounded-lg border border-white/10 bg-black/50 flex items-center gap-2.5 px-2.5">
-            {image ? (
-              <img src={image} alt={skill} className="w-6 h-6 object-contain" draggable={false} />
+            {iconEntry?.image ? (
+              <img src={iconEntry.image} alt={skill} className="w-6 h-6 object-contain" draggable={false} />
+            ) : SkillIcon ? (
+              <div className="w-6 h-6 rounded-md bg-cyan-900/25 border border-cyan-500/25 flex items-center justify-center">
+                <SkillIcon size={16} className={iconEntry.iconClassName || 'text-cyan-200'} />
+              </div>
             ) : (
               <div className="w-6 h-6 rounded-md bg-cyan-900/30 text-cyan-200 text-[10px] font-bold flex items-center justify-center">
                 {skill.slice(0, 2).toUpperCase()}
