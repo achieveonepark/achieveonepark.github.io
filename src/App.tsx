@@ -18,7 +18,7 @@ import { TextEdit } from './components/apps/TextEdit';
 import { Terminal } from './components/apps/Terminal';
 import { DocReader } from './components/apps/DocReader';
 import { DesktopSkillsWidget } from './components/DesktopSkillsWidget';
-import { Globe, HardDrive, FileText } from 'lucide-react';
+import { Globe, HardDrive, FileText, Folder } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
 import { OSContext } from './context';
 
@@ -31,6 +31,9 @@ const App: React.FC = () => {
     const [windows, setWindows] = useState<WindowState[]>([]);
     const [activeWindowId, setActiveWindowId] = useState<string | null>(null);
     const [zIndexCounter, setZIndexCounter] = useState(10);
+    const [showDesktopWidgets, setShowDesktopWidgets] = useState(true);
+    const [showDataGrid, setShowDataGrid] = useState(false);
+    const [showMetrics, setShowMetrics] = useState(false);
 
     // Ref to track the allowed desktop area (excluding menu bar)
     const desktopAreaRef = useRef<HTMLDivElement>(null);
@@ -255,6 +258,53 @@ const App: React.FC = () => {
         };
     }, []);
 
+    useEffect(() => {
+        const toggleWidgets = () => setShowDesktopWidgets(prev => !prev);
+        const toggleGrid = () => setShowDataGrid(prev => !prev);
+        const toggleMetrics = () => setShowMetrics(prev => !prev);
+        const createDirectory = () => {
+            setFileSystem(prev => {
+                const rootEntries = [...(prev.parkachieveone || [])];
+                const baseName = 'New Folder';
+                let candidate = baseName;
+                let index = 2;
+
+                while (rootEntries.some(item => item.name === candidate)) {
+                    candidate = `${baseName} ${index}`;
+                    index += 1;
+                }
+
+                const folderKey = `parkachieveone/${candidate.toLowerCase().replace(/\s+/g, '_')}`;
+
+                rootEntries.push({
+                    name: candidate,
+                    icon: Folder,
+                    color: 'text-cyan-400',
+                    type: 'folder',
+                    content: folderKey,
+                });
+
+                return {
+                    ...prev,
+                    parkachieveone: rootEntries,
+                    [folderKey]: prev[folderKey] || [],
+                };
+            });
+        };
+
+        window.addEventListener('os:toggle-widgets', toggleWidgets);
+        window.addEventListener('os:toggle-grid', toggleGrid);
+        window.addEventListener('os:toggle-metrics', toggleMetrics);
+        window.addEventListener('os:new-directory', createDirectory);
+
+        return () => {
+            window.removeEventListener('os:toggle-widgets', toggleWidgets);
+            window.removeEventListener('os:toggle-grid', toggleGrid);
+            window.removeEventListener('os:toggle-metrics', toggleMetrics);
+            window.removeEventListener('os:new-directory', createDirectory);
+        };
+    }, []);
+
     const closeWindow = useCallback((id: string) => {
         setWindows(prev => prev.filter(w => w.id !== id));
         if (activeWindowId === id) setActiveWindowId(null);
@@ -318,6 +368,8 @@ const App: React.FC = () => {
         return <div className="p-10 text-center text-gray-500">App content not loaded.</div>;
     };
 
+    const hasMaximizedWindow = windows.some(windowState => !windowState.isMinimized && windowState.isMaximized);
+
     return (
         <OSContext.Provider value={{
             apps,
@@ -350,7 +402,26 @@ const App: React.FC = () => {
                     className="absolute top-16 left-0 right-0 bottom-0 pointer-events-none z-0"
                 />
 
-                <DesktopSkillsWidget />
+                {showDesktopWidgets && <DesktopSkillsWidget />}
+
+                {showDataGrid && (
+                    <div className="absolute top-16 left-0 right-0 bottom-24 pointer-events-none z-[1] opacity-35"
+                        style={{
+                            backgroundImage:
+                                'linear-gradient(rgba(34,211,238,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(34,211,238,0.18) 1px, transparent 1px)',
+                            backgroundSize: '28px 28px',
+                        }}
+                    />
+                )}
+
+                {showMetrics && (
+                    <div className="fixed top-16 right-4 z-[1100] rounded-xl border border-cyan-500/30 bg-black/75 backdrop-blur-md p-3 text-cyan-100 text-xs space-y-1">
+                        <div className="uppercase tracking-[0.2em] text-[10px] text-cyan-300">Metrics</div>
+                        <div>Open windows: {windows.filter(w => !w.isMinimized).length}</div>
+                        <div>Installed apps: {apps.length}</div>
+                        <div>Viewport: {window.innerWidth} x {window.innerHeight}</div>
+                    </div>
+                )}
 
                 {/* Desktop Icons Area */}
                 {/* Adjusted top-24 to clear the floating menu bar */}
@@ -377,14 +448,14 @@ const App: React.FC = () => {
                             window={win}
                             constraintsRef={desktopAreaRef} // Pass the restricted area ref
                             topOffset={20}
-                            dockOffset={150}
+                            dockOffset={0}
                         >
                             {renderAppContent(win)}
                         </Window>
                     ))}
                 </AnimatePresence>
 
-                <Dock />
+                <Dock isHidden={hasMaximizedWindow} />
             </div>
         </OSContext.Provider>
     );

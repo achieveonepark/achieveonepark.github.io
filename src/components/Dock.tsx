@@ -8,7 +8,11 @@ interface GameEntry {
   path: string;
 }
 
-export const Dock: React.FC = () => {
+interface DockProps {
+  isHidden?: boolean;
+}
+
+export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
   const { apps, launchApp, windows, activeWindowId, focusWindow, minimizeWindow, openFile } = useContext(OSContext);
   const [isGameFolderOpen, setIsGameFolderOpen] = useState(false);
   const [games, setGames] = useState<GameEntry[]>([]);
@@ -74,7 +78,7 @@ export const Dock: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[1000] w-auto">
+    <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[1000] w-auto transition-all duration-300 ${isHidden ? 'translate-y-28 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       {/* Outer glow container */}
       <div className="relative">
           {/* Background Bar */}

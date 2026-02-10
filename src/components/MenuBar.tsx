@@ -1,20 +1,26 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Wifi, Battery, Search, Activity } from 'lucide-react';
 import { format } from 'date-fns';
 import githubLogo from '../../images/github-logo.png';
 import docsLogo from '../../images/docs-logo.png';
 import instagramLogo from '../../images/Instagram-logo.png';
 import emailLogo from '../../images/email-logo.png';
+import { OSContext } from '../context';
 
 interface MenuStructure {
   [key: string]: (string | { type: 'separator' })[];
 }
 
 export const MenuBar: React.FC = () => {
+  const { apps, windows, activeWindowId, launchApp, closeWindow } = useContext(OSContext);
   const [time, setTime] = useState(new Date());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [linkUrls, setLinkUrls] = useState<Record<string, string>>({});
+  const [toastMessage, setToastMessage] = useState('');
+  const [isSleepMode, setIsSleepMode] = useState(false);
+  const [isSessionTerminated, setIsSessionTerminated] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const toastTimerRef = useRef<number | null>(null);
   const defaultLinks: Record<string, string> = {
     github: 'https://github.com/achieveonepark',
     'coding library': 'http://achieveonepark.github.io/cording-library',
@@ -85,13 +91,121 @@ export const MenuBar: React.FC = () => {
     setActiveMenu(activeMenu === menu ? null : menu);
   };
 
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    if (toastTimerRef.current) {
+      window.clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = window.setTimeout(() => {
+      setToastMessage('');
+    }, 2200);
+  };
+
+  const closeAllWindows = () => {
+    windows.forEach((win) => closeWindow(win.id));
+  };
+
+  const dispatchGlobalAction = (eventName: string) => {
+    window.dispatchEvent(new CustomEvent(eventName));
+  };
+
+  const handleMenuItemAction = (label: string) => {
+    setActiveMenu(null);
+
+    const normalized = label.toLowerCase();
+
+    if (normalized === 'system info') {
+      showToast(`System online | windows: ${windows.length} | viewport: ${window.innerWidth}x${window.innerHeight}`);
+      return;
+    }
+
+    if (normalized === 'network status') {
+      showToast(navigator.onLine ? 'Network stable: ONLINE' : 'Network unstable: OFFLINE');
+      return;
+    }
+
+    if (normalized === 'sleep mode') {
+      setIsSleepMode(true);
+      return;
+    }
+
+    if (normalized === 'reboot system') {
+      closeAllWindows();
+      setIsSleepMode(false);
+      setIsSessionTerminated(false);
+      showToast('System reboot sequence complete');
+      return;
+    }
+
+    if (normalized === 'terminate session') {
+      closeAllWindows();
+      setIsSessionTerminated(true);
+      return;
+    }
+
+    if (normalized === 'new instance') {
+      const finderApp = apps.find((app) => app.id === 'finder');
+      if (finderApp) {
+        launchApp(finderApp);
+        showToast('Finder instance launched');
+      }
+      return;
+    }
+
+    if (normalized === 'new directory') {
+      dispatchGlobalAction('os:new-directory');
+      showToast('New directory created in parkachieveone');
+      return;
+    }
+
+    if (normalized === 'terminate') {
+      if (activeWindowId) {
+        closeWindow(activeWindowId);
+        showToast('Active window terminated');
+      } else {
+        showToast('No active window to terminate');
+      }
+      return;
+    }
+
+    if (normalized === 'hud mode') {
+      dispatchGlobalAction('os:toggle-widgets');
+      showToast('HUD mode toggled');
+      return;
+    }
+
+    if (normalized === 'data grid') {
+      dispatchGlobalAction('os:toggle-grid');
+      showToast('Data grid toggled');
+      return;
+    }
+
+    if (normalized === 'show metrics') {
+      dispatchGlobalAction('os:toggle-metrics');
+      showToast('Metrics overlay toggled');
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current) {
+        window.clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
+
   const renderDropdown = (items: (string | { type: 'separator' })[]) => (
     <div className="absolute top-full left-0 mt-2 min-w-[200px] bg-black/80 backdrop-blur-xl border border-cyan-500/30 shadow-[0_0_15px_rgba(6,182,212,0.2)] rounded-sm py-1 z-[100] text-cyan-100">
       {items.map((item, idx) => (
         typeof item === 'string' ? (
-          <div key={idx} className="px-4 py-2 hover:bg-cyan-500/20 hover:text-cyan-300 cursor-pointer text-xs uppercase tracking-wider transition-colors">
+          <button
+            key={idx}
+            type="button"
+            onClick={() => handleMenuItemAction(item)}
+            className="w-full text-left px-4 py-2 hover:bg-cyan-500/20 hover:text-cyan-300 cursor-pointer text-xs uppercase tracking-wider transition-colors"
+          >
             {item}
-          </div>
+          </button>
         ) : (
           <div key={idx} className="h-[1px] bg-cyan-500/20 my-1 mx-2" />
         )
@@ -127,6 +241,7 @@ export const MenuBar: React.FC = () => {
   ];
 
   return (
+    <>
     <div className="fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg relative">
       <div className="flex items-center space-x-2 h-full" ref={menuRef}>
         <div className="relative h-full flex items-center mr-4">
@@ -184,5 +299,36 @@ export const MenuBar: React.FC = () => {
         </span>
       </div>
     </div>
+    {toastMessage && (
+      <div className="fixed top-16 right-4 z-[1200] bg-black/80 border border-cyan-500/30 text-cyan-100 text-xs px-3 py-2 rounded-md backdrop-blur-md shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+        {toastMessage}
+      </div>
+    )}
+    {isSleepMode && (
+      <button
+        type="button"
+        className="fixed inset-0 z-[1300] bg-black/95 text-cyan-200 flex flex-col items-center justify-center"
+        onClick={() => setIsSleepMode(false)}
+      >
+        <div className="text-lg tracking-[0.3em] uppercase mb-2">Sleep Mode</div>
+        <div className="text-xs text-cyan-400/80">tap to wake</div>
+      </button>
+    )}
+    {isSessionTerminated && (
+      <div className="fixed inset-0 z-[1300] bg-black/95 text-cyan-200 flex flex-col items-center justify-center gap-3">
+        <div className="text-lg tracking-[0.24em] uppercase">Session Terminated</div>
+        <button
+          type="button"
+          className="px-4 py-2 rounded-md border border-cyan-400/40 text-cyan-100 hover:bg-cyan-500/15 transition-colors"
+          onClick={() => {
+            setIsSessionTerminated(false);
+            showToast('Session restored');
+          }}
+        >
+          Restart Session
+        </button>
+      </div>
+    )}
+    </>
   );
 };
