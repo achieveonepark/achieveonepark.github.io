@@ -25,7 +25,7 @@ export const withBasePath = (path: string) => {
     return `${BASE_URL}${normalizedPath}`;
 };
 
-// Using a simple component mapping for demonstration
+// Using a simple component mapping for app registration
 export const INITIAL_APPS: AppDefinition[] = [
     {
         id: 'finder',
@@ -61,8 +61,16 @@ export const INITIAL_APPS: AppDefinition[] = [
         pinned: true,
     },
     {
+        id: 'achieveonecode',
+        title: 'Achieveone Code',
+        icon: Code,
+        type: 'system',
+        color: 'bg-blue-700',
+        pinned: true,
+    },
+    {
         id: 'messenger',
-        title: '메신저',
+        title: 'Achieve Talk',
         icon: MessageCircle,
         type: 'system',
         color: 'bg-teal-600',
@@ -208,7 +216,8 @@ export const FILE_SYSTEM: Record<string, FileObject[]> = {
     'parkachieveone': [],
     'Applications': [
         { name: 'NetLink', icon: Globe, color: 'text-blue-500', type: 'app', content: 'safari' },
-        { name: '메신저', icon: MessageCircle, color: 'text-teal-400', type: 'app', content: 'messenger' },
+        { name: 'Achieveone Code', icon: Code, color: 'text-blue-400', type: 'app', content: 'achieveonecode' },
+        { name: 'Achieve Talk', icon: MessageCircle, color: 'text-teal-400', type: 'app', content: 'messenger' },
         { name: 'Shell', icon: Code, color: 'text-gray-400', type: 'app', content: 'terminal' },
         { name: 'Market', icon: PlusCircle, color: 'text-purple-500', type: 'app', content: 'store' },
     ]

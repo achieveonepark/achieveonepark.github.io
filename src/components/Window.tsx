@@ -10,9 +10,10 @@ interface WindowProps {
   constraintsRef?: React.RefObject<HTMLDivElement>;
   topOffset?: number;
   dockOffset?: number;
+  showHeader?: boolean;
 }
 
-export const Window: React.FC<WindowProps> = ({ window: winState, children, constraintsRef, topOffset = 20, dockOffset = 150 }) => {
+export const Window: React.FC<WindowProps> = ({ window: winState, children, constraintsRef, topOffset = 20, dockOffset = 150, showHeader = true }) => {
   const { focusWindow, moveWindow, resizeWindow, closeWindow, minimizeWindow, maximizeWindow } = useContext(OSContext);
   const dragControls = useDragControls();
   const windowRef = useRef<HTMLDivElement>(null);
@@ -223,41 +224,77 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
           dragElastic={0} // Hard stop at edges (no bounce)
           onDragEnd={handleDragEnd}
       >
-        {/* HUD Header */}
-        <div
-            className="h-9 bg-cyan-950/30 border-b border-cyan-500/20 flex items-center justify-between px-3 cursor-default select-none flex-shrink-0"
-            onPointerDown={startDrag}
-            onDoubleClick={() => maximizeWindow(winState.id)}
-        >
-          <div className="text-cyan-400 text-xs tracking-widest font-bold uppercase flex items-center">
-            <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2 animate-pulse"></span>
-            {winState.title}
-          </div>
+        {showHeader && (
+          <div
+              className="h-9 bg-cyan-950/30 border-b border-cyan-500/20 flex items-center justify-between px-3 cursor-default select-none flex-shrink-0"
+              onPointerDown={startDrag}
+              onDoubleClick={() => maximizeWindow(winState.id)}
+          >
+            <div className="text-cyan-400 text-xs tracking-widest font-bold uppercase flex items-center">
+              <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2 animate-pulse"></span>
+              {winState.title}
+            </div>
 
-          <div className="flex items-center space-x-1 window-controls" onPointerDown={(e) => e.stopPropagation()}>
-            <button
-                onClick={(e) => { e.stopPropagation(); minimizeWindow(winState.id); }}
-                className="p-1 hover:text-yellow-400 text-cyan-700 transition-colors"
-            >
-              <Minus size={14} />
-            </button>
-            <button
-                onClick={(e) => { e.stopPropagation(); maximizeWindow(winState.id); }}
-                className="p-1 hover:text-green-400 text-cyan-700 transition-colors"
-            >
-              {winState.isMaximized ? <Square size={12} /> : <Maximize2 size={12} />}
-            </button>
-            <button
-                onClick={(e) => { e.stopPropagation(); closeWindow(winState.id); }}
-                className="p-1 hover:text-red-500 text-cyan-700 transition-colors"
-            >
-              <X size={14} />
-            </button>
+            <div className="flex items-center space-x-1 window-controls" onPointerDown={(e) => e.stopPropagation()}>
+              <button
+                  onClick={(e) => { e.stopPropagation(); minimizeWindow(winState.id); }}
+                  className="p-1 hover:text-yellow-400 text-cyan-700 transition-colors"
+              >
+                <Minus size={14} />
+              </button>
+              <button
+                  onClick={(e) => { e.stopPropagation(); maximizeWindow(winState.id); }}
+                  className="p-1 hover:text-green-400 text-cyan-700 transition-colors"
+              >
+                {winState.isMaximized ? <Square size={12} /> : <Maximize2 size={12} />}
+              </button>
+              <button
+                  onClick={(e) => { e.stopPropagation(); closeWindow(winState.id); }}
+                  className="p-1 hover:text-red-500 text-cyan-700 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Content Area - Transparent to show blur */}
-        <div className="flex-1 overflow-hidden relative" onPointerDown={(e) => e.stopPropagation()}>
+        <div
+          className="flex-1 overflow-hidden relative"
+          onPointerDownCapture={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (!target) return;
+
+            if (target.closest('[data-os-window-control="true"]')) {
+              return;
+            }
+
+            if (target.closest('[data-os-window-drag-handle="true"]')) {
+              if (!winState.isMaximized) {
+                dragControls.start(e);
+              }
+              focusWindow(winState.id);
+              e.stopPropagation();
+            }
+          }}
+          onDoubleClickCapture={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (!target) return;
+
+            if (target.closest('[data-os-window-control="true"]')) {
+              return;
+            }
+
+            if (target.closest('[data-os-window-drag-handle="true"]')) {
+              maximizeWindow(winState.id);
+              e.stopPropagation();
+            }
+          }}
+          onPointerDown={(e) => {
+            focusWindow(winState.id);
+            e.stopPropagation();
+          }}
+        >
           {children}
         </div>
 

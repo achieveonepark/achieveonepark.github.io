@@ -18,6 +18,7 @@ import { TextEdit } from './components/apps/TextEdit';
 import { Terminal } from './components/apps/Terminal';
 import { DocReader } from './components/apps/DocReader';
 import { Messenger } from './components/apps/Messenger';
+import { AchieveoneCode } from './components/apps/AchieveoneCode';
 import { DesktopSkillsWidget } from './components/DesktopSkillsWidget';
 import { Globe, HardDrive, FileText, Folder } from 'lucide-react';
 import { AnimatePresence } from 'framer-motion';
@@ -55,7 +56,7 @@ const App: React.FC = () => {
     };
 
     const launchApp = useCallback((app: AppDefinition) => {
-        const shouldStartMaximized = window.innerWidth < 1024 || app.id === 'gameplayer';
+        const shouldStartMaximized = window.innerWidth < 1024 || app.id === 'gameplayer' || app.id === 'achieveonecode';
 
         // Check if app is already open
         const existingWindow = windows.find(w => w.appId === app.id);
@@ -74,8 +75,12 @@ const App: React.FC = () => {
         }
 
         // Determine initial size
-        const width = Math.min(window.innerWidth * 0.8, 800);
-        const height = Math.min(window.innerHeight * 0.8, 600);
+        const width = app.id === 'achieveonecode'
+            ? Math.min(window.innerWidth * 0.92, 1440)
+            : Math.min(window.innerWidth * 0.8, 800);
+        const height = app.id === 'achieveonecode'
+            ? Math.min(window.innerHeight * 0.88, 920)
+            : Math.min(window.innerHeight * 0.8, 600);
         // Initial visual position for animation is handled in Window.tsx variants
         // These coordinates are the FINAL position
         const x = Math.max(0, (window.innerWidth - width) / 2) + (windows.length * 20);
@@ -361,6 +366,7 @@ const App: React.FC = () => {
         if (app.id === 'finder') return <Finder />;
         if (app.id === 'store') return <AppStore />;
         if (app.id === 'terminal') return <Terminal />;
+        if (app.id === 'achieveonecode') return <AchieveoneCode />;
         if (app.id === 'messenger') return <Messenger />;
         if (app.id === 'preview') return <Preview content={windowState.content} />;
         if (app.id === 'textedit') return <TextEdit content={windowState.content} />;
@@ -576,6 +582,7 @@ const App: React.FC = () => {
                             constraintsRef={desktopAreaRef} // Pass the restricted area ref
                             topOffset={0}
                             dockOffset={0}
+                            showHeader={win.appId !== 'achieveonecode'}
                         >
                             {renderAppContent(win)}
                         </Window>

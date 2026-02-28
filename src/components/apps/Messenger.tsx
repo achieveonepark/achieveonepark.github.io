@@ -199,9 +199,9 @@ export const Messenger: React.FC = () => {
       <div className="h-12 border-b border-cyan-500/20 bg-gradient-to-r from-slate-900 via-slate-900 to-cyan-950/60 px-4 flex items-center justify-between">
         <div className="flex items-center gap-2 text-cyan-300 text-sm tracking-[0.08em]">
           <MessageCircle size={16} />
-          개발자 커리어 메신저
+          Achieve Talk
         </div>
-        <div className="text-[11px] text-cyan-200/70">포트폴리오 데모 모드</div>
+        <div className="text-[11px] text-cyan-200/70">포트폴리오 채널</div>
       </div>
 
       <div className="flex-1 min-h-0 flex">
