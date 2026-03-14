@@ -94,7 +94,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
     }
   }, [content]);
 
-  // Enhanced Inline Parser for Links and Bold text
+  // Enhanced inline parser for links and inline markdown styles.
   const parseInline = (text: string) => {
     // Regex for [text](url)
     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
@@ -106,9 +106,9 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
     // Replace logic with a splitter approach
     const splitByLink = text.split(linkRegex);
     
-    // If no links, just check for bold
+    // If no links, just check inline styles.
     if (splitByLink.length === 1) {
-        return parseBold(text);
+        return parseInlineStyles(text);
     }
 
     // Reconstruct with links
@@ -116,7 +116,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
     for (let i = 0; i < splitByLink.length; i += 3) {
         // Text before link
         if (splitByLink[i]) {
-            parts.push(<span key={`text-${i}`}>{parseBold(splitByLink[i])}</span>);
+            parts.push(<span key={`text-${i}`}>{parseInlineStyles(splitByLink[i])}</span>);
         }
         // The Link itself (if exists)
         if (i + 1 < splitByLink.length) {
@@ -140,20 +140,315 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
     return parts;
   };
 
-  const parseBold = (text: string) => {
-      const parts = text.split(/\*\*([^*]+)\*\*/g);
-      if (parts.length === 1) return text;
+  const parseInlineStyles = (text: string) => {
+      if (!/(`[^`]+`|\*\*[^*]+\*\*)/.test(text)) return text;
+      const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean);
 
       return parts.map((part, i) => {
-          // Even indices are normal text, odd are bold (captured group)
-          if (i % 2 === 1) {
-              return <strong key={i} className="text-cyan-100 font-bold">{part}</strong>;
+          if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+              return <strong key={i} className="text-cyan-100 font-bold">{part.slice(2, -2)}</strong>;
           }
-          return part;
+
+          if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+              return (
+                <code
+                  key={i}
+                  className="rounded border border-cyan-500/30 bg-cyan-950/60 px-1.5 py-0.5 font-mono text-[0.78rem] text-cyan-100"
+                >
+                  {part.slice(1, -1)}
+                </code>
+              );
+          }
+
+          return <React.Fragment key={i}>{part}</React.Fragment>;
       });
   };
 
+  const normalizeTableLine = (line: string) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('- |')) return trimmed.slice(2).trimStart();
+    if (trimmed.startsWith('|')) return trimmed;
+    return null;
+  };
+
+  const splitTableRow = (line: string) => {
+    const normalized = line.trim().replace(/^\|/, '').replace(/\|$/, '');
+    return normalized.split('|').map(cell => cell.trim());
+  };
+
+  const isTableSeparator = (line: string) => {
+    const cells = splitTableRow(line);
+    return cells.length > 0 && cells.every(cell => cell === '' || /^:?-{3,}:?$/.test(cell));
+  };
+
+  const extractYouTubeVideoId = (url: string) => {
+    const embedMatch = url.match(/youtube\.com\/embed\/([^?&/]+)/i);
+    if (embedMatch?.[1]) return embedMatch[1];
+
+    const watchMatch = url.match(/[?&]v=([^?&/]+)/i);
+    if (watchMatch?.[1]) return watchMatch[1];
+
+    const shortMatch = url.match(/youtu\.be\/([^?&/]+)/i);
+    if (shortMatch?.[1]) return shortMatch[1];
+
+    return '';
+  };
+
+  const parseMediaLine = (line: string) => {
+    const trimmed = line.trim();
+    const markdownMediaMatch = trimmed.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    const directUrlMatch = trimmed.match(/^https?:\/\/\S+$/i);
+    if (!markdownMediaMatch && !directUrlMatch) return null;
+
+    const alt = markdownMediaMatch?.[1] || '';
+    const rawSrc = markdownMediaMatch?.[2] || directUrlMatch?.[0] || '';
+    const resolvedSrc = resolveLink(rawSrc)?.toString() || rawSrc;
+    const youtubeId = extractYouTubeVideoId(rawSrc) || extractYouTubeVideoId(resolvedSrc);
+    if (youtubeId) {
+      return {
+        kind: 'youtube' as const,
+        alt,
+        src: `https://www.youtube.com/embed/${youtubeId}`,
+        rawUrl: resolvedSrc,
+      };
+    }
+
+    const isVideo = /\.(mp4|webm|ogg)(\?.*)?$/i.test(rawSrc) || /\.(mp4|webm|ogg)(\?.*)?$/i.test(resolvedSrc);
+    const isImage = /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(rawSrc) || /\.(png|jpe?g|gif|webp|svg)(\?.*)?$/i.test(resolvedSrc);
+    if (isVideo) {
+      return {
+        kind: 'video' as const,
+        alt,
+        src: resolvedSrc,
+        rawUrl: resolvedSrc,
+      };
+    }
+    if (isImage) {
+      return {
+        kind: 'image' as const,
+        alt,
+        src: resolvedSrc,
+        rawUrl: resolvedSrc,
+      };
+    }
+    return null;
+  };
+
   const lines = text.split('\n');
+  const renderedLines: React.ReactNode[] = [];
+
+  for (let idx = 0; idx < lines.length; idx += 1) {
+    const line = lines[idx];
+    const trimmedLine = line.trim();
+
+    // Markdown table (supports lines starting with "|", and "- |" inside lists).
+    const tableHeaderCandidate = normalizeTableLine(line);
+    const tableSeparatorCandidate = idx + 1 < lines.length ? normalizeTableLine(lines[idx + 1]) : null;
+    if (tableHeaderCandidate && tableSeparatorCandidate && isTableSeparator(tableSeparatorCandidate)) {
+      const tableLines: string[] = [tableHeaderCandidate];
+      let tableCursor = idx + 1;
+
+      while (tableCursor < lines.length) {
+        const rowCandidate = normalizeTableLine(lines[tableCursor]);
+        if (!rowCandidate) break;
+        tableLines.push(rowCandidate);
+        tableCursor += 1;
+      }
+
+      const headerCells = splitTableRow(tableLines[0]);
+      const bodyRows = tableLines.slice(2).map(splitTableRow);
+
+      renderedLines.push(
+        <div key={`table-${idx}`} className="my-4 overflow-x-auto rounded-lg border border-cyan-500/30 bg-black/40">
+          <table className="min-w-full border-collapse text-xs sm:text-sm">
+            <thead className="bg-cyan-900/25">
+              <tr>
+                {headerCells.map((cell, cellIndex) => (
+                  <th
+                    key={`th-${idx}-${cellIndex}`}
+                    className="border-b border-cyan-500/25 px-3 py-2 text-left text-cyan-100 font-semibold whitespace-nowrap"
+                  >
+                    {cell ? parseInline(cell) : '\u00A0'}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {bodyRows.map((row, rowIndex) => (
+                <tr key={`tr-${idx}-${rowIndex}`} className="even:bg-cyan-900/10">
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={`td-${idx}-${rowIndex}-${cellIndex}`}
+                      className="border-t border-cyan-500/15 px-3 py-2 text-gray-300 align-top"
+                    >
+                      {cell ? parseInline(cell) : '\u00A0'}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
+
+      idx = tableCursor - 1;
+      continue;
+    }
+
+    const media = parseMediaLine(line);
+    if (media?.kind === 'youtube') {
+      renderedLines.push(
+        <div key={`youtube-${idx}`} className="my-4 rounded-lg border border-cyan-500/30 bg-black/40 p-2.5">
+          <div className="relative w-full overflow-hidden rounded-md border border-white/10 bg-black pb-[56.25%]">
+            <iframe
+              src={media.src}
+              title={media.alt || 'YouTube Video'}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              className="absolute inset-0 h-full w-full"
+            />
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <span className="text-xs text-cyan-200/90">{media.alt || 'YouTube Video'}</span>
+            <a
+              href={media.rawUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-blue-300 hover:text-blue-200 underline decoration-blue-400/40"
+            >
+              Open YouTube
+              <ExternalLink size={11} />
+            </a>
+          </div>
+        </div>,
+      );
+      continue;
+    }
+
+    if (media?.kind === 'video') {
+      renderedLines.push(
+        <div key={`video-${idx}`} className="my-4 rounded-lg border border-cyan-500/30 bg-black/40 p-2.5">
+          <video controls preload="metadata" className="w-full rounded-md border border-white/10 bg-black">
+            <source src={media.src} />
+            Your browser does not support the video tag.
+          </video>
+          {(media.alt || media.src) && (
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <span className="text-xs text-cyan-200/90">{media.alt || 'Video'}</span>
+              <a
+                href={media.src}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-xs text-blue-300 hover:text-blue-200 underline decoration-blue-400/40"
+              >
+                Open Video
+                <ExternalLink size={11} />
+              </a>
+            </div>
+          )}
+        </div>,
+      );
+      continue;
+    }
+
+    if (media?.kind === 'image') {
+      renderedLines.push(
+        <div key={`image-${idx}`} className="my-4 rounded-lg border border-cyan-500/30 bg-black/40 p-2.5">
+          <img src={media.src} alt={media.alt || 'Image'} className="w-full rounded-md border border-white/10" />
+          {media.alt && <div className="mt-2 text-xs text-cyan-200/90">{media.alt}</div>}
+        </div>,
+      );
+      continue;
+    }
+
+    // Header 1
+    if (line.startsWith('# ')) {
+      renderedLines.push(
+        <h1 key={idx} className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mt-6 mb-4 border-b border-white/10 pb-2 uppercase tracking-tight">
+          {line.replace('# ', '')}
+        </h1>,
+      );
+      continue;
+    }
+
+    // Header 2
+    if (line.startsWith('## ')) {
+      renderedLines.push(
+        <h2 key={idx} className="text-xl font-bold text-cyan-200 mt-6 mb-2 flex items-center">
+          <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>
+          {line.replace('## ', '')}
+        </h2>,
+      );
+      continue;
+    }
+
+    // Header 3
+    if (line.startsWith('### ')) {
+      renderedLines.push(
+        <h3 key={idx} className="text-lg font-bold text-purple-300 mt-4 mb-2">
+          {line.replace('### ', '')}
+        </h3>,
+      );
+      continue;
+    }
+
+    // List Item
+    if (trimmedLine.startsWith('- ')) {
+      renderedLines.push(
+        <div key={idx} className="flex items-start ml-4 text-gray-300 my-1">
+          <span className="text-cyan-500 mr-2">▹</span>
+          <span className="text-gray-400">{parseInline(trimmedLine.replace(/^- /, ''))}</span>
+        </div>,
+      );
+      continue;
+    }
+
+    // Numbered List
+    if (/^\d+\./.test(trimmedLine)) {
+      const orderMark = trimmedLine.match(/^\d+\./)?.[0] || '1.';
+      renderedLines.push(
+        <div key={idx} className="flex items-start ml-4 text-gray-300 my-1">
+          <span className="text-purple-500 mr-2 text-xs">{orderMark}</span>
+          <span>{parseInline(trimmedLine.replace(/^\d+\.\s*/, ''))}</span>
+        </div>,
+      );
+      continue;
+    }
+
+    // Blockquote
+    if (trimmedLine.startsWith('> ')) {
+      renderedLines.push(
+        <div key={idx} className="border-l-2 border-purple-500 bg-purple-900/10 p-3 my-4 italic text-purple-200 rounded-r">
+          {parseInline(trimmedLine.replace(/^> /, ''))}
+        </div>,
+      );
+      continue;
+    }
+
+    // Code Block (Simple detection)
+    if (trimmedLine.startsWith('```')) {
+      continue; // Skip the markers for this simple parser
+    }
+
+    // Horizontal Rule
+    if (trimmedLine === '---') {
+      renderedLines.push(<div key={idx} className="border-b border-white/10 my-8"></div>);
+      continue;
+    }
+
+    // Empty line
+    if (trimmedLine === '') {
+      renderedLines.push(<div key={idx} className="h-2"></div>);
+      continue;
+    }
+
+    // Regular paragraph
+    renderedLines.push(
+      <p key={idx} className="text-sm leading-relaxed text-gray-400">
+        {parseInline(line)}
+      </p>,
+    );
+  }
 
   if (loading) {
     return (
@@ -192,78 +487,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
       {/* Document Content */}
       <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
         <div className="max-w-3xl mx-auto space-y-4">
-          {lines.map((line, idx) => {
-            // Header 1
-            if (line.startsWith('# ')) {
-              return (
-                <h1 key={idx} className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500 mt-6 mb-4 border-b border-white/10 pb-2 uppercase tracking-tight">
-                  {line.replace('# ', '')}
-                </h1>
-              );
-            }
-            // Header 2
-            if (line.startsWith('## ')) {
-              return (
-                <h2 key={idx} className="text-xl font-bold text-cyan-200 mt-6 mb-2 flex items-center">
-                  <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>
-                  {line.replace('## ', '')}
-                </h2>
-              );
-            }
-             // Header 3
-             if (line.startsWith('### ')) {
-                return (
-                  <h3 key={idx} className="text-lg font-bold text-purple-300 mt-4 mb-2">
-                    {line.replace('### ', '')}
-                  </h3>
-                );
-              }
-            // List Item
-            if (line.trim().startsWith('- ')) {
-              return (
-                <div key={idx} className="flex items-start ml-4 text-gray-300 my-1">
-                  <span className="text-cyan-500 mr-2">▹</span>
-                  <span className="text-gray-400">{parseInline(line.replace('- ', ''))}</span>
-                </div>
-              );
-            }
-             // Numbered List
-             if (/^\d+\./.test(line.trim())) {
-                return (
-                  <div key={idx} className="flex items-start ml-4 text-gray-300 my-1">
-                    <span className="text-purple-500 mr-2 text-xs">{line.split('.')[0]}.</span>
-                    <span>{parseInline(line.replace(/^\d+\.\s/, ''))}</span>
-                  </div>
-                );
-              }
-            // Blockquote
-            if (line.trim().startsWith('> ')) {
-              return (
-                <div key={idx} className="border-l-2 border-purple-500 bg-purple-900/10 p-3 my-4 italic text-purple-200 rounded-r">
-                  {parseInline(line.replace('> ', ''))}
-                </div>
-              );
-            }
-            // Code Block (Simple detection)
-            if (line.trim().startsWith('```')) {
-                return null; // Skip the markers for this simple parser
-            }
-             // Horizontal Rule
-             if (line.trim() === '---') {
-                return <div key={idx} className="border-b border-white/10 my-8"></div>;
-             }
-
-            // Empty line
-            if (line.trim() === '') {
-              return <div key={idx} className="h-2"></div>;
-            }
-            // Regular paragraph
-            return (
-              <p key={idx} className="text-sm leading-relaxed text-gray-400">
-                {parseInline(line)}
-              </p>
-            );
-          })}
+          {renderedLines}
         </div>
         
         {/* End of Document Marker */}

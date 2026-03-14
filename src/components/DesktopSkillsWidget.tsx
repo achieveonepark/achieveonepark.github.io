@@ -159,7 +159,8 @@ export const DesktopSkillsWidget: React.FC = () => {
   const [skills, setSkills] = useState<string[]>([]);
   const [aboutName, setAboutName] = useState('');
   const [aboutCareer, setAboutCareer] = useState('');
-  const [aboutSummary, setAboutSummary] = useState<string[]>([]);
+  const [aboutIntroLines, setAboutIntroLines] = useState<string[]>([]);
+  const [aboutHighlights, setAboutHighlights] = useState<string[]>([]);
   const [experienceItems, setExperienceItems] = useState<ExperienceItem[]>([]);
   const [projectItems, setProjectItems] = useState<ProjectItem[]>([]);
   const [isProfileZoomed, setIsProfileZoomed] = useState(false);
@@ -303,6 +304,34 @@ export const DesktopSkillsWidget: React.FC = () => {
     openFile(file);
   };
 
+  const renderInlineMarkdown = (text: string) => {
+    if (!/(`[^`]+`|\*\*[^*]+\*\*)/.test(text)) return text;
+    const parts = text.split(/(`[^`]+`|\*\*[^*]+\*\*)/g).filter(Boolean);
+
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+        return (
+          <strong key={`about-bold-${index}`} className="text-cyan-50 font-semibold">
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+
+      if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+        return (
+          <code
+            key={`about-code-${index}`}
+            className="rounded border border-cyan-500/30 bg-cyan-950/60 px-1.5 py-0.5 font-mono text-[0.78rem] text-cyan-100"
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+
+      return <React.Fragment key={`about-text-${index}`}>{part}</React.Fragment>;
+    });
+  };
+
   useEffect(() => {
     const loadSkills = async () => {
       try {
@@ -342,11 +371,16 @@ export const DesktopSkillsWidget: React.FC = () => {
         if (nameLine) setAboutName(nameLine.replace('- 이름:', '').trim());
         if (careerLine) setAboutCareer(careerLine.replace('- 경력:', '').trim());
 
-        const summaryLines = lines
+        const introLines = lines
           .filter(line => !line.startsWith('#') && !line.startsWith('- '))
           .filter(Boolean);
 
-        setAboutSummary(summaryLines);
+        const highlights = profileLines
+          .map(line => line.replace('- ', '').trim())
+          .filter(line => line && !line.startsWith('이름:') && !line.startsWith('경력:'));
+
+        setAboutIntroLines(introLines);
+        setAboutHighlights(highlights);
       } catch (error) {
         console.error('Failed to load about widget data:', error);
       }
@@ -559,7 +593,7 @@ export const DesktopSkillsWidget: React.FC = () => {
     };
   }, []);
 
-  if (skills.length === 0 && aboutSummary.length === 0 && experienceItems.length === 0 && projectItems.length === 0) return null;
+  if (skills.length === 0 && aboutIntroLines.length === 0 && aboutHighlights.length === 0 && experienceItems.length === 0 && projectItems.length === 0) return null;
 
   const profileContent = (
     <>
@@ -577,11 +611,25 @@ export const DesktopSkillsWidget: React.FC = () => {
         </div>
       </div>
 
-      <div className="space-y-2.5">
-        {aboutSummary.map((line, index) => (
-          <p key={`${line}-${index}`} className="text-sm leading-relaxed text-gray-200">
-            {line}
-          </p>
+      {aboutIntroLines.length > 0 && (
+        <div className="mb-3 space-y-1.5">
+          {aboutIntroLines.map((line, index) => (
+            <p key={`${line}-${index}`} className="text-sm leading-relaxed text-cyan-100/90">
+              {renderInlineMarkdown(line)}
+            </p>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        {aboutHighlights.map((item, index) => (
+          <div
+            key={`${item}-${index}`}
+            className="rounded-lg border border-cyan-500/25 bg-gradient-to-br from-cyan-900/20 via-black/55 to-blue-900/15 px-3 py-2.5 shadow-[0_0_14px_rgba(6,182,212,0.08)]"
+          >
+            <div className="text-[10px] tracking-[0.18em] uppercase text-cyan-300/80 font-semibold">POINT {String(index + 1).padStart(2, '0')}</div>
+            <div className="mt-1 text-sm text-gray-100 font-semibold leading-relaxed">{renderInlineMarkdown(item)}</div>
+          </div>
         ))}
       </div>
     </>

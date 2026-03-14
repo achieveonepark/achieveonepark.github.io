@@ -2,7 +2,9 @@
 
 - 기간: 2021.09 - 2022.04
 
-## 주요 기여
+
+https://www.youtube.com/watch?v=qKEeqTkbvn0
+
 - '기사 키우기 : 데미갓' 런칭 및 라이브 서비스
 - 퍼즐 게임 신규 개발 및 인게임 스테이지 제작 툴(Level Editor) 개발
 - 전체 프로젝트 Android/iOS 빌드 파이프라인 관리

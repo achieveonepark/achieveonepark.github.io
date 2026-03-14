@@ -4,8 +4,21 @@
 - 링크: https://www.dalcomsoft.com
 - 분야: Rhythm Game, SDK Integration
 
-## 주요 기여
-- 신규 개발: SuperStar YG, SuperStar KangDaniel 런칭
-- 라이브 서비스: Superstar BTS, Superstar JYP 유지 보수
-- SDK 연동: AdManager, Tapjoy, AudienceNetwork 등 광고 SDK 및 Firebase 연동
+## 개발 및 런칭 프로젝트
+- SuperStar Starship
+- SuperStar YG
+- SuperStar KangDaniel
+
+## 유지보수 프로젝트
+- SuperStar BTS
+- SuperStar JYP
+
+## SDK 연동
+- Google AdManager
+- Tapjoy
+- AudienceNetwork 광고 SDK
+- Firebase 연동
+
+## Contents
+- 업데이트 피쳐 제작
 - 인게임 UI 폴리싱 및 컨텐츠 구현 (Native Java/Obj-C 활용)
