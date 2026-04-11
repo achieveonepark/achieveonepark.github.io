@@ -1,10 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Wifi, Battery, Search, Activity, ArrowLeft } from 'lucide-react';
+import { Wifi, Battery, Search, Activity, ArrowLeft, Github, BookOpen, Code, Mail } from 'lucide-react';
 import { format } from 'date-fns';
-import githubLogo from '../../images/github-logo.png';
-import docsLogo from '../../images/docs-logo.png';
-import instagramLogo from '../../images/Instagram-logo.png';
-import emailLogo from '../../images/email-logo.png';
 import { OSContext } from '../context';
 
 interface MenuStructure {
@@ -28,8 +24,8 @@ export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false, onExitOS }) 
   const toastTimerRef = useRef<number | null>(null);
   const defaultLinks: Record<string, string> = {
     github: 'https://github.com/achieveonepark',
-    'coding library': 'http://achieveonepark.github.io/cording-library',
-    instagram: 'https://instagram.com/parkachieveone',
+    blog: 'https://blog.somiri.dev',
+    library: 'https://lib.somiri.dev',
     email: 'mailto:park_achieveone@naver.com',
   };
 
@@ -222,25 +218,25 @@ export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false, onExitOS }) 
     {
       label: 'Github',
       href: linkUrls.github || defaultLinks.github,
-      logo: githubLogo,
+      Icon: Github,
       hoverClass: 'hover:text-white',
     },
     {
-      label: 'Coding Library',
-      href: linkUrls['coding library'] || defaultLinks['coding library'],
-      logo: docsLogo,
-      hoverClass: 'hover:text-green-400',
+      label: 'Blog',
+      href: linkUrls.blog || defaultLinks.blog,
+      Icon: BookOpen,
+      hoverClass: 'hover:text-cyan-300',
     },
     {
-      label: 'Instagram',
-      href: linkUrls.instagram || defaultLinks.instagram,
-      logo: instagramLogo,
-      hoverClass: 'hover:text-purple-400',
+      label: 'Library',
+      href: linkUrls.library || defaultLinks.library,
+      Icon: Code,
+      hoverClass: 'hover:text-green-400',
     },
     {
       label: 'Email',
       href: linkUrls.email || defaultLinks.email,
-      logo: emailLogo,
+      Icon: Mail,
       hoverClass: 'hover:text-blue-400',
     },
   ];
@@ -293,7 +289,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false, onExitOS }) 
             className={`h-7 px-2 rounded-md border border-white/10 bg-black/30 text-cyan-100/80 flex items-center gap-1.5 transition-colors ${link.hoverClass}`}
             title={link.label}
           >
-            <img src={link.logo} alt={link.label} className="w-4 h-4 object-contain" draggable={false} />
+            <link.Icon size={14} className="shrink-0" />
             <span className="text-[10px] uppercase tracking-wider font-semibold">{link.label}</span>
           </a>
         ))}

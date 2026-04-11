@@ -1,6 +1,6 @@
 # Links
 
 - GitHub: https://github.com/achieveonepark
-- Coding Library: http://achieveonepark.github.io/cording-library
-- Instagram: https://instagram.com/parkachieveone
+- Blog: https://blog.somiri.dev
+- Library: https://lib.somiri.dev
 - Email: park_achieveone@naver.com
