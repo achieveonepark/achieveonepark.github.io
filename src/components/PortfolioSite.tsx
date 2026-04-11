@@ -639,7 +639,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                 </div>
             </header>
 
-            <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-24 flex gap-10">
+            <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-24 flex gap-10 items-start">
                 {/* Desktop TOC */}
                 <nav className="hidden lg:block w-56 shrink-0 sticky top-24 self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-2">
                     <div className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-3 px-2">Sections</div>
