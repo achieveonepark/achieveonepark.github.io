@@ -145,6 +145,7 @@ const renderInline = (
                                 {label}
                             </a>,
                         );
+                        lastIndex = match.index + token.length;
                         continue;
                     }
                 }
@@ -197,6 +198,43 @@ const toYoutubeEmbed = (url: string): string | null => {
     if (watchMatch) return `https://www.youtube.com/embed/${watchMatch[1]}`;
     const shortMatch = url.match(/youtu\.be\/([\w-]+)/);
     if (shortMatch) return `https://www.youtube.com/embed/${shortMatch[1]}`;
+    return null;
+};
+
+const renderYoutubeEmbed = (embed: string, key: string, className?: string) => (
+    <div
+        key={key}
+        className={
+            className ??
+            'my-4 aspect-video w-full rounded-xl overflow-hidden border border-white/10 bg-black'
+        }
+    >
+        <iframe
+            src={embed}
+            title="YouTube video"
+            className="w-full h-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+        />
+    </div>
+);
+
+const extractYoutubeListItem = (text: string): { label: string | null; embed: string } | null => {
+    const trimmed = text.trim();
+    const labeledMatch = trimmed.match(/^(.+?):\s*(https?:\/\/\S+)\s*$/);
+    if (labeledMatch) {
+        const [, label, url] = labeledMatch;
+        const embed = toYoutubeEmbed(url);
+        if (embed) {
+            return { label: label.trim(), embed };
+        }
+    }
+
+    const embed = toYoutubeEmbed(trimmed);
+    if (embed) {
+        return { label: null, embed };
+    }
+
     return null;
 };
 
@@ -465,20 +503,7 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
         if (/^https?:\/\//.test(trimmedLine) && !trimmedLine.includes(' ')) {
             const embed = toYoutubeEmbed(trimmedLine);
             if (embed) {
-                out.push(
-                    <div
-                        key={nextKey()}
-                        className="my-4 aspect-video w-full rounded-xl overflow-hidden border border-white/10 bg-black"
-                    >
-                        <iframe
-                            src={embed}
-                            title="YouTube video"
-                            className="w-full h-full"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                        />
-                    </div>,
-                );
+                out.push(renderYoutubeEmbed(embed, nextKey()));
                 i++;
                 continue;
             }
@@ -544,16 +569,38 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
                     key={nextKey()}
                     className="my-3 space-y-1.5 text-white/80"
                 >
-                    {items.map((item, idx) => (
-                        <li
-                            key={idx}
-                            className="relative pl-5 leading-relaxed"
-                            style={{ marginLeft: item.depth * 16 }}
-                        >
-                            <span className="absolute left-0 top-[0.6em] w-1.5 h-1.5 rounded-full bg-cyan-400/70" />
-                            {renderInline(item.text, { ...ctx, keyPrefix: `li-${idx}` })}
-                        </li>
-                    ))}
+                    {items.map((item, idx) => {
+                        const youtubeItem = extractYoutubeListItem(item.text);
+
+                        return (
+                            <li
+                                key={idx}
+                                className={`relative pl-5 ${youtubeItem ? 'pt-0.5' : 'leading-relaxed'}`}
+                                style={{ marginLeft: item.depth * 16 }}
+                            >
+                                <span className="absolute left-0 top-3 h-1.5 w-1.5 rounded-full bg-cyan-400/70" />
+                                {youtubeItem ? (
+                                    <div className="space-y-3">
+                                        {youtubeItem.label && (
+                                            <div className="text-white/80 leading-relaxed">
+                                                {renderInline(`${youtubeItem.label}:`, {
+                                                    ...ctx,
+                                                    keyPrefix: `li-${idx}-label`,
+                                                })}
+                                            </div>
+                                        )}
+                                        {renderYoutubeEmbed(
+                                            youtubeItem.embed,
+                                            `li-${idx}-video`,
+                                            'aspect-video w-full rounded-xl overflow-hidden border border-white/10 bg-black',
+                                        )}
+                                    </div>
+                                ) : (
+                                    renderInline(item.text, { ...ctx, keyPrefix: `li-${idx}` })
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>,
             );
             continue;
