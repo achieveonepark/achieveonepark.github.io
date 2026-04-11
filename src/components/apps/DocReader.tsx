@@ -452,7 +452,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
 
   if (loading) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d0d0d] text-cyan-500" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d0d0d] text-cyan-500" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
         <Loader className="animate-spin mb-4" size={32} />
         <div className="text-xs tracking-widest animate-pulse">ESTABLISHING DATALINK...</div>
       </div>
@@ -461,7 +461,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
 
   if (error) {
     return (
-      <div className="w-full h-full flex flex-col items-center justify-center bg-[#0d0d0d] text-red-500 p-8 text-center" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
+      <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0d0d0d] text-red-500 p-8 text-center" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
         <AlertTriangle className="mb-4" size={32} />
         <div className="text-xs tracking-widest">CONNECTION FAILED</div>
         <div className="text-[10px] text-red-800 mt-2">UNABLE TO RETRIEVE DOCUMENT OBJECT</div>
@@ -473,7 +473,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
   }
 
   return (
-    <div className="w-full h-full flex flex-col bg-[#0d0d0d] text-gray-300" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
+    <div className="absolute inset-0 flex flex-col bg-[#0d0d0d] text-gray-300" style={{ fontFamily: VIEWER_FONT_FAMILY }}>
       {/* Header Bar */}
       <div className="h-10 bg-black/40 border-b border-white/10 flex items-center px-4 space-x-3 shrink-0">
         <div className="bg-cyan-900/30 text-cyan-400 px-2 py-0.5 rounded text-[10px] font-bold tracking-widest uppercase border border-cyan-500/30">
