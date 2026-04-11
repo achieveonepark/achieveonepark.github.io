@@ -331,9 +331,10 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
             }
         }
 
-        // Table: header line with |, followed by separator | --- | --- |
-        if (line.includes('|') && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]+/.test(lines[i + 1])) {
-            const headerCells = line.split('|').map(c => c.trim()).filter((c, idx, arr) => !(idx === 0 && c === '') && !(idx === arr.length - 1 && c === ''));
+        // Table: header line with | (also handles "- | ..." list-wrapped tables)
+        const tableHeaderLine = /^\s*-\s+(\|.*)$/.exec(line)?.[1] ?? line;
+        if (tableHeaderLine.includes('|') && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]+/.test(lines[i + 1])) {
+            const headerCells = tableHeaderLine.split('|').map(c => c.trim()).filter((c, idx, arr) => !(idx === 0 && c === '') && !(idx === arr.length - 1 && c === ''));
             i += 2; // skip header + separator
             const rows: string[][] = [];
             while (i < lines.length && lines[i].includes('|') && lines[i].trim() !== '') {
@@ -379,6 +380,8 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
             while (i < lines.length && /^\s*-\s+/.test(lines[i])) {
                 const m = lines[i].match(/^(\s*)-\s+(.*)$/);
                 if (!m) break;
+                // If this list item is actually a table header, stop and let the table handler take over
+                if (m[2].startsWith('|') && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]+/.test(lines[i + 1])) break;
                 const depth = Math.floor(m[1].length / 2);
                 items.push({ depth, text: m[2] });
                 i++;
