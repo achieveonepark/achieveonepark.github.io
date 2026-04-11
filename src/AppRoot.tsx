@@ -11,6 +11,7 @@ const AppRoot: React.FC = () => {
         const isOS = mode === 'os';
         document.documentElement.style.overflow = isOS ? 'hidden' : '';
         document.body.style.overflow = isOS ? 'hidden' : '';
+        document.title = isOS ? 'AchieveOne OS' : 'AchieveOne Portfolio';
     }, [mode]);
 
     const enterOS = useCallback(() => setMode('os'), []);

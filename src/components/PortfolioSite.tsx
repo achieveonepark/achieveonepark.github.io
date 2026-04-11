@@ -753,17 +753,19 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                         <button
                                             type="button"
                                             onClick={() => toggleCollapsed(section.slug)}
-                                            className="w-full flex items-center justify-between px-6 py-4 text-left text-white/70 hover:text-white transition"
+                                            className="w-full flex items-center justify-between px-6 py-5 text-left text-white/70 hover:text-white transition"
                                         >
-                                            <span className="flex items-center gap-2 text-sm">
-                                                <BookOpen size={14} className="text-cyan-300/70" />
-                                                <span>{section.title}</span>
-                                                <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                                                    legacy · full version
+                                            <span className="flex items-center gap-3">
+                                                <BookOpen size={16} className="text-cyan-300/70 shrink-0" />
+                                                <span className="flex flex-col gap-0.5">
+                                                    <span className="text-sm font-semibold tracking-wide text-white/80">FULL VERSION</span>
+                                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
+                                                        {section.title}
+                                                    </span>
                                                 </span>
                                             </span>
-                                            <span className="text-xs text-white/40">
-                                                {open ? 'hide' : 'show'}
+                                            <span className="text-xs text-white/40 shrink-0">
+                                                {open ? 'hide ↑' : 'show ↓'}
                                             </span>
                                         </button>
                                         {open && (
