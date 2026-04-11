@@ -543,12 +543,34 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
 
     return (
         <div className="relative min-h-screen w-full bg-neutral-950 text-white/90 font-sans overflow-x-hidden">
-            {/* Subtle static grid only — no ambient glow */}
+            {/* Top-left cyan ambient glow */}
             <div
-                className="pointer-events-none fixed inset-0 z-0 opacity-[0.03]"
+                className="pointer-events-none fixed z-0"
+                style={{
+                    top: '-10%',
+                    left: '-10%',
+                    width: '55vw',
+                    height: '55vw',
+                    background: 'radial-gradient(circle, rgba(6,182,212,0.07) 0%, transparent 70%)',
+                }}
+            />
+            {/* Bottom-right purple ambient glow */}
+            <div
+                className="pointer-events-none fixed z-0"
+                style={{
+                    bottom: '-15%',
+                    right: '-10%',
+                    width: '60vw',
+                    height: '60vw',
+                    background: 'radial-gradient(circle, rgba(139,92,246,0.06) 0%, transparent 70%)',
+                }}
+            />
+            {/* Subtle static grid */}
+            <div
+                className="pointer-events-none fixed inset-0 z-0 opacity-[0.035]"
                 style={{
                     backgroundImage:
-                        'linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px)',
+                        'linear-gradient(rgba(255,255,255,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.4) 1px, transparent 1px)',
                     backgroundSize: '48px 48px',
                 }}
             />

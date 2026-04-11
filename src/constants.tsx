@@ -40,7 +40,7 @@ export const INITIAL_APPS: AppDefinition[] = [
         title: 'NET',
         icon: Globe,
         type: 'browser',
-        url: 'https://www.google.com/webhp?igu=1&theme=dark', // Try to force dark mode if possible
+        url: 'https://blog.somiri.dev',
         color: 'bg-blue-600',
         pinned: true,
     },
