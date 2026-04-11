@@ -9,10 +9,10 @@ export const Browser: React.FC<BrowserProps> = ({ url }) => {
   const isYouTube = /youtube\.com|youtu\.be/i.test(url);
   const isGame = /(^|\/)applications\/game\//i.test(url);
   const iframeClassName = isYouTube
-    ? 'w-full flex-1 border-none bg-black'
+    ? 'w-full flex-1 min-h-0 border-none bg-black'
     : isGame
       ? 'w-full h-full border-none bg-black'
-      : 'w-full flex-1 border-none bg-white';
+      : 'w-full flex-1 min-h-0 border-none bg-white';
 
   const iframe = (
     <iframe

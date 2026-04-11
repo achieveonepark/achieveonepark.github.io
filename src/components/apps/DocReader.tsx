@@ -485,7 +485,7 @@ export const DocReader: React.FC<DocReaderProps> = ({ content = '' }) => {
       </div>
 
       {/* Document Content */}
-      <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+      <div className="flex-1 min-h-0 overflow-y-auto p-8 custom-scrollbar">
         <div className="max-w-3xl mx-auto space-y-4">
           {renderedLines}
         </div>
