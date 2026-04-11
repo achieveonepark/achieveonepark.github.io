@@ -27,7 +27,11 @@ import { OSContext } from './context';
 // Helper for generating IDs
 const generateId = () => Math.random().toString(36).substr(2, 9);
 
-const App: React.FC = () => {
+interface AppProps {
+    onExitOS?: () => void;
+}
+
+const App: React.FC<AppProps> = ({ onExitOS }) => {
     const [apps, setApps] = useState<AppDefinition[]>(INITIAL_APPS);
     const [fileSystem, setFileSystem] = useState<Record<string, FileObject[]>>(FILE_SYSTEM);
     const [windows, setWindows] = useState<WindowState[]>([]);
@@ -523,7 +527,7 @@ const App: React.FC = () => {
                     }
                 }}
             >
-                {!hasMaximizedWindow && <MenuBar />}
+                {!hasMaximizedWindow && <MenuBar onExitOS={onExitOS} />}
 
                 {/* 
             Desktop Constraints Area:

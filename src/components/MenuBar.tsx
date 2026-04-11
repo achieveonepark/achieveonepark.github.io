@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Wifi, Battery, Search, Activity } from 'lucide-react';
+import { Wifi, Battery, Search, Activity, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import githubLogo from '../../images/github-logo.png';
 import docsLogo from '../../images/docs-logo.png';
@@ -13,9 +13,10 @@ interface MenuStructure {
 
 interface MenuBarProps {
   isHidden?: boolean;
+  onExitOS?: () => void;
 }
 
-export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false }) => {
+export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false, onExitOS }) => {
   const { apps, windows, activeWindowId, launchApp, closeWindow } = useContext(OSContext);
   const [time, setTime] = useState(new Date());
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -248,6 +249,17 @@ export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false }) => {
     <>
     <div className={`fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg relative transition-all duration-300 ${isHidden ? '-translate-y-6 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="flex items-center space-x-2 h-full" ref={menuRef}>
+        {onExitOS && (
+          <button
+            type="button"
+            onClick={onExitOS}
+            className="h-7 px-2.5 mr-2 rounded-md border border-cyan-400/30 bg-cyan-400/10 text-cyan-200 hover:bg-cyan-400/20 hover:border-cyan-300/50 transition-colors flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-semibold"
+            title="포트폴리오 웹페이지로 돌아가기"
+          >
+            <ArrowLeft size={12} />
+            <span>Portfolio</span>
+          </button>
+        )}
         <div className="relative h-full flex items-center mr-4">
             <button 
                 onClick={() => handleMenuClick('sys')} 
