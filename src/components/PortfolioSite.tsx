@@ -46,6 +46,8 @@ const DEFAULT_COLLAPSED: string[] = ['portfolio_full.md'];
 const DESKTOP_TOC_TOP_OFFSET = 96;
 const SECTION_SPY_OFFSET_DESKTOP = 136;
 const SECTION_SPY_OFFSET_MOBILE = 108;
+const SECTION_SPY_RATIO_DESKTOP = 0.3;
+const SECTION_SPY_RATIO_MOBILE = 0.22;
 
 // ============================================================================
 // Utilities
@@ -678,8 +680,12 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
             const renderedSections = getRenderedSections();
             if (renderedSections.length === 0) return;
 
-            const sectionSpyOffset =
-                window.innerWidth >= 1024 ? SECTION_SPY_OFFSET_DESKTOP : SECTION_SPY_OFFSET_MOBILE;
+            const isDesktop = window.innerWidth >= 1024;
+            const sectionSpyOffset = isDesktop ? SECTION_SPY_OFFSET_DESKTOP : SECTION_SPY_OFFSET_MOBILE;
+            const sectionSpyLine = Math.max(
+                sectionSpyOffset,
+                Math.round(window.innerHeight * (isDesktop ? SECTION_SPY_RATIO_DESKTOP : SECTION_SPY_RATIO_MOBILE)),
+            );
 
             const viewportBottom = window.scrollY + window.innerHeight;
             const documentBottom = document.documentElement.scrollHeight - 4;
@@ -690,6 +696,14 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
             }
 
             let nextActiveSlug = renderedSections[0].section.slug;
+
+            for (const { section, element } of renderedSections) {
+                const rect = element.getBoundingClientRect();
+                if (rect.top <= sectionSpyLine && rect.bottom > sectionSpyLine) {
+                    nextActiveSlug = section.slug;
+                    break;
+                }
+            }
 
             for (const { section, element } of renderedSections) {
                 if (element.getBoundingClientRect().top <= sectionSpyOffset) {
@@ -756,7 +770,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
     const collapsedSections = sections.filter(s => DEFAULT_COLLAPSED.includes(s.rel));
 
     return (
-        <div className="relative min-h-screen w-full bg-neutral-950 text-white/90 font-sans overflow-x-hidden">
+        <div className="relative min-h-screen w-full bg-neutral-950 text-white/90 font-sans">
             {/* Top-left cyan ambient glow */}
             <div
                 className="pointer-events-none fixed z-0"
@@ -863,7 +877,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                 {/* Desktop TOC */}
                 <nav
                     ref={tocRef}
-                    className="hidden lg:block w-56 shrink-0 sticky self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-2"
+                    className="hidden lg:block h-fit w-56 shrink-0 sticky self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-2"
                     style={{ top: `${DESKTOP_TOC_TOP_OFFSET}px` }}
                 >
                     <div className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-3 px-2">Sections</div>
