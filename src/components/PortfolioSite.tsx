@@ -739,48 +739,6 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                         ))}
                     </div>
 
-                    {/* Collapsed section(s) at the bottom */}
-                    {collapsedSections.length > 0 && (
-                        <div className="mt-10 md:mt-14 space-y-4">
-                            {collapsedSections.map(section => {
-                                const open = collapsedOpen[section.slug];
-                                return (
-                                    <section
-                                        key={section.slug}
-                                        id={section.slug}
-                                        className="scroll-mt-24 rounded-2xl border border-white/[0.06] bg-white/[0.015]"
-                                    >
-                                        <button
-                                            type="button"
-                                            onClick={() => toggleCollapsed(section.slug)}
-                                            className="w-full flex items-center justify-between px-6 py-5 text-left text-white/70 hover:text-white transition"
-                                        >
-                                            <span className="flex items-center gap-3">
-                                                <BookOpen size={16} className="text-cyan-300/70 shrink-0" />
-                                                <span className="flex flex-col gap-0.5">
-                                                    <span className="text-sm font-semibold tracking-wide text-white/80">FULL VERSION</span>
-                                                    <span className="text-[10px] uppercase tracking-[0.2em] text-white/30">
-                                                        {section.title}
-                                                    </span>
-                                                </span>
-                                            </span>
-                                            <span className="text-xs text-white/40 shrink-0">
-                                                {open ? 'hide ↑' : 'show ↓'}
-                                            </span>
-                                        </button>
-                                        {open && (
-                                            <div className="px-6 md:px-10 pb-8 pt-2 border-t border-white/5">
-                                                {renderMarkdown(section.markdown, {
-                                                    sectionRel: section.rel,
-                                                    pathToSlug,
-                                                })}
-                                            </div>
-                                        )}
-                                    </section>
-                                );
-                            })}
-                        </div>
-                    )}
 
                     {/* Footer */}
                     <footer className="mt-16 pt-8 border-t border-white/5 text-center">
