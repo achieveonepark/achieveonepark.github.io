@@ -25,7 +25,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false, onExitOS }) 
   const defaultLinks: Record<string, string> = {
     github: 'https://github.com/achieveonepark',
     blog: 'https://blog.somiri.dev',
-    library: 'https://lib.somiri.dev',
+    docs: 'https://docs.somiri.dev',
     email: 'mailto:park_achieveone@naver.com',
   };
 
@@ -228,8 +228,8 @@ export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false, onExitOS }) 
       hoverClass: 'hover:text-cyan-300',
     },
     {
-      label: 'Library',
-      href: linkUrls.library || defaultLinks.library,
+      label: 'Docs',
+      href: linkUrls.docs || defaultLinks.docs,
       Icon: Code,
       hoverClass: 'hover:text-green-400',
     },

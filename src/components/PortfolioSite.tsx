@@ -889,11 +889,11 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             <BookOpen size={16} />
                         </a>
                         <a
-                            href="https://lib.somiri.dev"
+                            href="https://docs.somiri.dev"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/20 transition"
-                            title="Library"
+                            title="Docs"
                         >
                             <Code size={16} />
                         </a>
