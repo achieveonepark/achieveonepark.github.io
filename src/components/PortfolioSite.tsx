@@ -825,7 +825,7 @@ const CareerPhoneSection: React.FC<{
                 {title}
             </h2>
 
-            {!prefersReducedMotion && (
+            {!prefersReducedMotion && isDesktop && (
                 <div ref={stageRef} className="relative" style={{ height: `${PHONE_STAGE_HEIGHT_VH}vh` }}>
                     <div className="sticky top-0 h-screen overflow-hidden flex items-center">
                         <motion.div
