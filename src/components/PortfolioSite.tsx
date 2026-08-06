@@ -5,15 +5,16 @@ import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
 import profileImage from '../../images/profile.png';
 
 // Zoom-in + shape-morph reveal: sections pop from a rounded "blob" into their
-// normal card shape as they scroll into view (whoosh-in effect).
+// normal card shape as they scroll into view (whoosh-in effect). Spring-based
+// so it has a snappy overshoot instead of a flat ease.
 const SECTION_REVEAL_VARIANTS: Variants = {
-    hidden: { opacity: 0, scale: 0.82, y: 40, borderRadius: 56 },
+    hidden: { opacity: 0, scale: 0.72, y: 64, borderRadius: 64 },
     visible: {
         opacity: 1,
         scale: 1,
         y: 0,
         borderRadius: 16,
-        transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] },
+        transition: { type: 'spring', stiffness: 260, damping: 20, mass: 0.8 },
     },
 };
 
@@ -1031,7 +1032,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                 className="scroll-mt-24 border border-white/[0.06] bg-white/[0.015] p-6 md:p-10"
                                 initial={prefersReducedMotion ? undefined : 'hidden'}
                                 whileInView={prefersReducedMotion ? undefined : 'visible'}
-                                viewport={{ once: true, amount: 0.25 }}
+                                viewport={{ once: true, amount: 'some', margin: '0px 0px 100px 0px' }}
                                 variants={prefersReducedMotion ? undefined : SECTION_REVEAL_VARIANTS}
                                 style={prefersReducedMotion ? { borderRadius: 16 } : undefined}
                             >
