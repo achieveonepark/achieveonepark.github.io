@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Signal, Wifi, BatteryFull } from 'lucide-react';
-import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, useScroll, useTransform, type Variants } from 'framer-motion';
 import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
 import profileImage from '../../images/profile.png';
 
@@ -658,79 +659,143 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
     return <>{out}</>;
 };
 
+// Realistic iPhone chrome: bezel, side buttons, dynamic island, status bar,
+// screen sheen, home indicator. Pure presentation — apps/selection are props.
+const PhoneFrame: React.FC<{
+    apps: LoadedSection[];
+    activeIndex: number;
+    onSelect?: (index: number) => void;
+    interactive?: boolean;
+}> = ({ apps, activeIndex, onSelect, interactive = true }) => (
+    <div className="relative w-[260px] h-[544px]">
+        {/* Side buttons — mute switch + volume rocker (left), power button (right) */}
+        <div className="absolute -left-[3px] top-[108px] w-[3px] h-7 rounded-l bg-neutral-700" />
+        <div className="absolute -left-[3px] top-[152px] w-[3px] h-12 rounded-l bg-neutral-700" />
+        <div className="absolute -left-[3px] top-[212px] w-[3px] h-12 rounded-l bg-neutral-700" />
+        <div className="absolute -right-[3px] top-[168px] w-[3px] h-16 rounded-r bg-neutral-700" />
+
+        {/* Bezel */}
+        <div className="relative w-full h-full rounded-[52px] bg-gradient-to-br from-neutral-600 via-neutral-800 to-neutral-900 p-[6px] shadow-[0_40px_90px_rgba(0,0,0,0.55)]">
+            <div className="relative w-full h-full rounded-[46px] overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black">
+                {/* Status bar */}
+                <div className="relative z-20 flex items-center justify-between px-7 pt-3 text-white/90">
+                    <span className="text-[13px] font-semibold">9:41</span>
+                    <div className="flex items-center gap-1">
+                        <Signal size={13} />
+                        <Wifi size={13} />
+                        <BatteryFull size={15} />
+                    </div>
+                </div>
+                {/* Dynamic island */}
+                <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[88px] h-[25px] rounded-full bg-black z-30" />
+
+                {/* App grid */}
+                <div className="relative z-10 grid grid-cols-3 gap-x-4 gap-y-6 px-5 pt-10">
+                    {apps.map((app, idx) => {
+                        const isActive = idx === activeIndex;
+                        return (
+                            <button
+                                key={app.slug}
+                                type="button"
+                                disabled={!interactive}
+                                onClick={() => onSelect?.(idx)}
+                                className="flex flex-col items-center gap-1.5"
+                            >
+                                <span
+                                    className={`flex items-center justify-center w-14 h-14 rounded-[15px] bg-neutral-800 border border-white/10 shadow-[0_6px_14px_rgba(0,0,0,0.35)] overflow-hidden transition-transform duration-150 ${
+                                        isActive
+                                            ? 'ring-2 ring-offset-2 ring-offset-neutral-950 ring-cyan-300 scale-105'
+                                            : 'active:scale-90'
+                                    }`}
+                                >
+                                    {app.thumbnail ? (
+                                        <img src={app.thumbnail} alt={`${app.title} logo`} className="w-full h-full object-contain p-2.5" />
+                                    ) : (
+                                        <span className="text-white font-bold text-lg">{app.title.charAt(0)}</span>
+                                    )}
+                                </span>
+                                <span className="text-[10.5px] leading-tight text-white/85 text-center line-clamp-1 max-w-[60px]">
+                                    {app.title}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Home indicator */}
+                <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-32 h-1 rounded-full bg-white/60" />
+
+                {/* Screen sheen */}
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/[0.06] via-transparent to-transparent" />
+            </div>
+        </div>
+    </div>
+);
+
 // An iPhone home-screen mockup used as the "Professional Experience" chapter:
 // each company is an app icon (its logo), tapping one swaps the detail panel.
+// As the chapter scrolls into view, a huge full-screen phone shrinks continuously
+// (scroll-scrubbed, reverses on scroll-up) down into its docked reading position.
 const CareerPhoneSection: React.FC<{
     title: string;
     apps: LoadedSection[];
     pathToSlug: Map<string, string>;
-}> = ({ title, apps, pathToSlug }) => {
+    prefersReducedMotion: boolean;
+}> = ({ title, apps, pathToSlug, prefersReducedMotion }) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const active = apps[activeIndex];
+    const rootRef = useRef<HTMLDivElement>(null);
+
+    const { scrollYProgress } = useScroll({
+        target: rootRef,
+        offset: ['start end', 'start start'],
+    });
+    const heroScale = useTransform(scrollYProgress, [0, 1], [1.75, 1]);
+    const heroOpacity = useTransform(scrollYProgress, [0, 0.7, 1], [1, 1, 0]);
+    const backdropOpacity = useTransform(scrollYProgress, [0, 0.55, 1], [0.92, 0.92, 0]);
+    const dockedOpacity = useTransform(scrollYProgress, [0.65, 1], [0, 1]);
 
     return (
-        <div>
+        <div ref={rootRef}>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-10 md:mb-14 tracking-tight leading-[1.05]">
                 {title}
             </h2>
 
+            {!prefersReducedMotion &&
+                createPortal(
+                    <>
+                        {/* Dimming backdrop behind the full-screen hero phone */}
+                        <motion.div
+                            className="fixed inset-0 z-[35] bg-black pointer-events-none"
+                            style={{ opacity: backdropOpacity }}
+                        />
+                        {/* Full-screen hero phone — shrinks as you scroll, grows back on scroll-up */}
+                        <motion.div
+                            className="fixed inset-0 z-[35] flex items-center justify-center pointer-events-none"
+                            style={{ opacity: heroOpacity }}
+                        >
+                            <motion.div style={{ scale: heroScale }}>
+                                <PhoneFrame apps={apps} activeIndex={activeIndex} interactive={false} />
+                            </motion.div>
+                        </motion.div>
+                    </>,
+                    document.body,
+                )}
+
             <div className="grid gap-10 lg:gap-16 lg:grid-cols-[272px_1fr] items-start">
-                {/* iPhone mockup */}
-                <div className="mx-auto lg:mx-0 lg:sticky shrink-0" style={{ top: CHAPTER_SCROLL_OFFSET + 36 }}>
-                    <div className="relative w-[260px] h-[544px] rounded-[52px] bg-neutral-800 p-[6px] shadow-[0_40px_90px_rgba(0,0,0,0.55)]">
-                        <div className="relative w-full h-full rounded-[46px] overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black">
-                            {/* Status bar */}
-                            <div className="relative z-20 flex items-center justify-between px-7 pt-3 text-white/90">
-                                <span className="text-[13px] font-semibold">9:41</span>
-                                <div className="flex items-center gap-1">
-                                    <Signal size={13} />
-                                    <Wifi size={13} />
-                                    <BatteryFull size={15} />
-                                </div>
-                            </div>
-                            {/* Dynamic island */}
-                            <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[92px] h-[26px] rounded-full bg-black z-30" />
-
-                            {/* App grid */}
-                            <div className="relative z-10 grid grid-cols-3 gap-x-4 gap-y-6 px-5 pt-10">
-                                {apps.map((app, idx) => {
-                                    const isActive = idx === activeIndex;
-                                    return (
-                                        <button
-                                            key={app.slug}
-                                            type="button"
-                                            onClick={() => setActiveIndex(idx)}
-                                            className="flex flex-col items-center gap-1.5"
-                                        >
-                                            <span
-                                                className={`flex items-center justify-center w-14 h-14 rounded-[15px] bg-neutral-800 border border-white/10 shadow-[0_6px_14px_rgba(0,0,0,0.35)] overflow-hidden transition-transform duration-150 ${
-                                                    isActive
-                                                        ? 'ring-2 ring-offset-2 ring-offset-neutral-950 ring-cyan-300 scale-105'
-                                                        : 'active:scale-90'
-                                                }`}
-                                            >
-                                                {app.thumbnail ? (
-                                                    <img src={app.thumbnail} alt={`${app.title} logo`} className="w-full h-full object-contain p-2.5" />
-                                                ) : (
-                                                    <span className="text-white font-bold text-lg">{app.title.charAt(0)}</span>
-                                                )}
-                                            </span>
-                                            <span className="text-[10.5px] leading-tight text-white/85 text-center line-clamp-1 max-w-[60px]">
-                                                {app.title}
-                                            </span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Home indicator */}
-                            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-32 h-1 rounded-full bg-white/60" />
-                        </div>
-                    </div>
+                {/* Docked iPhone mockup — the real, interactive one */}
+                <motion.div
+                    className="mx-auto lg:mx-0 lg:sticky shrink-0"
+                    style={{
+                        top: CHAPTER_SCROLL_OFFSET + 36,
+                        opacity: prefersReducedMotion ? 1 : dockedOpacity,
+                    }}
+                >
+                    <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={setActiveIndex} />
                     <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
                         탭해서 회사별 이야기 보기
                     </p>
-                </div>
+                </motion.div>
 
                 {/* Detail panel */}
                 <div className="min-w-0">
@@ -1124,7 +1189,12 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                     pathToSlug,
                                 })
                             ) : section.rel === 'experience.md' && phoneApps.length > 0 ? (
-                                <CareerPhoneSection title={section.title} apps={phoneApps} pathToSlug={pathToSlug} />
+                                <CareerPhoneSection
+                                    title={section.title}
+                                    apps={phoneApps}
+                                    pathToSlug={pathToSlug}
+                                    prefersReducedMotion={Boolean(prefersReducedMotion)}
+                                />
                             ) : (
                                 renderMarkdown(section.markdown, {
                                     sectionRel: section.rel,
