@@ -1,20 +1,19 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Menu, X } from 'lucide-react';
+import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code } from 'lucide-react';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
 import profileImage from '../../images/profile.png';
 
-// Zoom-in + shape-morph reveal: sections pop from a rounded "blob" into their
-// normal card shape as they scroll into view (whoosh-in effect). Spring-based
-// so it has a snappy overshoot instead of a flat ease.
+// Cinematic chapter reveal: each chapter zooms + un-blurs into place as it
+// scrolls into view, spring-based for a snappy overshoot (whoosh-in effect).
 const SECTION_REVEAL_VARIANTS: Variants = {
-    hidden: { opacity: 0, scale: 0.72, y: 64, borderRadius: 64 },
+    hidden: { opacity: 0, scale: 0.82, y: 72, filter: 'blur(6px)' },
     visible: {
         opacity: 1,
         scale: 1,
         y: 0,
-        borderRadius: 16,
-        transition: { type: 'spring', stiffness: 260, damping: 20, mass: 0.8 },
+        filter: 'blur(0px)',
+        transition: { type: 'spring', stiffness: 220, damping: 22, mass: 0.9 },
     },
 };
 
@@ -58,9 +57,10 @@ const SECTION_PRIORITY: string[] = [
 const EXCLUDED_SECTIONS: string[] = ['career_resume.md'];
 
 const DEFAULT_COLLAPSED: string[] = ['portfolio_full.md'];
-const DESKTOP_TOC_TOP_OFFSET = 96;
-const SECTION_SPY_OFFSET_DESKTOP = 136;
-const SECTION_SPY_OFFSET_MOBILE = 108;
+// Sticky header (h-16 = 64px) + chapter pill nav (~52px) stacked on top of each other.
+const CHAPTER_SCROLL_OFFSET = 116;
+const SECTION_SPY_OFFSET_DESKTOP = 152;
+const SECTION_SPY_OFFSET_MOBILE = 124;
 const SECTION_SPY_RATIO_DESKTOP = 0.3;
 const SECTION_SPY_RATIO_MOBILE = 0.22;
 
@@ -327,7 +327,7 @@ const renderAboutSection = (md: string, ctx: RenderContext): React.ReactNode => 
 
     return (
         <>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mt-0 mb-6 tracking-tight">
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mt-0 mb-8 tracking-tight leading-[1.05]">
                 {renderInline(about.title, { ...ctx, keyPrefix: 'about-title' })}
             </h2>
 
@@ -353,10 +353,10 @@ const renderAboutSection = (md: string, ctx: RenderContext): React.ReactNode => 
                             {about.subtitle ?? 'Profile'}
                         </div>
 
-                        <h3 className="mt-4 text-3xl md:text-4xl font-bold tracking-tight text-white">{name}</h3>
+                        <h3 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight text-white">{name}</h3>
 
                         {career && (
-                            <p className="mt-2 text-lg font-semibold text-cyan-200/95">
+                            <p className="mt-2 text-xl font-semibold text-cyan-200/95">
                                 {renderInline(career, { ...ctx, keyPrefix: 'about-career' })}
                             </p>
                         )}
@@ -380,7 +380,7 @@ const renderAboutSection = (md: string, ctx: RenderContext): React.ReactNode => 
                         )}
 
                         {about.greeting && (
-                            <p className="mt-6 max-w-2xl text-base md:text-lg leading-relaxed text-white/78">
+                            <p className="mt-6 max-w-2xl text-lg md:text-xl leading-relaxed text-white/78">
                                 {renderInline(about.greeting, { ...ctx, keyPrefix: 'about-greeting' })}
                             </p>
                         )}
@@ -439,7 +439,7 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
             out.push(
                 <h2
                     key={nextKey()}
-                    className="text-2xl md:text-3xl font-bold text-white mt-10 first:mt-0 mb-4 tracking-tight"
+                    className="text-4xl md:text-6xl lg:text-7xl font-black text-white mt-10 first:mt-0 mb-6 md:mb-8 tracking-tight leading-[1.05]"
                 >
                     {renderInline(h1[1], { ...ctx, keyPrefix: `h1-${i}` })}
                 </h2>,
@@ -451,7 +451,7 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
             out.push(
                 <h3
                     key={nextKey()}
-                    className="text-xl md:text-2xl font-semibold text-cyan-200 mt-8 mb-3 tracking-tight"
+                    className="text-2xl md:text-3xl font-bold text-cyan-200 mt-12 mb-4 tracking-tight"
                 >
                     {renderInline(h2[1], { ...ctx, keyPrefix: `h2-${i}` })}
                 </h3>,
@@ -463,7 +463,7 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
             out.push(
                 <h4
                     key={nextKey()}
-                    className="text-lg font-semibold text-white/90 mt-6 mb-2"
+                    className="text-xl md:text-2xl font-semibold text-white/90 mt-8 mb-3"
                 >
                     {renderInline(h3[1], { ...ctx, keyPrefix: `h3-${i}` })}
                 </h4>,
@@ -475,7 +475,7 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
             out.push(
                 <h5
                     key={nextKey()}
-                    className="text-base font-semibold text-white/80 mt-4 mb-2"
+                    className="text-lg font-semibold text-white/80 mt-5 mb-2"
                 >
                     {renderInline(h4[1], { ...ctx, keyPrefix: `h4-${i}` })}
                 </h5>,
@@ -582,7 +582,7 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
             out.push(
                 <ul
                     key={nextKey()}
-                    className="my-3 space-y-1.5 text-white/80"
+                    className="my-4 space-y-2.5 text-lg md:text-xl text-white/75"
                 >
                     {items.map((item, idx) => {
                         const youtubeItem = extractYoutubeListItem(item.text);
@@ -590,10 +590,10 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
                         return (
                             <li
                                 key={idx}
-                                className={`relative pl-5 ${youtubeItem ? 'pt-0.5' : 'leading-relaxed'}`}
+                                className={`relative pl-6 ${youtubeItem ? 'pt-0.5' : 'leading-relaxed'}`}
                                 style={{ marginLeft: item.depth * 16 }}
                             >
-                                <span className="absolute left-0 top-3 h-1.5 w-1.5 rounded-full bg-cyan-400/70" />
+                                <span className="absolute left-0 top-3.5 h-1.5 w-1.5 rounded-full bg-cyan-400/70" />
                                 {youtubeItem ? (
                                     <div className="space-y-3">
                                         {youtubeItem.label && (
@@ -638,7 +638,7 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
         const paragraph = paragraphLines.join(' ').replace(/\s+/g, ' ').trim();
         if (paragraph) {
             out.push(
-                <p key={nextKey()} className="my-3 text-white/75 leading-relaxed">
+                <p key={nextKey()} className="my-4 text-lg md:text-xl text-white/70 leading-relaxed max-w-3xl">
                     {renderInline(paragraph, { ...ctx, keyPrefix: `p-${i}` })}
                 </p>,
             );
@@ -657,10 +657,9 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [activeSlug, setActiveSlug] = useState<string | null>(null);
-    const [tocOpen, setTocOpen] = useState(false);
     const [collapsedOpen, setCollapsedOpen] = useState<Record<string, boolean>>({});
-    const tocRef = useRef<HTMLElement | null>(null);
-    const tocItemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+    const chapterNavRef = useRef<HTMLDivElement | null>(null);
+    const chapterNavItemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
     // Fetch manifest -> fetch all portfolio md files
     useEffect(() => {
@@ -800,19 +799,20 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
         };
     }, [sections]);
 
+    // Keep the active pill scrolled into view within the horizontally-scrolling chapter nav.
     useEffect(() => {
         if (!activeSlug) return;
 
-        const toc = tocRef.current;
-        const activeItem = tocItemRefs.current[activeSlug];
-        if (!toc || !activeItem) return;
+        const nav = chapterNavRef.current;
+        const activeItem = chapterNavItemRefs.current[activeSlug];
+        if (!nav || !activeItem) return;
 
-        const tocRect = toc.getBoundingClientRect();
+        const navRect = nav.getBoundingClientRect();
         const itemRect = activeItem.getBoundingClientRect();
-        const isOutOfView = itemRect.top < tocRect.top || itemRect.bottom > tocRect.bottom;
+        const isOutOfView = itemRect.left < navRect.left || itemRect.right > navRect.right;
 
         if (isOutOfView) {
-            activeItem.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+            activeItem.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
         }
     }, [activeSlug]);
 
@@ -821,7 +821,6 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
         if (el) {
             setActiveSlug(slug);
             el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            setTocOpen(false);
         }
     }, []);
 
@@ -868,22 +867,12 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
 
             {/* Top bar */}
             <header className="sticky top-0 z-40 backdrop-blur-xl bg-neutral-950/70 border-b border-white/5">
-                <div className="max-w-6xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <button
-                            type="button"
-                            className="lg:hidden p-2 -ml-2 text-white/70 hover:text-white"
-                            onClick={() => setTocOpen(v => !v)}
-                            aria-label="Toggle sections menu"
-                        >
-                            {tocOpen ? <X size={20} /> : <Menu size={20} />}
-                        </button>
-                        <div className="flex flex-col leading-none">
-                            <span className="text-sm font-semibold tracking-wide text-white">Park Achieveone</span>
-                            <span className="text-[10px] uppercase tracking-[0.2em] text-white/40 mt-1">
-                                Unity Game Developer
-                            </span>
-                        </div>
+                <div className="max-w-5xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
+                    <div className="flex flex-col leading-none">
+                        <span className="text-sm font-semibold tracking-wide text-white">Park Achieveone</span>
+                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/40 mt-1">
+                            Unity Game Developer
+                        </span>
                     </div>
                     <div className="flex items-center gap-2 md:gap-3">
                         <a
@@ -936,142 +925,119 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                 </div>
             </header>
 
-            <div className="relative z-10 max-w-6xl mx-auto px-4 md:px-8 pt-10 md:pt-16 pb-24 flex gap-10 items-start">
-                {/* Desktop TOC */}
-                <nav
-                    ref={tocRef}
-                    className="hidden lg:block h-fit w-56 shrink-0 sticky self-start max-h-[calc(100vh-8rem)] overflow-y-auto pr-2"
-                    style={{ top: `${DESKTOP_TOC_TOP_OFFSET}px` }}
-                >
-                    <div className="text-[10px] uppercase tracking-[0.22em] text-white/40 mb-3 px-2">Sections</div>
-                    <ul className="space-y-1">
-                        {sections.map(s => (
-                            <li key={s.slug}>
+            {/* Chapter nav — Apple-style horizontal jump bar, sticky just below the header */}
+            {sections.length > 0 && (
+                <div className="sticky top-16 z-30 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl">
+                    <style>{'.chapter-nav-scroll::-webkit-scrollbar{display:none}'}</style>
+                    <div
+                        ref={chapterNavRef}
+                        className="chapter-nav-scroll max-w-5xl mx-auto px-4 md:px-8 overflow-x-auto"
+                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                    >
+                        <div className="flex items-center gap-1.5 py-2.5 whitespace-nowrap">
+                            {sections.map(s => (
                                 <button
+                                    key={s.slug}
                                     ref={node => {
-                                        tocItemRefs.current[s.slug] = node;
+                                        chapterNavItemRefs.current[s.slug] = node;
                                     }}
                                     type="button"
                                     onClick={() => scrollToSection(s.slug)}
                                     aria-current={activeSlug === s.slug ? 'location' : undefined}
-                                    className={`w-full text-left px-2 py-1.5 rounded-md text-[13px] transition ${
+                                    className={`shrink-0 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition ${
                                         activeSlug === s.slug
-                                            ? 'bg-cyan-400/10 text-cyan-200 border-l-2 border-cyan-400'
-                                            : 'text-white/55 hover:text-white/90 hover:bg-white/[0.03] border-l-2 border-transparent'
+                                            ? 'bg-white text-neutral-950'
+                                            : 'text-white/55 hover:text-white hover:bg-white/[0.06]'
                                     }`}
                                 >
                                     {s.title}
                                 </button>
-                            </li>
-                        ))}
-                    </ul>
-                </nav>
-
-                {/* Mobile TOC drawer */}
-                {tocOpen && (
-                    <div
-                        className="lg:hidden fixed inset-0 z-50 bg-neutral-950/90 backdrop-blur-xl pt-20 px-6 overflow-y-auto"
-                        onClick={() => setTocOpen(false)}
-                    >
-                        <ul className="space-y-1" onClick={e => e.stopPropagation()}>
-                            {sections.map(s => (
-                                <li key={s.slug}>
-                                    <button
-                                        type="button"
-                                        onClick={() => scrollToSection(s.slug)}
-                                        className={`w-full text-left px-3 py-3 rounded-lg text-sm ${
-                                            activeSlug === s.slug
-                                                ? 'bg-cyan-400/10 text-cyan-200'
-                                                : 'text-white/70 hover:bg-white/5'
-                                        }`}
-                                    >
-                                        {s.title}
-                                    </button>
-                                </li>
                             ))}
-                        </ul>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Main content column — single, full-bleed, chapter by chapter */}
+            <main className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 pb-24">
+                {/* Hero chapter */}
+                <motion.section
+                    className="min-h-[78vh] flex flex-col justify-center"
+                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 28 }}
+                    animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                >
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] text-white/50 text-[11px] uppercase tracking-[0.22em] mb-6 w-fit">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
+                        Portfolio · 2026
+                    </div>
+                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight text-white mb-6">
+                        Let's keep up and
+                        <br />
+                        stay ahead of the game.
+                    </h1>
+                    <p className="text-white/60 text-lg md:text-2xl max-w-2xl leading-relaxed">
+                        8년 차 Unity 개발자. 게임 공용 시스템과 멀티플랫폼 대응, 그리고 팀 생산성을
+                        높이는 툴·파이프라인을 만듭니다.
+                    </p>
+                </motion.section>
+
+                {loading && (
+                    <div className="text-white/50 text-sm py-20 text-center">
+                        Loading portfolio content…
+                    </div>
+                )}
+                {error && (
+                    <div className="text-red-300 text-sm py-20 text-center">
+                        Failed to load: {error}
                     </div>
                 )}
 
-                {/* Main content column */}
-                <main className="flex-1 min-w-0">
-                    {/* Hero band */}
-                    <section className="mb-12 md:mb-16">
-                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] text-white/50 text-[11px] uppercase tracking-[0.22em] mb-5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                            Portfolio · 2026
+                {/* Chapters */}
+                {visibleSections.map(section => (
+                    <motion.section
+                        key={section.slug}
+                        id={section.slug}
+                        className="border-t border-white/[0.06] py-20 md:py-32"
+                        style={{ scrollMarginTop: CHAPTER_SCROLL_OFFSET }}
+                        initial={prefersReducedMotion ? undefined : 'hidden'}
+                        whileInView={prefersReducedMotion ? undefined : 'visible'}
+                        viewport={{ once: true, amount: 'some', margin: '0px 0px 100px 0px' }}
+                        variants={prefersReducedMotion ? undefined : SECTION_REVEAL_VARIANTS}
+                    >
+                        <div className="mb-4 text-xs uppercase tracking-[0.28em] text-white/35 font-semibold">
+                            {section.rel}
                         </div>
-                        <h1 className="text-4xl md:text-6xl font-bold leading-[1.05] tracking-tight text-white mb-5">
-                            Let's keep up and
-                            <br />
-                            stay ahead of the game.
-                        </h1>
-                        <p className="text-white/60 text-base md:text-lg max-w-2xl leading-relaxed">
-                            8년 차 Unity 개발자. 게임 공용 시스템과 멀티플랫폼 대응, 그리고 팀 생산성을
-                            높이는 툴·파이프라인을 만듭니다.
-                        </p>
-                    </section>
+                        <div>
+                            {section.rel === 'about.md'
+                                ? renderAboutSection(section.markdown, {
+                                    sectionRel: section.rel,
+                                    pathToSlug,
+                                })
+                                : renderMarkdown(section.markdown, {
+                                    sectionRel: section.rel,
+                                    pathToSlug,
+                                })}
+                        </div>
+                    </motion.section>
+                ))}
 
-                    {loading && (
-                        <div className="text-white/50 text-sm py-20 text-center">
-                            Loading portfolio content…
-                        </div>
-                    )}
-                    {error && (
-                        <div className="text-red-300 text-sm py-20 text-center">
-                            Failed to load: {error}
-                        </div>
-                    )}
-
-                    {/* Sections */}
-                    <div className="space-y-6 md:space-y-8">
-                        {visibleSections.map(section => (
-                            <motion.section
-                                key={section.slug}
-                                id={section.slug}
-                                className="scroll-mt-24 border border-white/[0.06] bg-white/[0.015] p-6 md:p-10"
-                                initial={prefersReducedMotion ? undefined : 'hidden'}
-                                whileInView={prefersReducedMotion ? undefined : 'visible'}
-                                viewport={{ once: true, amount: 'some', margin: '0px 0px 100px 0px' }}
-                                variants={prefersReducedMotion ? undefined : SECTION_REVEAL_VARIANTS}
-                                style={prefersReducedMotion ? { borderRadius: 16 } : undefined}
-                            >
-                                 <div className="mb-1 text-[10px] uppercase tracking-[0.22em] text-white/35">
-                                     {section.rel}
-                                 </div>
-                                 <div>
-                                    {section.rel === 'about.md'
-                                        ? renderAboutSection(section.markdown, {
-                                            sectionRel: section.rel,
-                                            pathToSlug,
-                                        })
-                                        : renderMarkdown(section.markdown, {
-                                            sectionRel: section.rel,
-                                            pathToSlug,
-                                        })}
-                                 </div>
-                             </motion.section>
-                         ))}
+                {/* Footer */}
+                <footer className="pt-16 pb-8 border-t border-white/5 text-center">
+                    <button
+                        type="button"
+                        onClick={onEnterOS}
+                        className="inline-flex items-center gap-2 h-11 px-5 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-200 hover:bg-cyan-400/15 hover:border-cyan-300/50 transition text-sm font-semibold tracking-wide"
+                    >
+                        <Monitor size={16} />
+                        OS 모드로 구경하기
+                        <ArrowUpRight size={14} />
+                    </button>
+                    <div className="mt-6 text-[11px] text-white/30 tracking-wider">
+                        © {new Date().getFullYear()} Park Achieveone · built with React + Vite
                     </div>
-
-
-                    {/* Footer */}
-                    <footer className="mt-16 pt-8 border-t border-white/5 text-center">
-                        <button
-                            type="button"
-                            onClick={onEnterOS}
-                            className="inline-flex items-center gap-2 h-11 px-5 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-200 hover:bg-cyan-400/15 hover:border-cyan-300/50 transition text-sm font-semibold tracking-wide"
-                        >
-                            <Monitor size={16} />
-                            OS 모드로 구경하기
-                            <ArrowUpRight size={14} />
-                        </button>
-                        <div className="mt-6 text-[11px] text-white/30 tracking-wider">
-                            © {new Date().getFullYear()} Park Achieveone · built with React + Vite
-                        </div>
-                    </footer>
-                </main>
-            </div>
+                </footer>
+            </main>
         </div>
     );
 };
