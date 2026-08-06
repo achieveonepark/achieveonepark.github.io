@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code } from 'lucide-react';
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Signal, Wifi, BatteryFull } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
 import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
 import profileImage from '../../images/profile.png';
 
@@ -30,6 +30,7 @@ interface LoadedSection {
     slug: string;      // anchor id
     title: string;     // from first H1 or filename
     markdown: string;
+    thumbnail?: string; // company logo, when provided by the manifest
 }
 
 interface PortfolioSiteProps {
@@ -57,6 +58,15 @@ const SECTION_PRIORITY: string[] = [
 const EXCLUDED_SECTIONS: string[] = ['career_resume.md'];
 
 const DEFAULT_COLLAPSED: string[] = ['portfolio_full.md'];
+// Per-company case studies aren't rendered as their own chapters — they show up as
+// "apps" inside the iPhone-style career launcher on the Professional Experience chapter.
+const PHONE_APP_SECTIONS: string[] = [
+    'experience/111percent.md',
+    'experience/snowpipe.md',
+    'experience/gridinc.md',
+    'experience/snowballs.md',
+    'experience/dalcomsoft.md',
+];
 // Sticky header (h-16 = 64px) + chapter pill nav (~52px) stacked on top of each other.
 const CHAPTER_SCROLL_OFFSET = 116;
 const SECTION_SPY_OFFSET_DESKTOP = 152;
@@ -648,6 +658,101 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
     return <>{out}</>;
 };
 
+// An iPhone home-screen mockup used as the "Professional Experience" chapter:
+// each company is an app icon (its logo), tapping one swaps the detail panel.
+const CareerPhoneSection: React.FC<{
+    title: string;
+    apps: LoadedSection[];
+    pathToSlug: Map<string, string>;
+}> = ({ title, apps, pathToSlug }) => {
+    const [activeIndex, setActiveIndex] = useState(0);
+    const active = apps[activeIndex];
+
+    return (
+        <div>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-10 md:mb-14 tracking-tight leading-[1.05]">
+                {title}
+            </h2>
+
+            <div className="grid gap-10 lg:gap-16 lg:grid-cols-[272px_1fr] items-start">
+                {/* iPhone mockup */}
+                <div className="mx-auto lg:mx-0 lg:sticky shrink-0" style={{ top: CHAPTER_SCROLL_OFFSET + 36 }}>
+                    <div className="relative w-[260px] h-[544px] rounded-[52px] bg-neutral-800 p-[6px] shadow-[0_40px_90px_rgba(0,0,0,0.55)]">
+                        <div className="relative w-full h-full rounded-[46px] overflow-hidden bg-gradient-to-b from-neutral-900 via-neutral-950 to-black">
+                            {/* Status bar */}
+                            <div className="relative z-20 flex items-center justify-between px-7 pt-3 text-white/90">
+                                <span className="text-[13px] font-semibold">9:41</span>
+                                <div className="flex items-center gap-1">
+                                    <Signal size={13} />
+                                    <Wifi size={13} />
+                                    <BatteryFull size={15} />
+                                </div>
+                            </div>
+                            {/* Dynamic island */}
+                            <div className="absolute top-[10px] left-1/2 -translate-x-1/2 w-[92px] h-[26px] rounded-full bg-black z-30" />
+
+                            {/* App grid */}
+                            <div className="relative z-10 grid grid-cols-3 gap-x-4 gap-y-6 px-5 pt-10">
+                                {apps.map((app, idx) => {
+                                    const isActive = idx === activeIndex;
+                                    return (
+                                        <button
+                                            key={app.slug}
+                                            type="button"
+                                            onClick={() => setActiveIndex(idx)}
+                                            className="flex flex-col items-center gap-1.5"
+                                        >
+                                            <span
+                                                className={`flex items-center justify-center w-14 h-14 rounded-[15px] bg-neutral-800 border border-white/10 shadow-[0_6px_14px_rgba(0,0,0,0.35)] overflow-hidden transition-transform duration-150 ${
+                                                    isActive
+                                                        ? 'ring-2 ring-offset-2 ring-offset-neutral-950 ring-cyan-300 scale-105'
+                                                        : 'active:scale-90'
+                                                }`}
+                                            >
+                                                {app.thumbnail ? (
+                                                    <img src={app.thumbnail} alt={`${app.title} logo`} className="w-full h-full object-contain p-2.5" />
+                                                ) : (
+                                                    <span className="text-white font-bold text-lg">{app.title.charAt(0)}</span>
+                                                )}
+                                            </span>
+                                            <span className="text-[10.5px] leading-tight text-white/85 text-center line-clamp-1 max-w-[60px]">
+                                                {app.title}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Home indicator */}
+                            <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 w-32 h-1 rounded-full bg-white/60" />
+                        </div>
+                    </div>
+                    <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
+                        탭해서 회사별 이야기 보기
+                    </p>
+                </div>
+
+                {/* Detail panel */}
+                <div className="min-w-0">
+                    <AnimatePresence mode="wait">
+                        {active && (
+                            <motion.div
+                                key={active.slug}
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                            >
+                                {renderMarkdown(active.markdown, { sectionRel: active.rel, pathToSlug })}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // ============================================================================
 // Component
 // ============================================================================
@@ -674,7 +779,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                 // Filter portfolio/*.md entries
                 const mdFiles = manifest.files
                     .filter(f => f.path.startsWith('portfolio/') && f.path.endsWith('.md'))
-                    .map(f => ({ path: f.path, rel: f.path.replace(/^portfolio\//, '') }))
+                    .map(f => ({ path: f.path, rel: f.path.replace(/^portfolio\//, ''), thumbnail: f.thumbnail }))
                     .filter(f => !EXCLUDED_SECTIONS.includes(f.rel));
 
                 // Sort by SECTION_PRIORITY, then alphabetically for the rest
@@ -700,6 +805,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             slug: `section-${slugify(file.path)}`,
                             title,
                             markdown,
+                            thumbnail: file.thumbnail,
                         } as LoadedSection;
                     }),
                 );
@@ -827,8 +933,11 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
     const toggleCollapsed = (slug: string) =>
         setCollapsedOpen(prev => ({ ...prev, [slug]: !prev[slug] }));
 
-    const visibleSections = sections.filter(s => !DEFAULT_COLLAPSED.includes(s.rel));
+    const visibleSections = sections.filter(
+        s => !DEFAULT_COLLAPSED.includes(s.rel) && !PHONE_APP_SECTIONS.includes(s.rel),
+    );
     const collapsedSections = sections.filter(s => DEFAULT_COLLAPSED.includes(s.rel));
+    const phoneApps = sections.filter(s => PHONE_APP_SECTIONS.includes(s.rel));
     const prefersReducedMotion = useReducedMotion();
 
     return (
@@ -926,7 +1035,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
             </header>
 
             {/* Chapter nav — Apple-style horizontal jump bar, sticky just below the header */}
-            {sections.length > 0 && (
+            {visibleSections.length > 0 && (
                 <div className="sticky top-16 z-30 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl">
                     <style>{'.chapter-nav-scroll::-webkit-scrollbar{display:none}'}</style>
                     <div
@@ -935,7 +1044,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                     >
                         <div className="flex items-center gap-1.5 py-2.5 whitespace-nowrap">
-                            {sections.map(s => (
+                            {visibleSections.map(s => (
                                 <button
                                     key={s.slug}
                                     ref={node => {
@@ -1009,15 +1118,19 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             {section.rel}
                         </div>
                         <div>
-                            {section.rel === 'about.md'
-                                ? renderAboutSection(section.markdown, {
+                            {section.rel === 'about.md' ? (
+                                renderAboutSection(section.markdown, {
                                     sectionRel: section.rel,
                                     pathToSlug,
                                 })
-                                : renderMarkdown(section.markdown, {
+                            ) : section.rel === 'experience.md' && phoneApps.length > 0 ? (
+                                <CareerPhoneSection title={section.title} apps={phoneApps} pathToSlug={pathToSlug} />
+                            ) : (
+                                renderMarkdown(section.markdown, {
                                     sectionRel: section.rel,
                                     pathToSlug,
-                                })}
+                                })
+                            )}
                         </div>
                     </motion.section>
                 ))}
