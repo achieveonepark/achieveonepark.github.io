@@ -1,7 +1,21 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Menu, X } from 'lucide-react';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
 import profileImage from '../../images/profile.png';
+
+// Zoom-in + shape-morph reveal: sections pop from a rounded "blob" into their
+// normal card shape as they scroll into view (whoosh-in effect).
+const SECTION_REVEAL_VARIANTS: Variants = {
+    hidden: { opacity: 0, scale: 0.82, y: 40, borderRadius: 56 },
+    visible: {
+        opacity: 1,
+        scale: 1,
+        y: 0,
+        borderRadius: 16,
+        transition: { duration: 0.65, ease: [0.16, 1, 0.3, 1] },
+    },
+};
 
 // ============================================================================
 // Types
@@ -815,6 +829,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
 
     const visibleSections = sections.filter(s => !DEFAULT_COLLAPSED.includes(s.rel));
     const collapsedSections = sections.filter(s => DEFAULT_COLLAPSED.includes(s.rel));
+    const prefersReducedMotion = useReducedMotion();
 
     return (
         <div className="relative min-h-screen w-full bg-neutral-950 text-white/90 font-sans">
@@ -1010,10 +1025,15 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                     {/* Sections */}
                     <div className="space-y-6 md:space-y-8">
                         {visibleSections.map(section => (
-                            <section
+                            <motion.section
                                 key={section.slug}
                                 id={section.slug}
-                                className="scroll-mt-24 rounded-2xl border border-white/[0.06] bg-white/[0.015] p-6 md:p-10"
+                                className="scroll-mt-24 border border-white/[0.06] bg-white/[0.015] p-6 md:p-10"
+                                initial={prefersReducedMotion ? undefined : 'hidden'}
+                                whileInView={prefersReducedMotion ? undefined : 'visible'}
+                                viewport={{ once: true, amount: 0.25 }}
+                                variants={prefersReducedMotion ? undefined : SECTION_REVEAL_VARIANTS}
+                                style={prefersReducedMotion ? { borderRadius: 16 } : undefined}
                             >
                                  <div className="mb-1 text-[10px] uppercase tracking-[0.22em] text-white/35">
                                      {section.rel}
@@ -1029,7 +1049,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                             pathToSlug,
                                         })}
                                  </div>
-                             </section>
+                             </motion.section>
                          ))}
                     </div>
 
