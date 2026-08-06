@@ -1,9 +1,23 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Signal, Wifi, BatteryFull } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion, useScroll, useTransform, type Variants } from 'framer-motion';
 import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
 import profileImage from '../../images/profile.png';
+import logo111percent from '../../images/111percent.png';
+import logoSnowpipe from '../../images/snowpipe.png';
+import logoGridinc from '../../images/gridinc.png';
+import logoSnowballs from '../../images/snowballs.png';
+import logoDalcomsoft from '../../images/dalcomsoft.png';
+
+// Company logos, bundled as JS imports (not manifest `thumbnail` paths — those point at
+// `/images/...`, which lives outside Vite's publicDir and 404s in production builds).
+const COMPANY_LOGOS: Record<string, string> = {
+    'experience/111percent.md': logo111percent,
+    'experience/snowpipe.md': logoSnowpipe,
+    'experience/gridinc.md': logoGridinc,
+    'experience/snowballs.md': logoSnowballs,
+    'experience/dalcomsoft.md': logoDalcomsoft,
+};
 
 // Cinematic chapter reveal: each chapter zooms + un-blurs into place as it
 // scrolls into view, spring-based for a snappy overshoot (whoosh-in effect).
@@ -664,9 +678,8 @@ const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
 const PhoneFrame: React.FC<{
     apps: LoadedSection[];
     activeIndex: number;
-    onSelect?: (index: number) => void;
-    interactive?: boolean;
-}> = ({ apps, activeIndex, onSelect, interactive = true }) => (
+    onSelect: (index: number) => void;
+}> = ({ apps, activeIndex, onSelect }) => (
     <div className="relative w-[260px] h-[544px]">
         {/* Side buttons — mute switch + volume rocker (left), power button (right) */}
         <div className="absolute -left-[3px] top-[108px] w-[3px] h-7 rounded-l bg-neutral-700" />
@@ -693,12 +706,12 @@ const PhoneFrame: React.FC<{
                 <div className="relative z-10 grid grid-cols-3 gap-x-4 gap-y-6 px-5 pt-10">
                     {apps.map((app, idx) => {
                         const isActive = idx === activeIndex;
+                        const logo = COMPANY_LOGOS[app.rel];
                         return (
                             <button
                                 key={app.slug}
                                 type="button"
-                                disabled={!interactive}
-                                onClick={() => onSelect?.(idx)}
+                                onClick={() => onSelect(idx)}
                                 className="flex flex-col items-center gap-1.5"
                             >
                                 <span
@@ -708,8 +721,8 @@ const PhoneFrame: React.FC<{
                                             : 'active:scale-90'
                                     }`}
                                 >
-                                    {app.thumbnail ? (
-                                        <img src={app.thumbnail} alt={`${app.title} logo`} className="w-full h-full object-contain p-2.5" />
+                                    {logo ? (
+                                        <img src={logo} alt={`${app.title} logo`} className="w-full h-full object-contain p-2.5" />
                                     ) : (
                                         <span className="text-white font-bold text-lg">{app.title.charAt(0)}</span>
                                     )}
@@ -732,10 +745,17 @@ const PhoneFrame: React.FC<{
     </div>
 );
 
+// Roughly how far (px) the phone's docked left-column position sits from the
+// horizontal center of the centered `max-w-5xl` content column, at desktop widths.
+const PHONE_CENTER_OFFSET_X = 344;
+
 // An iPhone home-screen mockup used as the "Professional Experience" chapter:
 // each company is an app icon (its logo), tapping one swaps the detail panel.
-// As the chapter scrolls into view, a huge full-screen phone shrinks continuously
-// (scroll-scrubbed, reverses on scroll-up) down into its docked reading position.
+// It's a single element, always in its normal docked (sticky) position — no
+// fixed/portal overlay — so it's only ever visible once actually scrolled near.
+// As it scrolls into view it's transformed to look huge and screen-centered,
+// then scroll continuously shrinks + slides it left into its resting spot
+// (and reverses cleanly on scroll-up, since it's driven straight off scroll).
 const CareerPhoneSection: React.FC<{
     title: string;
     apps: LoadedSection[];
@@ -744,58 +764,52 @@ const CareerPhoneSection: React.FC<{
 }> = ({ title, apps, pathToSlug, prefersReducedMotion }) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const active = apps[activeIndex];
-    const rootRef = useRef<HTMLDivElement>(null);
+    const phoneWrapperRef = useRef<HTMLDivElement>(null);
+    const [isDesktop, setIsDesktop] = useState(false);
+
+    useEffect(() => {
+        const mq = window.matchMedia('(min-width: 1024px)');
+        const update = () => setIsDesktop(mq.matches);
+        update();
+        mq.addEventListener('change', update);
+        return () => mq.removeEventListener('change', update);
+    }, []);
 
     const { scrollYProgress } = useScroll({
-        target: rootRef,
+        target: phoneWrapperRef,
         offset: ['start end', 'start start'],
     });
-    const heroScale = useTransform(scrollYProgress, [0, 1], [1.75, 1]);
-    const heroOpacity = useTransform(scrollYProgress, [0, 0.7, 1], [1, 1, 0]);
-    const backdropOpacity = useTransform(scrollYProgress, [0, 0.55, 1], [0.92, 0.92, 0]);
-    const dockedOpacity = useTransform(scrollYProgress, [0.65, 1], [0, 1]);
+    const centerOffset = isDesktop ? PHONE_CENTER_OFFSET_X : 0;
+    const scale = useTransform(scrollYProgress, [0, 0.3, 1], [2.4, 1, 1]);
+    const x = useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [centerOffset, centerOffset, 0, 0]);
+    const backdropOpacity = useTransform(scrollYProgress, [0, 0.25, 0.45, 1], [0.85, 0.85, 0, 0]);
 
     return (
-        <div ref={rootRef}>
+        <div>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-10 md:mb-14 tracking-tight leading-[1.05]">
                 {title}
             </h2>
 
-            {!prefersReducedMotion &&
-                createPortal(
-                    <>
-                        {/* Dimming backdrop behind the full-screen hero phone */}
-                        <motion.div
-                            className="fixed inset-0 z-[35] bg-black pointer-events-none"
-                            style={{ opacity: backdropOpacity }}
-                        />
-                        {/* Full-screen hero phone — shrinks as you scroll, grows back on scroll-up */}
-                        <motion.div
-                            className="fixed inset-0 z-[35] flex items-center justify-center pointer-events-none"
-                            style={{ opacity: heroOpacity }}
-                        >
-                            <motion.div style={{ scale: heroScale }}>
-                                <PhoneFrame apps={apps} activeIndex={activeIndex} interactive={false} />
-                            </motion.div>
-                        </motion.div>
-                    </>,
-                    document.body,
-                )}
-
             <div className="grid gap-10 lg:gap-16 lg:grid-cols-[272px_1fr] items-start">
-                {/* Docked iPhone mockup — the real, interactive one */}
-                <motion.div
-                    className="mx-auto lg:mx-0 lg:sticky shrink-0"
-                    style={{
-                        top: CHAPTER_SCROLL_OFFSET + 36,
-                        opacity: prefersReducedMotion ? 1 : dockedOpacity,
-                    }}
+                {/* Docked iPhone mockup */}
+                <div
+                    ref={phoneWrapperRef}
+                    className="relative mx-auto lg:mx-0 lg:sticky shrink-0"
+                    style={{ top: CHAPTER_SCROLL_OFFSET + 36 }}
                 >
-                    <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={setActiveIndex} />
+                    {!prefersReducedMotion && (
+                        <motion.div
+                            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black pointer-events-none -z-10"
+                            style={{ width: '200vw', height: '200vh', opacity: backdropOpacity }}
+                        />
+                    )}
+                    <motion.div style={prefersReducedMotion ? undefined : { scale, x }}>
+                        <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={setActiveIndex} />
+                    </motion.div>
                     <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
                         탭해서 회사별 이야기 보기
                     </p>
-                </motion.div>
+                </div>
 
                 {/* Detail panel */}
                 <div className="min-w-0">
