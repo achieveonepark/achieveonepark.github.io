@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Signal, Wifi, BatteryFull } from 'lucide-react';
-import { motion, AnimatePresence, useReducedMotion, useScroll, useTransform, type Variants } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
 import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
 import profileImage from '../../images/profile.png';
 import logo111percent from '../../images/111percent.png';
@@ -757,43 +758,39 @@ const PhoneFrame: React.FC<{
     </div>
 );
 
-// Roughly how far (px) the phone's docked left-column position sits from the
-// horizontal center of the centered `max-w-5xl` content column, at desktop widths.
-const PHONE_CENTER_OFFSET_X = 344;
-
-// Scroll distance (beyond one viewport) reserved for the pinned intro sequence.
-const PHONE_STAGE_HEIGHT_VH = 220;
-
-// The layout every phase shares: a left column for the phone, a right column for
-// text. Reused verbatim by both the pinned intro and the real docked content so
-// they land in the same spot with no measurement needed. (Vertical alignment is
-// added per-usage since Tailwind can't reliably override `items-*` by class order.)
+// The layout shared by the phone column and the text column.
 const PHONE_GRID_CLASS = 'grid gap-10 lg:gap-16 lg:grid-cols-[272px_1fr]';
+
+// Must match PhoneFrame's `w-[260px] h-[544px]`.
+const PHONE_FRAME_W = 260;
+const PHONE_FRAME_H = 544;
+
+// The About section's DOM id (see `slug` derivation below: `section-${slugify(path)}`).
+const ABOUT_SECTION_ID = 'section-portfolio-about';
 
 // An iPhone home-screen mockup used as the "Professional Experience" chapter:
 // each company is an app icon (its logo), tapping one swaps the detail panel.
+// The phone sticks near the top of the viewport as the write-up scrolls past
+// beside it.
 //
-// Scrolling into the chapter PINS the viewport for an extended stretch (a tall
-// spacer + position:sticky) rather than animating during the ordinary entry
-// scroll — so nothing happens until the section has fully taken over the
-// screen. Once pinned, continued scrolling plays a fixed sequence: the phone
-// pops in big and centered, shrinks while holding center, slides left into its
-// resting spot, and only then does the first company's write-up fade in on the
-// right. Finishing the sequence releases the pin into the real, interactive
-// docked phone + detail panel (identical layout, so the handoff is seamless).
-// Scrolling back up reverses the whole thing, since it's all driven straight
-// off scroll position — no separate triggers to keep in sync.
+// Before the reader reaches this chapter, a huge decorative copy of the same
+// phone sits fixed in the background (behind the Hero/About text) — from the
+// moment the reader scrolls past About Me, that copy shrinks and slides,
+// tracking scroll 1:1, into exactly the spot where the real docked phone
+// below will end up. Once it arrives, the fixed copy hides and the real,
+// now-stuck phone is sitting in the identical spot, so the handoff is invisible.
 const CareerPhoneSection: React.FC<{
     title: string;
     apps: LoadedSection[];
     pathToSlug: Map<string, string>;
-    prefersReducedMotion: boolean;
-}> = ({ title, apps, pathToSlug, prefersReducedMotion }) => {
+}> = ({ title, apps, pathToSlug }) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const active = apps[activeIndex];
-    const firstApp = apps[0];
-    const stageRef = useRef<HTMLDivElement>(null);
+    const dockRef = useRef<HTMLDivElement>(null);
+    const bgPhoneRef = useRef<HTMLDivElement>(null);
     const [isDesktop, setIsDesktop] = useState(false);
+    const prefersReducedMotion = useReducedMotion();
+    const showBgPhone = isDesktop && !prefersReducedMotion;
 
     useEffect(() => {
         const mq = window.matchMedia('(min-width: 1024px)');
@@ -803,21 +800,69 @@ const CareerPhoneSection: React.FC<{
         return () => mq.removeEventListener('change', update);
     }, []);
 
-    const { scrollYProgress } = useScroll({
-        target: stageRef,
-        offset: ['start start', 'end end'],
-    });
-    const centerOffset = isDesktop ? PHONE_CENTER_OFFSET_X : 0;
+    useEffect(() => {
+        if (!showBgPhone) return;
+        const aboutEl = document.getElementById(ABOUT_SECTION_ID);
+        const dockEl = dockRef.current;
+        const bgEl = bgPhoneRef.current;
+        if (!aboutEl || !dockEl || !bgEl) return;
 
-    // Phase 1 (0 – 0.1): arrival pause, then the phone pops in.
-    const phoneOpacity = useTransform(scrollYProgress, [0, 0.06, 0.1], [0, 0, 1]);
-    const phoneScale = useTransform(scrollYProgress, [0, 0.1, 0.4, 1], [0.4, 2.3, 1, 1]);
-    // Phase 2 (0.1 – 0.4): shrinks to full size, holding center.
-    // Phase 3 (0.4 – 0.68): slides from center into its docked (left) position.
-    const phoneX = useTransform(scrollYProgress, [0, 0.4, 0.68, 1], [centerOffset, centerOffset, 0, 0]);
-    // Phase 4 (0.68 – 0.82): first company's write-up fades in on the right.
-    const firstDetailOpacity = useTransform(scrollYProgress, [0.68, 0.82], [0, 1]);
-    const backdropOpacity = useTransform(scrollYProgress, [0, 0.06, 0.5, 0.62], [0, 0.85, 0.85, 0]);
+        const dockStuckTop = CHAPTER_SCROLL_OFFSET + 36; // matches dockRef's own `style.top`
+
+        // Measured once (not per scroll frame): once the dock slot is actually
+        // stuck, its own getBoundingClientRect() reports the *stuck* position,
+        // not its natural document position — sampling it mid-scroll would feed
+        // that back in and corrupt the target. Mount/resize always happen
+        // before the reader has scrolled there, so it's safe here.
+        let target = { aboutBottomDocY: 0, triggerScrollY: 1, bigScale: 1, top0: 0, left0: 0, dockLeft: 0 };
+        const measure = () => {
+            const dockRect = dockEl.getBoundingClientRect();
+            const aboutBottomDocY = aboutEl.getBoundingClientRect().bottom + window.scrollY;
+            const dockDocTop = dockRect.top + window.scrollY;
+            const bigScale = (window.innerHeight * 0.85) / PHONE_FRAME_H;
+            target = {
+                aboutBottomDocY,
+                triggerScrollY: dockDocTop - dockStuckTop,
+                bigScale,
+                top0: (window.innerHeight - PHONE_FRAME_H * bigScale) / 2,
+                left0: window.innerWidth - PHONE_FRAME_W * bigScale - 24,
+                dockLeft: dockRect.left,
+            };
+        };
+
+        let raf = 0;
+        const applyStyle = () => {
+            raf = 0;
+            const span = Math.max(1, target.triggerScrollY - target.aboutBottomDocY);
+            const progress = Math.min(1, Math.max(0, (window.scrollY - target.aboutBottomDocY) / span));
+            if (progress >= 1) {
+                bgEl.style.opacity = '0';
+                return;
+            }
+            const scale = target.bigScale + (1 - target.bigScale) * progress;
+            const top = target.top0 + (dockStuckTop - target.top0) * progress;
+            const left = target.left0 + (target.dockLeft - target.left0) * progress;
+            bgEl.style.opacity = '1';
+            bgEl.style.transform = `translate(${left}px, ${top}px) scale(${scale})`;
+        };
+        const onScroll = () => {
+            if (!raf) raf = requestAnimationFrame(applyStyle);
+        };
+        const onResize = () => {
+            measure();
+            applyStyle();
+        };
+
+        measure();
+        applyStyle();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('resize', onResize);
+        return () => {
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('resize', onResize);
+            if (raf) cancelAnimationFrame(raf);
+        };
+    }, [showBgPhone]);
 
     return (
         <div>
@@ -825,31 +870,20 @@ const CareerPhoneSection: React.FC<{
                 {title}
             </h2>
 
-            {!prefersReducedMotion && isDesktop && (
-                <div ref={stageRef} className="relative" style={{ height: `${PHONE_STAGE_HEIGHT_VH}vh` }}>
-                    <div className="sticky top-0 h-screen overflow-hidden flex items-center">
-                        <motion.div
-                            className="absolute inset-0 bg-black pointer-events-none"
-                            style={{ opacity: backdropOpacity }}
-                        />
-                        <div className={`relative w-full max-w-5xl mx-auto px-4 md:px-8 items-center ${PHONE_GRID_CLASS}`}>
-                            <motion.div className="mx-auto lg:mx-0" style={{ opacity: phoneOpacity, scale: phoneScale, x: phoneX }}>
-                                <PhoneFrame apps={apps} activeIndex={0} />
-                            </motion.div>
-                            <motion.div
-                                className="min-w-0 self-start max-h-[70vh] overflow-hidden"
-                                style={{ opacity: firstDetailOpacity }}
-                            >
-                                {firstApp && renderMarkdown(firstApp.markdown, { sectionRel: firstApp.rel, pathToSlug })}
-                            </motion.div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {showBgPhone &&
+                createPortal(
+                    <div
+                        ref={bgPhoneRef}
+                        className="fixed top-0 left-0 pointer-events-none"
+                        style={{ width: PHONE_FRAME_W, height: PHONE_FRAME_H, transformOrigin: 'top left', zIndex: 5, opacity: 0 }}
+                    >
+                        <PhoneFrame apps={apps} activeIndex={0} />
+                    </div>,
+                    document.body,
+                )}
 
-            {/* Real, interactive docked phone + detail panel — what's left once the pin above releases. */}
             <div className={`items-start ${PHONE_GRID_CLASS}`}>
-                <div className="mx-auto lg:mx-0 lg:sticky shrink-0" style={{ top: CHAPTER_SCROLL_OFFSET + 36 }}>
+                <div ref={dockRef} className="mx-auto lg:mx-0 lg:sticky shrink-0" style={{ top: CHAPTER_SCROLL_OFFSET + 36 }}>
                     <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={setActiveIndex} />
                     <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
                         탭해서 회사별 이야기 보기
@@ -1257,7 +1291,6 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                     title={section.title}
                                     apps={phoneApps}
                                     pathToSlug={pathToSlug}
-                                    prefersReducedMotion={Boolean(prefersReducedMotion)}
                                 />
                             ) : (
                                 renderMarkdown(section.markdown, {
