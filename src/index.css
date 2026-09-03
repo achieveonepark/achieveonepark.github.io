@@ -2,3 +2,47 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes tech-type-line {
+    from {
+        width: 0;
+        opacity: 1;
+    }
+    to {
+        width: var(--line-width);
+        opacity: 1;
+    }
+}
+
+@keyframes tech-type-caret {
+    0%, 100% { border-right-color: transparent; }
+    15%, 85% { border-right-color: rgb(103 232 249 / 0.95); }
+}
+
+.tech-code-line,
+.tech-code-line-pending {
+    display: inline-block;
+    max-width: var(--line-width);
+    overflow: hidden;
+    vertical-align: top;
+    white-space: nowrap;
+}
+
+.tech-code-line-pending {
+    width: 0;
+    opacity: 0;
+}
+
+.tech-code-line {
+    width: 0;
+    opacity: 0;
+    border-right: 2px solid transparent;
+    animation-name: tech-type-line, tech-type-caret;
+    animation-duration: var(--type-duration), var(--type-duration);
+    animation-delay: var(--type-delay), var(--type-delay);
+    animation-fill-mode: forwards, both;
+    animation-iteration-count: 1, 1;
+}
+
+.tech-code-line-last {
+    animation-iteration-count: 1, infinite;
+}

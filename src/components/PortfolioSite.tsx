@@ -764,24 +764,63 @@ const TECH_STACK_GROUPS = [
 ];
 
 const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
-    const prefersReducedMotion = useReducedMotion();
+    const sectionRef = useRef<HTMLDivElement>(null);
+    const [typingStarted, setTypingStarted] = useState(false);
+    const [typingRun, setTypingRun] = useState(0);
+
+    useEffect(() => {
+        const section = sectionRef.current;
+        if (!section) return;
+
+        const observer = new IntersectionObserver(
+            entries => {
+                if (!entries.some(entry => entry.isIntersecting)) return;
+                setTypingStarted(true);
+                observer.disconnect();
+            },
+            { threshold: 0.28 },
+        );
+        observer.observe(section);
+        return () => observer.disconnect();
+    }, []);
+
+    const makeTypingStyle = (characters: number, lineIndex: number) => ({
+        '--line-width': `${characters}ch`,
+        '--type-duration': `${Math.max(340, characters * 34)}ms`,
+        '--type-delay': `${260 + lineIndex * 430}ms`,
+        animationTimingFunction: `steps(${characters}, end)`,
+    }) as React.CSSProperties;
+
+    const replayTyping = () => {
+        setTypingStarted(true);
+        setTypingRun(run => run + 1);
+    };
 
     return (
-        <div>
+        <div ref={sectionRef}>
             <div className="mb-10 flex items-end justify-between gap-6 md:mb-14">
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
                     {title}
                 </h2>
-                <div className="hidden items-center gap-2 pb-2 text-[11px] uppercase tracking-[0.24em] text-cyan-200/55 sm:flex">
-                    <Braces size={15} />
-                    tools I build with
+                <div className="hidden items-center gap-4 pb-2 sm:flex">
+                    <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.24em] text-cyan-200/55">
+                        <Braces size={15} />
+                        tools I build with
+                    </div>
+                    <button
+                        type="button"
+                        onClick={replayTyping}
+                        className="rounded-full border border-cyan-300/20 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-cyan-100/60 transition hover:border-cyan-300/45 hover:text-cyan-100"
+                    >
+                        replay
+                    </button>
                 </div>
             </div>
 
             <motion.div
                 className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#101826]/95 shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
-                initial={prefersReducedMotion ? undefined : { opacity: 0, y: 28, scale: 0.98 }}
-                whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                initial={{ opacity: 0, y: 28, scale: 0.98 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
                 viewport={{ once: true, amount: 0.25 }}
                 transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
@@ -794,49 +833,43 @@ const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
 
                 <div className="pointer-events-none absolute right-[-10%] top-[-20%] h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
                 <div className="relative min-h-[440px] overflow-x-auto px-5 py-8 font-mono text-[14px] leading-8 sm:px-9 sm:py-10 md:text-[17px] md:leading-9">
-                    <motion.div
-                        initial={prefersReducedMotion ? undefined : { opacity: 0, x: -12 }}
-                        whileInView={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.15, duration: 0.35 }}
-                        className="whitespace-nowrap"
-                    >
-                        <span className="text-violet-300">const</span>{' '}
-                        <span className="text-cyan-300">stack</span>{' '}
-                        <span className="text-white/45">= {'{'}</span>
-                    </motion.div>
+                    <div key={`typing-${typingRun}`} aria-label="Technology stack source code">
+                        <div className="h-8 whitespace-nowrap md:h-9">
+                            <span className={typingStarted ? 'tech-code-line' : 'tech-code-line-pending'} style={makeTypingStyle(15, 0)}>
+                                <span className="text-violet-300">const</span>{' '}
+                                <span className="text-cyan-300">stack</span>{' '}
+                                <span className="text-white/45">= {'{'}</span>
+                            </span>
+                        </div>
 
-                    {TECH_STACK_GROUPS.map((group, groupIndex) => (
-                        <motion.div
-                            key={group.key}
-                            className="ml-5 whitespace-nowrap sm:ml-8"
-                            initial={prefersReducedMotion ? undefined : { opacity: 0, x: -12 }}
-                            whileInView={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.28 + groupIndex * 0.14, duration: 0.38 }}
-                        >
-                            <span className="text-emerald-300">{group.key}</span>
-                            <span className="text-white/45">: [</span>
-                            {group.values.map((value, valueIndex) => (
-                                <React.Fragment key={value}>
-                                    <span className="text-sky-200">&quot;{value}&quot;</span>
-                                    {valueIndex < group.values.length - 1 && <span className="text-white/45">, </span>}
-                                </React.Fragment>
-                            ))}
-                            <span className="text-white/45">]{groupIndex < TECH_STACK_GROUPS.length - 1 ? ',' : ''}</span>
-                        </motion.div>
-                    ))}
+                        {TECH_STACK_GROUPS.map((group, groupIndex) => {
+                            const lineText = `${group.key}: [${group.values.map(value => `\"${value}\"`).join(', ')}]${groupIndex < TECH_STACK_GROUPS.length - 1 ? ',' : ''}`;
+                            return (
+                                <div key={group.key} className="ml-5 h-8 whitespace-nowrap sm:ml-8 md:h-9">
+                                    <span
+                                        className={typingStarted ? 'tech-code-line' : 'tech-code-line-pending'}
+                                        style={makeTypingStyle(lineText.length, groupIndex + 1)}
+                                    >
+                                        <span className="text-emerald-300">{group.key}</span>
+                                        <span className="text-white/45">: [</span>
+                                        {group.values.map((value, valueIndex) => (
+                                            <React.Fragment key={value}>
+                                                <span className="text-sky-200">&quot;{value}&quot;</span>
+                                                {valueIndex < group.values.length - 1 && <span className="text-white/45">, </span>}
+                                            </React.Fragment>
+                                        ))}
+                                        <span className="text-white/45">]{groupIndex < TECH_STACK_GROUPS.length - 1 ? ',' : ''}</span>
+                                    </span>
+                                </div>
+                            );
+                        })}
 
-                    <motion.div
-                        className="whitespace-nowrap text-white/45"
-                        initial={prefersReducedMotion ? undefined : { opacity: 0 }}
-                        whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: 0.92, duration: 0.35 }}
-                    >
-                        {'}'};
-                        <span className="ml-2 inline-block h-5 w-[2px] translate-y-1 bg-cyan-300 animate-pulse" />
-                    </motion.div>
+                        <div className="h-8 whitespace-nowrap text-white/45 md:h-9">
+                            <span className={typingStarted ? 'tech-code-line tech-code-line-last' : 'tech-code-line-pending'} style={makeTypingStyle(2, TECH_STACK_GROUPS.length + 1)}>
+                                {'}'};
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </motion.div>
         </div>
@@ -873,8 +906,7 @@ const CareerPhoneSection: React.FC<{
     const dockRef = useRef<HTMLDivElement>(null);
     const bgPhoneRef = useRef<HTMLDivElement>(null);
     const [isDesktop, setIsDesktop] = useState(false);
-    const prefersReducedMotion = useReducedMotion();
-    const showBgPhone = isDesktop && !prefersReducedMotion;
+    const showBgPhone = isDesktop;
 
     useEffect(() => {
         const mq = window.matchMedia('(min-width: 1024px)');
@@ -919,10 +951,10 @@ const CareerPhoneSection: React.FC<{
             const techStackTopDocY = techStackRect.top + window.scrollY;
             const dockDocTop = dockRect.top + window.scrollY;
             const bigScale = Math.max(
-                1.35,
+                1.6,
                 Math.min(
-                    (window.innerHeight * 1.08) / PHONE_FRAME_H,
-                    (window.innerWidth * 0.58) / PHONE_FRAME_W,
+                    (window.innerHeight * 1.22) / PHONE_FRAME_H,
+                    (window.innerWidth * 0.72) / PHONE_FRAME_W,
                 ),
             );
             const centerScale = Math.max(1.05, Math.min(1.22, bigScale * 0.72));
@@ -953,6 +985,8 @@ const CareerPhoneSection: React.FC<{
                 bgEl.style.opacity = '0';
                 return;
             }
+
+            bgEl.style.zIndex = window.scrollY < target.shrinkStartY ? '20' : '5';
 
             const scaleAtCenter = target.bigScale + (target.centerScale - target.bigScale) * firstProgress;
             const topAtCenter = target.top0 + (target.centerTop - target.top0) * firstProgress;
@@ -993,8 +1027,9 @@ const CareerPhoneSection: React.FC<{
                 createPortal(
                     <div
                         ref={bgPhoneRef}
+                        data-scroll-phone
                         className="fixed top-0 left-0 pointer-events-none"
-                        style={{ width: PHONE_FRAME_W, height: PHONE_FRAME_H, transformOrigin: 'top left', zIndex: 5, opacity: 0, willChange: 'transform, opacity' }}
+                        style={{ width: PHONE_FRAME_W, height: PHONE_FRAME_H, transformOrigin: 'top left', zIndex: 20, opacity: 0, willChange: 'transform, opacity' }}
                     >
                         <PhoneFrame apps={apps} activeIndex={0} />
                     </div>,
