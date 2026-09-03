@@ -883,19 +883,12 @@ const PHONE_GRID_CLASS = 'grid gap-10 lg:gap-16 lg:grid-cols-[272px_1fr]';
 const PHONE_FRAME_W = 260;
 const PHONE_FRAME_H = 544;
 
-// The About section's DOM id (see `slug` derivation below: `section-${slugify(path)}`).
-const ABOUT_SECTION_ID = 'section-portfolio-about';
 const TECH_STACK_SECTION_ID = 'section-portfolio-skills';
+const PHONE_TRANSITION_SECTION_ID = 'phone-transition-stage';
 
-// An iPhone home-screen mockup used as the "Professional Experience" chapter:
-// each company is an app icon (its logo), tapping one swaps the detail panel.
-// The phone sticks near the top of the viewport as the write-up scrolls past
-// beside it.
-//
-    // Before the reader reaches this chapter, a huge decorative copy of the same
-    // phone fills the opening viewport behind the content. It follows a three-act
-    // Apple-style scroll sequence: full-screen hero, smaller centered product shot
-    // through Tech Stack, then a precise handoff into the real sticky career dock.
+// A single phone owns the whole sequence: oversized hero, a pinned transition
+// after Tech Stack, then the interactive fixed phone beside Experience. Keeping
+// one instance avoids a visible duplicate at the destination.
 const CareerPhoneSection: React.FC<{
     title: string;
     apps: LoadedSection[];
@@ -903,10 +896,23 @@ const CareerPhoneSection: React.FC<{
 }> = ({ title, apps, pathToSlug }) => {
     const [activeIndex, setActiveIndex] = useState(0);
     const active = apps[activeIndex];
+    const sectionContentRef = useRef<HTMLDivElement>(null);
     const dockRef = useRef<HTMLDivElement>(null);
     const bgPhoneRef = useRef<HTMLDivElement>(null);
     const [isDesktop, setIsDesktop] = useState(false);
     const showBgPhone = isDesktop;
+
+    const selectCompany = useCallback((index: number) => {
+        setActiveIndex(index);
+        const section = sectionContentRef.current?.closest('section');
+        if (!section) return;
+
+        const sectionTop = section.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+            top: Math.max(0, sectionTop - CHAPTER_SCROLL_OFFSET),
+            behavior: 'smooth',
+        });
+    }, []);
 
     useEffect(() => {
         const mq = window.matchMedia('(min-width: 1024px)');
@@ -918,11 +924,11 @@ const CareerPhoneSection: React.FC<{
 
     useEffect(() => {
         if (!showBgPhone) return;
-        const aboutEl = document.getElementById(ABOUT_SECTION_ID);
         const techStackEl = document.getElementById(TECH_STACK_SECTION_ID);
+        const transitionEl = document.getElementById(PHONE_TRANSITION_SECTION_ID);
         const dockEl = dockRef.current;
         const bgEl = bgPhoneRef.current;
-        if (!aboutEl || !techStackEl || !dockEl || !bgEl) return;
+        if (!techStackEl || !transitionEl || !dockEl || !bgEl) return;
 
         const dockStuckTop = CHAPTER_SCROLL_OFFSET + 36; // matches dockRef's own `style.top`
 
@@ -932,42 +938,33 @@ const CareerPhoneSection: React.FC<{
         // that back in and corrupt the target. Mount/resize always happen
         // before the reader has scrolled there, so it's safe here.
         let target = {
-            shrinkStartY: 0,
-            centerArrivalY: 1,
+            heroEndY: 0,
+            moveStartY: 1,
             dockArrivalY: 2,
             bigScale: 1,
-            centerScale: 1,
             top0: 0,
             left0: 0,
-            centerTop: 0,
-            centerLeft: 0,
             dockLeft: 0,
         };
         const measure = () => {
             const dockRect = dockEl.getBoundingClientRect();
-            const aboutRect = aboutEl.getBoundingClientRect();
-            const techStackRect = techStackEl.getBoundingClientRect();
-            const aboutTopDocY = aboutRect.top + window.scrollY;
-            const techStackTopDocY = techStackRect.top + window.scrollY;
-            const dockDocTop = dockRect.top + window.scrollY;
+            const transitionRect = transitionEl.getBoundingClientRect();
+            const transitionTopDocY = transitionRect.top + window.scrollY;
+            const transitionBottomDocY = transitionTopDocY + transitionEl.offsetHeight;
             const bigScale = Math.max(
-                1.6,
+                2,
                 Math.min(
-                    (window.innerHeight * 1.22) / PHONE_FRAME_H,
-                    (window.innerWidth * 0.72) / PHONE_FRAME_W,
+                    (window.innerHeight * 1.42) / PHONE_FRAME_H,
+                    (window.innerWidth * 0.82) / PHONE_FRAME_W,
                 ),
             );
-            const centerScale = Math.max(1.05, Math.min(1.22, bigScale * 0.72));
             target = {
-                shrinkStartY: aboutTopDocY - window.innerHeight * 0.18,
-                centerArrivalY: techStackTopDocY - window.innerHeight * 0.18,
-                dockArrivalY: dockDocTop - dockStuckTop,
+                heroEndY: window.innerHeight * 0.62,
+                moveStartY: transitionTopDocY - CHAPTER_SCROLL_OFFSET,
+                dockArrivalY: transitionBottomDocY - window.innerHeight + dockStuckTop,
                 bigScale,
-                centerScale,
-                top0: (window.innerHeight - PHONE_FRAME_H * bigScale) / 2 + 32,
+                top0: window.innerHeight * 0.82 - (PHONE_FRAME_H * bigScale) / 2,
                 left0: (window.innerWidth - PHONE_FRAME_W * bigScale) / 2,
-                centerTop: (window.innerHeight - PHONE_FRAME_H * centerScale) / 2 + 48,
-                centerLeft: (window.innerWidth - PHONE_FRAME_W * centerScale) / 2,
                 dockLeft: dockRect.left,
             };
         };
@@ -976,26 +973,17 @@ const CareerPhoneSection: React.FC<{
         const applyStyle = () => {
             raf = 0;
             const ease = (value: number) => 1 - Math.pow(1 - value, 3);
-            const firstSpan = Math.max(1, target.centerArrivalY - target.shrinkStartY);
-            const secondSpan = Math.max(1, target.dockArrivalY - target.centerArrivalY);
-            const firstProgress = ease(Math.min(1, Math.max(0, (window.scrollY - target.shrinkStartY) / firstSpan)));
-            const secondProgress = ease(Math.min(1, Math.max(0, (window.scrollY - target.centerArrivalY) / secondSpan)));
+            const moveSpan = Math.max(1, target.dockArrivalY - target.moveStartY);
+            const progress = ease(Math.min(1, Math.max(0, (window.scrollY - target.moveStartY) / moveSpan)));
+            const scale = target.bigScale + (1 - target.bigScale) * progress;
+            const top = target.top0 + (dockStuckTop - target.top0) * progress;
+            const left = target.left0 + (target.dockLeft - target.left0) * progress;
 
-            if (secondProgress >= 1) {
-                bgEl.style.opacity = '0';
-                return;
-            }
-
-            bgEl.style.zIndex = window.scrollY < target.shrinkStartY ? '20' : '5';
-
-            const scaleAtCenter = target.bigScale + (target.centerScale - target.bigScale) * firstProgress;
-            const topAtCenter = target.top0 + (target.centerTop - target.top0) * firstProgress;
-            const leftAtCenter = target.left0 + (target.centerLeft - target.left0) * firstProgress;
-            const scale = scaleAtCenter + (1 - scaleAtCenter) * secondProgress;
-            const top = topAtCenter + (dockStuckTop - topAtCenter) * secondProgress;
-            const left = leftAtCenter + (target.dockLeft - leftAtCenter) * secondProgress;
-
-            bgEl.style.opacity = String(0.94 - secondProgress * 0.08);
+            // Fully opaque: page copy no longer bleeds through the phone. It sits
+            // behind About/Tech content, then comes forward for the pinned handoff.
+            bgEl.style.opacity = '1';
+            bgEl.style.zIndex = window.scrollY < target.heroEndY || window.scrollY >= target.moveStartY ? '20' : '5';
+            bgEl.style.pointerEvents = progress > 0.985 ? 'auto' : 'none';
             bgEl.style.transform = `translate3d(${left}px, ${top}px, 0) scale(${scale})`;
         };
         const onScroll = () => {
@@ -1018,7 +1006,7 @@ const CareerPhoneSection: React.FC<{
     }, [showBgPhone]);
 
     return (
-        <div>
+        <div ref={sectionContentRef}>
             <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-10 md:mb-14 tracking-tight leading-[1.05]">
                 {title}
             </h2>
@@ -1028,17 +1016,21 @@ const CareerPhoneSection: React.FC<{
                     <div
                         ref={bgPhoneRef}
                         data-scroll-phone
-                        className="fixed top-0 left-0 pointer-events-none"
-                        style={{ width: PHONE_FRAME_W, height: PHONE_FRAME_H, transformOrigin: 'top left', zIndex: 20, opacity: 0, willChange: 'transform, opacity' }}
+                        className="fixed top-0 left-0"
+                        style={{ width: PHONE_FRAME_W, height: PHONE_FRAME_H, transformOrigin: 'top left', zIndex: 20, opacity: 0, pointerEvents: 'none', willChange: 'transform, opacity' }}
                     >
-                        <PhoneFrame apps={apps} activeIndex={0} />
+                        <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={selectCompany} />
                     </div>,
                     document.body,
                 )}
 
             <div className={`items-start ${PHONE_GRID_CLASS}`}>
                 <div ref={dockRef} className="mx-auto lg:mx-0 lg:sticky shrink-0" style={{ top: CHAPTER_SCROLL_OFFSET + 36 }}>
-                    <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={setActiveIndex} />
+                    {isDesktop ? (
+                        <div className="h-[544px] w-[260px]" aria-hidden="true" />
+                    ) : (
+                        <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={selectCompany} />
+                    )}
                     <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
                         탭해서 회사별 이야기 보기
                     </p>
@@ -1372,8 +1364,8 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
 
                 {/* Chapters */}
                 {visibleSections.map(section => (
+                    <React.Fragment key={section.slug}>
                     <motion.section
-                        key={section.slug}
                         id={section.slug}
                         className="border-t border-white/[0.06] py-20 md:py-32"
                         style={{ scrollMarginTop: CHAPTER_SCROLL_OFFSET }}
@@ -1413,6 +1405,16 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             )}
                         </div>
                     </motion.section>
+                    {section.rel === 'skills.md' && (
+                        <div
+                            id={PHONE_TRANSITION_SECTION_ID}
+                            className="relative hidden h-[145vh] lg:block"
+                            aria-hidden="true"
+                        >
+                            <div className="sticky top-[116px] h-[calc(100vh-116px)]" />
+                        </div>
+                    )}
+                    </React.Fragment>
                 ))}
 
                 {/* Footer */}
