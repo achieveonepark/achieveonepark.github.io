@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Signal, Wifi, BatteryFull } from 'lucide-react';
+import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Signal, Wifi, BatteryFull, Braces } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
-import { PARK_FILES_MANIFEST_PATH, PARK_ROOT_PUBLIC_PATH } from '../constants';
+import { PARK_ROOT_PUBLIC_PATH } from '../constants';
+import bundledPortfolioDocuments from 'virtual:portfolio-content';
 import profileImage from '../../images/profile.png';
 import logo111percent from '../../images/111percent.png';
 import logoSnowpipe from '../../images/snowpipe.png';
@@ -48,9 +49,6 @@ const SECTION_REVEAL_VARIANTS_NO_TRANSFORM: Variants = {
 // Types
 // ============================================================================
 
-type ManifestFile = { path: string; thumbnail?: string };
-type ManifestResponse = { files: ManifestFile[] };
-
 interface LoadedSection {
     path: string;      // portfolio/experience.md
     rel: string;       // experience.md (relative to portfolio/)
@@ -70,6 +68,7 @@ interface PortfolioSiteProps {
 
 const SECTION_PRIORITY: string[] = [
     'about.md',
+    'skills.md',
     'experience.md',
     'experience/111percent.md',
     'experience/snowpipe.md',
@@ -77,7 +76,6 @@ const SECTION_PRIORITY: string[] = [
     'experience/snowballs.md',
     'experience/dalcomsoft.md',
     'projects.md',
-    'skills.md',
     'links.md',
     'portfolio_full.md', // shown collapsed at the bottom
 ];
@@ -758,6 +756,93 @@ const PhoneFrame: React.FC<{
     </div>
 );
 
+const TECH_STACK_GROUPS = [
+    { key: 'engine', values: ['Unity'] },
+    { key: 'language', values: ['C#', '.NET'] },
+    { key: 'platforms', values: ['Steam', 'WebGL', 'Android', 'iOS'] },
+    { key: 'services', values: ['Firebase'] },
+];
+
+const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
+    const prefersReducedMotion = useReducedMotion();
+
+    return (
+        <div>
+            <div className="mb-10 flex items-end justify-between gap-6 md:mb-14">
+                <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
+                    {title}
+                </h2>
+                <div className="hidden items-center gap-2 pb-2 text-[11px] uppercase tracking-[0.24em] text-cyan-200/55 sm:flex">
+                    <Braces size={15} />
+                    tools I build with
+                </div>
+            </div>
+
+            <motion.div
+                className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#101826]/95 shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
+                initial={prefersReducedMotion ? undefined : { opacity: 0, y: 28, scale: 0.98 }}
+                whileInView={prefersReducedMotion ? undefined : { opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            >
+                <div className="flex h-11 items-center gap-2 border-b border-white/[0.07] bg-white/[0.025] px-5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#febc2e]" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]" />
+                    <span className="ml-3 text-[10px] uppercase tracking-[0.2em] text-white/30">stack.ts</span>
+                </div>
+
+                <div className="pointer-events-none absolute right-[-10%] top-[-20%] h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+                <div className="relative min-h-[440px] overflow-x-auto px-5 py-8 font-mono text-[14px] leading-8 sm:px-9 sm:py-10 md:text-[17px] md:leading-9">
+                    <motion.div
+                        initial={prefersReducedMotion ? undefined : { opacity: 0, x: -12 }}
+                        whileInView={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.15, duration: 0.35 }}
+                        className="whitespace-nowrap"
+                    >
+                        <span className="text-violet-300">const</span>{' '}
+                        <span className="text-cyan-300">stack</span>{' '}
+                        <span className="text-white/45">= {'{'}</span>
+                    </motion.div>
+
+                    {TECH_STACK_GROUPS.map((group, groupIndex) => (
+                        <motion.div
+                            key={group.key}
+                            className="ml-5 whitespace-nowrap sm:ml-8"
+                            initial={prefersReducedMotion ? undefined : { opacity: 0, x: -12 }}
+                            whileInView={prefersReducedMotion ? undefined : { opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.28 + groupIndex * 0.14, duration: 0.38 }}
+                        >
+                            <span className="text-emerald-300">{group.key}</span>
+                            <span className="text-white/45">: [</span>
+                            {group.values.map((value, valueIndex) => (
+                                <React.Fragment key={value}>
+                                    <span className="text-sky-200">&quot;{value}&quot;</span>
+                                    {valueIndex < group.values.length - 1 && <span className="text-white/45">, </span>}
+                                </React.Fragment>
+                            ))}
+                            <span className="text-white/45">]{groupIndex < TECH_STACK_GROUPS.length - 1 ? ',' : ''}</span>
+                        </motion.div>
+                    ))}
+
+                    <motion.div
+                        className="whitespace-nowrap text-white/45"
+                        initial={prefersReducedMotion ? undefined : { opacity: 0 }}
+                        whileInView={prefersReducedMotion ? undefined : { opacity: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.92, duration: 0.35 }}
+                    >
+                        {'}'};
+                        <span className="ml-2 inline-block h-5 w-[2px] translate-y-1 bg-cyan-300 animate-pulse" />
+                    </motion.div>
+                </div>
+            </motion.div>
+        </div>
+    );
+};
+
 // The layout shared by the phone column and the text column.
 const PHONE_GRID_CLASS = 'grid gap-10 lg:gap-16 lg:grid-cols-[272px_1fr]';
 
@@ -767,18 +852,17 @@ const PHONE_FRAME_H = 544;
 
 // The About section's DOM id (see `slug` derivation below: `section-${slugify(path)}`).
 const ABOUT_SECTION_ID = 'section-portfolio-about';
+const TECH_STACK_SECTION_ID = 'section-portfolio-skills';
 
 // An iPhone home-screen mockup used as the "Professional Experience" chapter:
 // each company is an app icon (its logo), tapping one swaps the detail panel.
 // The phone sticks near the top of the viewport as the write-up scrolls past
 // beside it.
 //
-// Before the reader reaches this chapter, a huge decorative copy of the same
-// phone sits fixed in the background (behind the Hero/About text) — from the
-// moment the reader scrolls past About Me, that copy shrinks and slides,
-// tracking scroll 1:1, into exactly the spot where the real docked phone
-// below will end up. Once it arrives, the fixed copy hides and the real,
-// now-stuck phone is sitting in the identical spot, so the handoff is invisible.
+    // Before the reader reaches this chapter, a huge decorative copy of the same
+    // phone fills the opening viewport behind the content. It follows a three-act
+    // Apple-style scroll sequence: full-screen hero, smaller centered product shot
+    // through Tech Stack, then a precise handoff into the real sticky career dock.
 const CareerPhoneSection: React.FC<{
     title: string;
     apps: LoadedSection[];
@@ -803,9 +887,10 @@ const CareerPhoneSection: React.FC<{
     useEffect(() => {
         if (!showBgPhone) return;
         const aboutEl = document.getElementById(ABOUT_SECTION_ID);
+        const techStackEl = document.getElementById(TECH_STACK_SECTION_ID);
         const dockEl = dockRef.current;
         const bgEl = bgPhoneRef.current;
-        if (!aboutEl || !dockEl || !bgEl) return;
+        if (!aboutEl || !techStackEl || !dockEl || !bgEl) return;
 
         const dockStuckTop = CHAPTER_SCROLL_OFFSET + 36; // matches dockRef's own `style.top`
 
@@ -814,18 +899,43 @@ const CareerPhoneSection: React.FC<{
         // not its natural document position — sampling it mid-scroll would feed
         // that back in and corrupt the target. Mount/resize always happen
         // before the reader has scrolled there, so it's safe here.
-        let target = { aboutBottomDocY: 0, triggerScrollY: 1, bigScale: 1, top0: 0, left0: 0, dockLeft: 0 };
+        let target = {
+            shrinkStartY: 0,
+            centerArrivalY: 1,
+            dockArrivalY: 2,
+            bigScale: 1,
+            centerScale: 1,
+            top0: 0,
+            left0: 0,
+            centerTop: 0,
+            centerLeft: 0,
+            dockLeft: 0,
+        };
         const measure = () => {
             const dockRect = dockEl.getBoundingClientRect();
-            const aboutBottomDocY = aboutEl.getBoundingClientRect().bottom + window.scrollY;
+            const aboutRect = aboutEl.getBoundingClientRect();
+            const techStackRect = techStackEl.getBoundingClientRect();
+            const aboutTopDocY = aboutRect.top + window.scrollY;
+            const techStackTopDocY = techStackRect.top + window.scrollY;
             const dockDocTop = dockRect.top + window.scrollY;
-            const bigScale = (window.innerHeight * 0.85) / PHONE_FRAME_H;
+            const bigScale = Math.max(
+                1.35,
+                Math.min(
+                    (window.innerHeight * 1.08) / PHONE_FRAME_H,
+                    (window.innerWidth * 0.58) / PHONE_FRAME_W,
+                ),
+            );
+            const centerScale = Math.max(1.05, Math.min(1.22, bigScale * 0.72));
             target = {
-                aboutBottomDocY,
-                triggerScrollY: dockDocTop - dockStuckTop,
+                shrinkStartY: aboutTopDocY - window.innerHeight * 0.18,
+                centerArrivalY: techStackTopDocY - window.innerHeight * 0.18,
+                dockArrivalY: dockDocTop - dockStuckTop,
                 bigScale,
-                top0: (window.innerHeight - PHONE_FRAME_H * bigScale) / 2,
-                left0: window.innerWidth - PHONE_FRAME_W * bigScale - 24,
+                centerScale,
+                top0: (window.innerHeight - PHONE_FRAME_H * bigScale) / 2 + 32,
+                left0: (window.innerWidth - PHONE_FRAME_W * bigScale) / 2,
+                centerTop: (window.innerHeight - PHONE_FRAME_H * centerScale) / 2 + 48,
+                centerLeft: (window.innerWidth - PHONE_FRAME_W * centerScale) / 2,
                 dockLeft: dockRect.left,
             };
         };
@@ -833,17 +943,26 @@ const CareerPhoneSection: React.FC<{
         let raf = 0;
         const applyStyle = () => {
             raf = 0;
-            const span = Math.max(1, target.triggerScrollY - target.aboutBottomDocY);
-            const progress = Math.min(1, Math.max(0, (window.scrollY - target.aboutBottomDocY) / span));
-            if (progress >= 1) {
+            const ease = (value: number) => 1 - Math.pow(1 - value, 3);
+            const firstSpan = Math.max(1, target.centerArrivalY - target.shrinkStartY);
+            const secondSpan = Math.max(1, target.dockArrivalY - target.centerArrivalY);
+            const firstProgress = ease(Math.min(1, Math.max(0, (window.scrollY - target.shrinkStartY) / firstSpan)));
+            const secondProgress = ease(Math.min(1, Math.max(0, (window.scrollY - target.centerArrivalY) / secondSpan)));
+
+            if (secondProgress >= 1) {
                 bgEl.style.opacity = '0';
                 return;
             }
-            const scale = target.bigScale + (1 - target.bigScale) * progress;
-            const top = target.top0 + (dockStuckTop - target.top0) * progress;
-            const left = target.left0 + (target.dockLeft - target.left0) * progress;
-            bgEl.style.opacity = '1';
-            bgEl.style.transform = `translate(${left}px, ${top}px) scale(${scale})`;
+
+            const scaleAtCenter = target.bigScale + (target.centerScale - target.bigScale) * firstProgress;
+            const topAtCenter = target.top0 + (target.centerTop - target.top0) * firstProgress;
+            const leftAtCenter = target.left0 + (target.centerLeft - target.left0) * firstProgress;
+            const scale = scaleAtCenter + (1 - scaleAtCenter) * secondProgress;
+            const top = topAtCenter + (dockStuckTop - topAtCenter) * secondProgress;
+            const left = leftAtCenter + (target.dockLeft - leftAtCenter) * secondProgress;
+
+            bgEl.style.opacity = String(0.94 - secondProgress * 0.08);
+            bgEl.style.transform = `translate3d(${left}px, ${top}px, 0) scale(${scale})`;
         };
         const onScroll = () => {
             if (!raf) raf = requestAnimationFrame(applyStyle);
@@ -875,7 +994,7 @@ const CareerPhoneSection: React.FC<{
                     <div
                         ref={bgPhoneRef}
                         className="fixed top-0 left-0 pointer-events-none"
-                        style={{ width: PHONE_FRAME_W, height: PHONE_FRAME_H, transformOrigin: 'top left', zIndex: 5, opacity: 0 }}
+                        style={{ width: PHONE_FRAME_W, height: PHONE_FRAME_H, transformOrigin: 'top left', zIndex: 5, opacity: 0, willChange: 'transform, opacity' }}
                     >
                         <PhoneFrame apps={apps} activeIndex={0} />
                     </div>,
@@ -915,70 +1034,38 @@ const CareerPhoneSection: React.FC<{
 // ============================================================================
 
 export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
-    const [sections, setSections] = useState<LoadedSection[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [activeSlug, setActiveSlug] = useState<string | null>(null);
     const [collapsedOpen, setCollapsedOpen] = useState<Record<string, boolean>>({});
     const chapterNavRef = useRef<HTMLDivElement | null>(null);
     const chapterNavItemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-    // Fetch manifest -> fetch all portfolio md files
-    useEffect(() => {
-        let cancelled = false;
+    // Portfolio Markdown is bundled by Vite so the initial page never depends on
+    // a second round of runtime network requests before it can render.
+    const sections = useMemo<LoadedSection[]>(() => {
+        const loaded = bundledPortfolioDocuments
+            .filter(file => file.path.startsWith('portfolio/') && file.path.endsWith('.md'))
+            .map(file => {
+                const rel = file.path.replace(/^portfolio\//, '');
+                return {
+                    path: file.path,
+                    rel,
+                    slug: `section-${slugify(file.path)}`,
+                    title: extractFirstHeading(file.markdown) || titleCaseFromRel(rel),
+                    markdown: file.markdown,
+                };
+            })
+            .filter(file => !EXCLUDED_SECTIONS.includes(file.rel));
 
-        const load = async () => {
-            try {
-                const manifestRes = await fetch(PARK_FILES_MANIFEST_PATH);
-                if (!manifestRes.ok) throw new Error('manifest fetch failed');
-                const manifest: ManifestResponse = await manifestRes.json();
+        loaded.sort((a, b) => {
+            const ai = SECTION_PRIORITY.indexOf(a.rel);
+            const bi = SECTION_PRIORITY.indexOf(b.rel);
+            if (ai === -1 && bi === -1) return a.rel.localeCompare(b.rel);
+            if (ai === -1) return 1;
+            if (bi === -1) return -1;
+            return ai - bi;
+        });
 
-                // Filter portfolio/*.md entries
-                const mdFiles = manifest.files
-                    .filter(f => f.path.startsWith('portfolio/') && f.path.endsWith('.md'))
-                    .map(f => ({ path: f.path, rel: f.path.replace(/^portfolio\//, ''), thumbnail: f.thumbnail }))
-                    .filter(f => !EXCLUDED_SECTIONS.includes(f.rel));
-
-                // Sort by SECTION_PRIORITY, then alphabetically for the rest
-                mdFiles.sort((a, b) => {
-                    const ai = SECTION_PRIORITY.indexOf(a.rel);
-                    const bi = SECTION_PRIORITY.indexOf(b.rel);
-                    if (ai === -1 && bi === -1) return a.rel.localeCompare(b.rel);
-                    if (ai === -1) return 1;
-                    if (bi === -1) return -1;
-                    return ai - bi;
-                });
-
-                // Fetch content in parallel
-                const results = await Promise.all(
-                    mdFiles.map(async file => {
-                        const url = `${PARK_ROOT_PUBLIC_PATH}/${file.path}`;
-                        const res = await fetch(url);
-                        const markdown = res.ok ? await res.text() : '';
-                        const title = extractFirstHeading(markdown) || titleCaseFromRel(file.rel);
-                        return {
-                            path: file.path,
-                            rel: file.rel,
-                            slug: `section-${slugify(file.path)}`,
-                            title,
-                            markdown,
-                            thumbnail: file.thumbnail,
-                        } as LoadedSection;
-                    }),
-                );
-
-                if (!cancelled) setSections(results);
-            } catch (e) {
-                if (!cancelled) setError(e instanceof Error ? e.message : 'failed to load portfolio');
-            } finally {
-                if (!cancelled) setLoading(false);
-            }
-        };
-
-        load();
-        return () => {
-            cancelled = true;
-        };
+        return loaded;
     }, []);
 
     // Build path -> slug map for internal md link resolution
@@ -1248,17 +1335,6 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                     </p>
                 </motion.section>
 
-                {loading && (
-                    <div className="text-white/50 text-sm py-20 text-center">
-                        Loading portfolio content…
-                    </div>
-                )}
-                {error && (
-                    <div className="text-red-300 text-sm py-20 text-center">
-                        Failed to load: {error}
-                    </div>
-                )}
-
                 {/* Chapters */}
                 {visibleSections.map(section => (
                     <motion.section
@@ -1286,6 +1362,8 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                     sectionRel: section.rel,
                                     pathToSlug,
                                 })
+                            ) : section.rel === 'skills.md' ? (
+                                <TechStackSection title={section.title} />
                             ) : section.rel === 'experience.md' && phoneApps.length > 0 ? (
                                 <CareerPhoneSection
                                     title={section.title}

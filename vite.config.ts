@@ -6,6 +6,8 @@ import type { Plugin } from 'vite'
 
 const PARK_ROOT_DIR = 'public/parkachieveone'
 const PARK_MANIFEST_FILE = 'files.json'
+const VIRTUAL_PORTFOLIO_MODULE_ID = 'virtual:portfolio-content'
+const RESOLVED_VIRTUAL_PORTFOLIO_MODULE_ID = `\0${VIRTUAL_PORTFOLIO_MODULE_ID}`
 const SUPPORTED_EXTENSIONS = new Set(['.md', '.pdf', '.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'])
 
 const normalizeToPosix = (value: string) => value.split(path.sep).join('/')
@@ -81,6 +83,32 @@ const createParkManifestPlugin = (): Plugin => {
 
   return {
     name: 'parkachieveone-manifest-plugin',
+    resolveId(id) {
+      if (id === VIRTUAL_PORTFOLIO_MODULE_ID) {
+        return RESOLVED_VIRTUAL_PORTFOLIO_MODULE_ID
+      }
+    },
+    async load(id) {
+      if (id !== RESOLVED_VIRTUAL_PORTFOLIO_MODULE_ID) return
+
+      const parkAbsolutePath = path.resolve(rootDir, PARK_ROOT_DIR)
+      const sourceFiles = await walkFiles(parkAbsolutePath)
+      const markdownFiles = sourceFiles
+        .filter(filePath => path.extname(filePath).toLowerCase() === '.md')
+        .sort((a, b) => a.localeCompare(b, 'en'))
+
+      const documents = await Promise.all(
+        markdownFiles.map(async filePath => {
+          this.addWatchFile(filePath)
+          return {
+            path: normalizeToPosix(path.relative(parkAbsolutePath, filePath)),
+            markdown: await fs.readFile(filePath, 'utf8'),
+          }
+        }),
+      )
+
+      return `export default ${JSON.stringify(documents)}`
+    },
     configResolved(config) {
       rootDir = config.root
       baseUrl = config.base || '/'
