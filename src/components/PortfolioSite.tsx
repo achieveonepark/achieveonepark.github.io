@@ -2,9 +2,10 @@ import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom';
 import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code, Braces } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion, type Variants } from 'framer-motion';
+import { ProjectsTVSection, PROJECTS_TRANSITION_SECTION_ID } from './ProjectsTVSection';
 import { PARK_ROOT_PUBLIC_PATH } from '../constants';
 import bundledPortfolioDocuments from 'virtual:portfolio-content';
-import profileImage from '../../images/profile.png';
+import { AboutProfileSection, PROFILE_TRANSITION_SECTION_ID } from './AboutProfileSection';
 import logo111percent from '../../images/111percent.png';
 import logoSnowpipe from '../../images/snowpipe.png';
 import logoGridinc from '../../images/gridinc.png';
@@ -361,68 +362,42 @@ const renderAboutSection = (md: string, ctx: RenderContext): React.ReactNode => 
     const paragraphs = about.paragraphs.filter(Boolean);
 
     return (
-        <>
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mt-0 mb-8 tracking-tight leading-[1.05]">
-                {renderInline(about.title, { ...ctx, keyPrefix: 'about-title' })}
-            </h2>
-
-            <div className="relative mb-8 overflow-hidden rounded-[28px] border border-cyan-400/15 bg-[linear-gradient(135deg,rgba(8,145,178,0.16),rgba(15,23,42,0.92)_48%,rgba(8,145,178,0.08))] p-6 md:p-8">
-                <div className="pointer-events-none absolute inset-y-0 right-0 w-1/2 bg-[radial-gradient(circle_at_top_right,rgba(34,211,238,0.22),transparent_62%)]" />
-                <div className="pointer-events-none absolute -left-12 top-12 h-32 w-32 rounded-full bg-cyan-400/18 blur-3xl" />
-
-                <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center">
-                    <div className="relative mx-auto w-full max-w-[220px] shrink-0">
-                        <div className="absolute inset-0 rounded-[30px] bg-cyan-300/15 blur-2xl" />
-                        <div className="relative overflow-hidden rounded-[26px] border border-cyan-200/20 bg-black/55 shadow-[0_24px_60px_rgba(6,182,212,0.18)]">
-                            <img
-                                src={profileImage}
-                                alt={`${name} profile`}
-                                className="aspect-[4/5] w-full object-cover"
-                                loading="eager"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="relative flex-1">
-                        <div className="inline-flex items-center rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-cyan-100">
-                            {about.subtitle ?? 'Profile'}
-                        </div>
-
-                        <h3 className="mt-4 text-4xl md:text-5xl font-bold tracking-tight text-white">{name}</h3>
-
-                        {career && (
-                            <p className="mt-2 text-xl font-semibold text-cyan-200/95">
-                                {renderInline(career, { ...ctx, keyPrefix: 'about-career' })}
-                            </p>
-                        )}
-
-                        {details.length > 0 && (
-                            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                                {details.map((detail, index) => (
-                                    <div
-                                        key={`${detail.label}-${detail.value}-${index}`}
-                                        className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-sm"
-                                    >
-                                        <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">
-                                            {detail.label || 'Info'}
-                                        </div>
-                                        <div className="mt-2 text-base font-semibold text-white/90">
-                                            {renderInline(detail.value, { ...ctx, keyPrefix: `about-detail-${index}` })}
-                                        </div>
+        <AboutProfileSection
+            title={renderInline(about.title, { ...ctx, keyPrefix: 'about-title' })}
+            name={name}
+            career={career}
+            badge={about.subtitle ?? 'Profile'}
+            profileContent={
+                <>
+                    {details.length > 0 && (
+                        <div className="grid grid-cols-2 gap-3">
+                            {details.map((detail, index) => (
+                                <div
+                                    key={`${detail.label}-${detail.value}-${index}`}
+                                    className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 backdrop-blur-sm"
+                                >
+                                    <div className="text-[10px] uppercase tracking-[0.18em] text-white/40">
+                                        {detail.label || 'Info'}
                                     </div>
-                                ))}
-                            </div>
-                        )}
+                                    <div className="mt-2 break-keep text-base font-semibold text-white/90">
+                                        {renderInline(detail.value, { ...ctx, keyPrefix: `about-detail-${index}` })}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
-                        {about.greeting && (
-                            <p className="mt-6 max-w-2xl text-lg md:text-xl leading-relaxed text-white/78">
-                                {renderInline(about.greeting, { ...ctx, keyPrefix: 'about-greeting' })}
-                            </p>
-                        )}
-                    </div>
-                </div>
-            </div>
-
+                    {about.greeting && (
+                        <p className="mt-6 max-w-2xl break-keep text-lg md:text-xl leading-relaxed text-white/78">
+                            {renderInline(about.greeting, { ...ctx, keyPrefix: 'about-greeting' })}
+                        </p>
+                    )}
+                    <p className="mt-5 border-l-2 border-cyan-300/35 pl-4 text-sm italic leading-relaxed text-cyan-100/60 md:text-base">
+                        Let's keep up and stay ahead of the game.
+                    </p>
+                </>
+            }
+        >
             <div className="space-y-4">
                 {paragraphs.map((paragraph, index) => {
                     const isLastParagraph = index === paragraphs.length - 1;
@@ -445,7 +420,7 @@ const renderAboutSection = (md: string, ctx: RenderContext): React.ReactNode => 
                     );
                 })}
             </div>
-        </>
+        </AboutProfileSection>
     );
 };
 
@@ -964,6 +939,7 @@ const CareerPhoneSection: React.FC<{
             fadeStartY: 0,
             fadeEndY: 1,
             moveStartY: 1,
+            dockStartY: 2,
             dockArrivalY: 2,
             dockTopY: 0,
             dockBottomY: 0,
@@ -979,8 +955,11 @@ const CareerPhoneSection: React.FC<{
             const transitionTopDocY = transitionRect.top + window.scrollY;
             const sectionTopDocY = sectionEl.getBoundingClientRect().top + window.scrollY;
             const fadeStartY = transitionTopDocY - CHAPTER_SCROLL_OFFSET;
-            const fadeEndY = fadeStartY + window.innerHeight * 0.35;
-            const moveStartY = Math.max(fadeEndY, sectionTopDocY - window.innerHeight * 0.55);
+            const fadeEndY = fadeStartY + window.innerHeight * 0.6;
+            const moveStartY = Math.max(fadeEndY, sectionTopDocY - window.innerHeight * 1.05);
+            // Slide left over a longer distance, then align below the title
+            // only when Experience approaches its original handoff position.
+            const dockStartY = Math.max(moveStartY, sectionTopDocY - window.innerHeight * 0.55);
             const bigScale = Math.min(
                 1.65,
                 (window.innerHeight - CHAPTER_SCROLL_OFFSET - 72) / PHONE_FRAME_H,
@@ -990,7 +969,8 @@ const CareerPhoneSection: React.FC<{
                 fadeStartY,
                 fadeEndY,
                 moveStartY,
-                dockArrivalY: Math.max(moveStartY + 1, sectionTopDocY - CHAPTER_SCROLL_OFFSET),
+                dockStartY,
+                dockArrivalY: Math.max(dockStartY + 1, sectionTopDocY - CHAPTER_SCROLL_OFFSET),
                 dockTopY: slotRect.top + window.scrollY,
                 dockBottomY: slotRect.bottom + window.scrollY,
                 bigScale,
@@ -1008,10 +988,12 @@ const CareerPhoneSection: React.FC<{
             const fadeProgress = clamp((window.scrollY - target.fadeStartY) / (target.fadeEndY - target.fadeStartY));
             const moveSpan = Math.max(1, target.dockArrivalY - target.moveStartY);
             const moveProgress = clamp((window.scrollY - target.moveStartY) / moveSpan);
+            const dockSpan = Math.max(1, target.dockArrivalY - target.dockStartY);
+            const dockProgress = clamp((window.scrollY - target.dockStartY) / dockSpan);
             const progress = ease(moveProgress);
             // Clear the title's row before revealing it, including mid-scroll.
-            const topProgress = ease(clamp(moveProgress / 0.65));
-            const reveal = ease(clamp((moveProgress - 0.45) / 0.5));
+            const topProgress = ease(clamp(dockProgress / 0.65));
+            const reveal = ease(clamp((dockProgress - 0.45) / 0.5));
             const scale = target.bigScale + (1 - target.bigScale) * progress;
             // Follow the slot below the title before becoming sticky. Jumping
             // back to Experience must not pin the phone over the chapter heading.
@@ -1158,6 +1140,30 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
         for (const s of sections) map.set(s.path, s.slug);
         return map;
     }, [sections]);
+
+    const projectVideos = useMemo(() => {
+        const projects = sections.find(section => section.rel === 'projects.md');
+        if (!projects) return [];
+        return projects.markdown.split(/^##\s+/m).slice(1).flatMap(block => {
+            const [title, ...lines] = block.split('\n');
+            const videoIndex = lines.findIndex(line => extractYoutubeListItem(line.replace(/^\s*-\s+/, '')));
+            if (videoIndex < 0) return [];
+            const video = extractYoutubeListItem(lines[videoIndex].replace(/^\s*-\s+/, ''));
+            if (!video) return [];
+            const details = lines.filter((_, index) => index !== videoIndex);
+            const period = details.find(line => /^\s*-\s*기간:/.test(line));
+            const summary = period?.replace(/^\s*-\s*기간:\s*/, '')
+                ?? details.find(line => line.trim())?.replace(/^\s*-\s+/, '')
+                ?? '';
+            return [{
+                id: slugify(title),
+                title: title.trim(),
+                embed: video.embed,
+                summary,
+                description: renderMarkdown(details.join('\n'), { sectionRel: projects.rel, pathToSlug }),
+            }];
+        });
+    }, [sections, pathToSlug]);
 
     // Keep the TOC synced with the section closest to the top reading line.
     useEffect(() => {
@@ -1397,31 +1403,25 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
 
             {/* Main content column — single, full-bleed, chapter by chapter */}
             <main className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 pb-24">
-                {/* Hero chapter */}
-                <motion.section
-                    className="min-h-[78vh] flex flex-col justify-center"
-                    initial={prefersReducedMotion ? undefined : { opacity: 0, y: 28 }}
-                    animate={prefersReducedMotion ? undefined : { opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                >
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/[0.03] text-white/50 text-[11px] uppercase tracking-[0.22em] mb-6 w-fit">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white/40" />
-                        Portfolio · 2026
-                    </div>
-                    <h1 className="text-5xl md:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight text-white mb-6">
-                        Let's keep up and
-                        <br />
-                        stay ahead of the game.
-                    </h1>
-                    <p className="text-white/60 text-lg md:text-2xl max-w-2xl leading-relaxed">
-                        8년 차 Unity 개발자. 게임 공용 시스템과 멀티플랫폼 대응, 그리고 팀 생산성을
-                        높이는 툴·파이프라인을 만듭니다.
-                    </p>
-                </motion.section>
+                <h1 className="sr-only">Park Achieveone — Unity Game Developer</h1>
+                {visibleSections.some(section => section.rel === 'about.md') && (
+                    <div
+                        id={PROFILE_TRANSITION_SECTION_ID}
+                        className={prefersReducedMotion ? 'hidden' : 'h-[140vh] md:h-[170vh]'}
+                        aria-hidden="true"
+                    />
+                )}
 
                 {/* Chapters */}
                 {visibleSections.map(section => (
                     <React.Fragment key={section.slug}>
+                    {section.rel === 'projects.md' && projectVideos.length > 0 && (
+                        <div
+                            id={PROJECTS_TRANSITION_SECTION_ID}
+                            className={`relative hidden ${prefersReducedMotion ? '' : 'h-[220vh] lg:block'}`}
+                            aria-hidden="true"
+                        />
+                    )}
                     <motion.section
                         id={section.slug}
                         className="border-t border-white/[0.06] py-20 md:py-32"
@@ -1432,7 +1432,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                         variants={
                             prefersReducedMotion
                                 ? undefined
-                                : section.rel === 'experience.md'
+                                : section.rel === 'about.md' || section.rel === 'experience.md' || section.rel === 'projects.md'
                                     ? SECTION_REVEAL_VARIANTS_NO_TRANSFORM
                                     : SECTION_REVEAL_VARIANTS
                         }
@@ -1454,6 +1454,8 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                     apps={phoneApps}
                                     pathToSlug={pathToSlug}
                                 />
+                            ) : section.rel === 'projects.md' && projectVideos.length > 0 ? (
+                                <ProjectsTVSection title={section.title} projects={projectVideos} />
                             ) : (
                                 renderMarkdown(section.markdown, {
                                     sectionRel: section.rel,
@@ -1465,7 +1467,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                     {section.rel === 'skills.md' && (
                         <div
                             id={PHONE_TRANSITION_SECTION_ID}
-                            className={`relative hidden ${prefersReducedMotion ? '' : 'h-[145vh] lg:block'}`}
+                            className={`relative hidden ${prefersReducedMotion ? '' : 'h-[280vh] lg:block'}`}
                             aria-hidden="true"
                         >
                             <div className="sticky top-[116px] h-[calc(100vh-116px)]" />
