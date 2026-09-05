@@ -19,6 +19,15 @@
   <link rel="manifest" href="/site.webmanifest" />
   <meta name="theme-color" content="#000000" />
 
+  <!-- Fonts: Rajdhani is the intended display face. Without this it silently
+       fell back to Arial Narrow, which is what Windows was actually rendering. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&display=swap"
+  />
+
   <!-- Windows -->
   <meta name="msapplication-TileImage" content="/icon.png" />
   <meta name="msapplication-TileColor" content="#000000" />
@@ -28,7 +37,10 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      font-family: 'Rajdhani', 'Arial Narrow', 'Segoe UI', sans-serif;
+      /* Fall back to the platform UI font, not Arial Narrow — a condensed face
+         reads nothing like Rajdhani and was the de-facto font on Windows. */
+      font-family: 'Rajdhani', system-ui, 'Segoe UI', -apple-system, sans-serif;
+      font-optical-sizing: auto;
       background-color: #000;
       color: #e2e8f0;
     }
