@@ -221,7 +221,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
             return (
               <div
                 key={app.id}
-                className="group relative flex flex-col items-center justify-end cursor-pointer transition-transform duration-150 ease-out [@media(hover:hover)and(pointer:fine)]:hover:-translate-y-3 active:scale-95 active:duration-100 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100"
+                className="group relative flex flex-col items-center justify-end cursor-pointer transition-transform duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-3 active:scale-95 active:duration-100 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100"
                 onClick={() => handleAppClick(app)}
               >
                 <div className="absolute -top-14 bg-black/80 text-cyan-400 text-[10px] uppercase tracking-widest px-3 py-1 border border-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap backdrop-blur-md">
@@ -251,7 +251,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
             );
           })}
 
-          <div className="group relative flex flex-col items-center justify-end cursor-pointer transition-transform duration-150 ease-out [@media(hover:hover)and(pointer:fine)]:hover:-translate-y-3 active:scale-95 active:duration-100 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100">
+          <div className="group relative flex flex-col items-center justify-end cursor-pointer transition-transform duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:hover:-translate-y-3 active:scale-95 active:duration-100 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100">
             <div className="absolute -top-14 bg-black/80 text-cyan-400 text-[10px] uppercase tracking-widest px-3 py-1 border border-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap backdrop-blur-md">
               GAME
               <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2 h-2 bg-black/80 border-r border-b border-cyan-500/30 rotate-45"></div>
@@ -298,7 +298,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
                           setIsGameFolderOpen(false);
                         }}
                       >
-                        <div className={`relative mb-2 flex h-16 w-16 items-center justify-center rounded-2xl border transition-transform duration-150 ease-out [@media(hover:hover)and(pointer:fine)]:group-hover:-translate-y-1 motion-reduce:transition-none ${game.tileClassName}`}>
+                        <div className={`relative mb-2 flex h-16 w-16 items-center justify-center rounded-2xl border transition-transform duration-150 ease-out [@media(hover:hover)_and_(pointer:fine)]:group-hover:-translate-y-1 motion-reduce:transition-none ${game.tileClassName}`}>
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/12 via-transparent to-black/10 opacity-80"></div>
                           <Icon size={26} strokeWidth={1.6} className={`relative z-10 ${game.iconColor}`} />
                         </div>
