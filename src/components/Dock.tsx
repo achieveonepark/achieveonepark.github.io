@@ -230,6 +230,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
                 </div>
 
                 <div
+                  data-dock-icon={app.id}
                   className={`
                     w-12 h-12 rounded-lg flex items-center justify-center text-white transition-[background-color,box-shadow] duration-150 ease-out
                     ${app.color} bg-opacity-80 group-hover:bg-opacity-100 group-hover:shadow-[0_0_15px_currentColor]

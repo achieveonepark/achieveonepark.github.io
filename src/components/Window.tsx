@@ -95,11 +95,38 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
     };
   };
 
-  // Enter and exit travel the same short path (§ spatial consistency). The old
-  // variants flew a full viewport height in 80ms of linear tween, which read as
-  // a teleport rather than a window opening.
-  const enterOffset = prefersReducedMotion ? 0 : 24;
-  const enterScale = prefersReducedMotion ? 1 : 0.96;
+  /**
+   * Where this window's dock icon sits, in the window's own coordinate space.
+   * Windows grow out of the icon that launched them and collapse back into it,
+   * so the icon and the window read as the same object in two states.
+   *
+   * Cached rather than read inline: the variants object is rebuilt on every
+   * render, and a resize gesture re-renders on every pointer move — measuring
+   * the dock each time would thrash layout through the whole drag.
+   */
+  const readDockOrigin = React.useCallback((): { x: number; y: number } | null => {
+    if (typeof document === 'undefined') return null;
+
+    const icon = document.querySelector(`[data-dock-icon="${winState.appId}"]`);
+    if (!icon) return null;
+
+    const iconRect = icon.getBoundingClientRect();
+    if (iconRect.width === 0 && iconRect.height === 0) return null;
+
+    const origin = getOffsetParentRect();
+
+    return {
+      x: iconRect.left + iconRect.width / 2 - origin.left,
+      y: iconRect.top + iconRect.height / 2 - origin.top,
+    };
+  }, [winState.appId]);
+
+  const [dockOrigin, setDockOrigin] = React.useState<{ x: number; y: number } | null>(readDockOrigin);
+
+  useEffect(() => {
+    setDockOrigin(readDockOrigin());
+  }, [readDockOrigin, viewportSize.width, viewportSize.height]);
+
   const dismissDuration = prefersReducedMotion ? 0.12 : 0.18;
 
   const positionTransition = isInteracting
@@ -108,16 +135,31 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       ? INSTANT
       : MOVE_SPRING;
 
+  /**
+   * Collapsed-at-the-dock pose. `scale` works about the element's centre, so
+   * the window is positioned with its centre on the icon's centre. Falls back
+   * to a short rise from its resting place when the dock icon is not on screen
+   * (the dock hides behind a maximised window, and files opened from Finder
+   * have no icon of their own).
+   */
+  const collapsedPose = prefersReducedMotion
+    ? { opacity: 0, scale: 1, x: winState.x, y: winState.y }
+    : dockOrigin
+      ? {
+          opacity: 0,
+          scale: 0.16,
+          x: dockOrigin.x - winState.width / 2,
+          y: dockOrigin.y - winState.height / 2,
+        }
+      : { opacity: 0, scale: 0.96, x: winState.x, y: winState.y + 24 };
+
   // NOTE: these use Motion's `x`/`y`/`scale` shorthands rather than a full
   // transform string. `drag` writes to those same motion values, so a transform
   // string here would detach dragging from the animated position.
   const variants: Variants = {
-    initial: {
-      opacity: 0,
-      scale: enterScale,
-      x: winState.x,
-      y: winState.y + enterOffset,
-    },
+    // width/height are pinned here too, so only transform and opacity animate
+    // on the way in — otherwise Motion would animate the box from zero.
+    initial: { ...collapsedPose, width: winState.width, height: winState.height },
     normal: {
       opacity: 1,
       scale: 1,
@@ -136,17 +178,14 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       height: maximizedHeight,
       transition: prefersReducedMotion ? INSTANT : MOVE_SPRING,
     },
+    // Minimise retraces the way in, which is the whole point of the genie.
     minimized: {
-      opacity: 0,
-      scale: enterScale,
-      x: winState.x,
-      y: winState.y + enterOffset,
+      ...collapsedPose,
       transition: { duration: dismissDuration, ease: EASE_OUT },
     },
     exit: {
       opacity: 0,
-      scale: enterScale,
-      y: winState.y + enterOffset,
+      scale: prefersReducedMotion ? 1 : 0.96,
       transition: { duration: dismissDuration, ease: EASE_OUT },
     },
   };
@@ -169,11 +208,21 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
     const origin = getOffsetParentRect();
     const rect = el.getBoundingClientRect();
 
-    moveWindow(
-      winState.id,
-      Math.round(rect.left - origin.left),
-      Math.round(rect.top - origin.top),
-    );
+    let nextX = rect.left - origin.left;
+    let nextY = rect.top - origin.top;
+
+    // With rubber-banding the element is still outside the constraints at the
+    // moment the drag ends — Motion animates it back afterwards. Clamp here so
+    // the overshoot never reaches state, or the window would settle wherever
+    // the stretch happened to leave it.
+    const bounds = getConstraintBounds();
+
+    if (bounds) {
+      nextX = Math.min(Math.max(nextX, bounds.left), Math.max(bounds.left, bounds.right - winState.width));
+      nextY = Math.min(Math.max(nextY, bounds.top), Math.max(bounds.top, bounds.bottom - winState.height));
+    }
+
+    moveWindow(winState.id, Math.round(nextX), Math.round(nextY));
   };
 
   const startDrag = (e: React.PointerEvent) => {
@@ -313,7 +362,11 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
           dragListener={false}
           dragMomentum={false}
           dragConstraints={constraintsRef} // Confine to parent ref
-          dragElastic={0} // Hard stop at edges (no bounce)
+          // A hard stop at the boundary reads as frozen; a little resistance
+          // reads as "responsive, but there is nothing more here". Kept small —
+          // this is a window being dragged, not a sheet being flicked. The
+          // overshoot is clamped out of state in handleDragEnd.
+          dragElastic={prefersReducedMotion ? 0 : 0.06}
           onDragEnd={handleDragEnd}
       >
         {showHeader && (
