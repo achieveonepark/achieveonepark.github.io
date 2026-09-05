@@ -91,7 +91,7 @@ export const AppStore: React.FC = () => {
                     <div className="pt-4">
                         <button
                             type="submit"
-                            className="w-full flex justify-center py-2 px-4 border border-cyan-500/50 rounded shadow-[0_0_10px_rgba(6,182,212,0.2)] text-sm font-bold uppercase tracking-widest text-cyan-400 bg-cyan-950/30 hover:bg-cyan-900/50 hover:text-white transition-all"
+                            className="w-full flex justify-center py-2 px-4 border border-cyan-500/50 rounded shadow-[0_0_10px_rgba(6,182,212,0.2)] text-sm font-bold uppercase tracking-widest text-cyan-400 bg-cyan-950/30 hover:bg-cyan-900/50 hover:text-white transition-colors duration-150 ease-out active:scale-[0.98] motion-reduce:active:scale-100"
                         >
                             Execute Injection
                         </button>

@@ -243,7 +243,7 @@ export const MenuBar: React.FC<MenuBarProps> = ({ isHidden = false, onExitOS }) 
 
   return (
     <>
-    <div className={`fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg relative transition-all duration-300 ${isHidden ? '-translate-y-6 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+    <div className={`fixed top-4 left-4 right-4 h-10 bg-black/40 backdrop-blur-md border border-white/10 rounded-lg flex items-center justify-between px-4 text-cyan-50 text-sm select-none z-[1000] shadow-lg relative transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-opacity ${isHidden ? '-translate-y-6 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="flex items-center space-x-2 h-full" ref={menuRef}>
         {onExitOS && (
           <button

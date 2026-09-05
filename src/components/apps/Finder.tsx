@@ -90,7 +90,7 @@ export const Finder: React.FC = () => {
                                 key={item.name}
                                 onClick={() => navigateTo(item.path)}
                                 className={`
-                    px-3 py-2 rounded-md cursor-pointer flex items-center space-x-3 transition-all duration-200
+                    px-3 py-2 rounded-md cursor-pointer flex items-center space-x-3 transition-colors duration-150 ease-out
                     ${activePath === item.path
                                     ? 'bg-cyan-500/20 text-cyan-300 shadow-[0_0_10px_rgba(6,182,212,0.1)]'
                                     : 'hover:bg-white/10 text-gray-400 hover:text-cyan-100'}
@@ -170,11 +170,11 @@ export const Finder: React.FC = () => {
                                 {currentFiles.map((file, i) => (
                                     <div
                                         key={i}
-                                        className="flex flex-col items-center p-3 rounded-lg hover:bg-white/10 cursor-pointer group transition-all duration-200 border border-transparent hover:border-cyan-500/20 active:scale-95"
+                                        className="flex flex-col items-center p-3 rounded-lg hover:bg-white/10 cursor-pointer group transition-[background-color,border-color,transform] duration-150 ease-out border border-transparent hover:border-cyan-500/20 active:scale-95 motion-reduce:active:scale-100"
                                         onClick={() => handleFileOpen(file)}
                                     >
                                         {file.thumbnail || file.type === 'image' ? (
-                                            <div className="w-[46px] h-[46px] mb-3 rounded-md overflow-hidden border border-white/20 bg-black/30 shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300">
+                                            <div className="w-[46px] h-[46px] mb-3 rounded-md overflow-hidden border border-white/20 bg-black/30 shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-shadow duration-150 ease-out">
                                                 <img
                                                     src={file.thumbnail || file.content}
                                                     alt={file.name}
@@ -187,7 +187,7 @@ export const Finder: React.FC = () => {
                                             <file.icon
                                                 size={46}
                                                 strokeWidth={1}
-                                                className={`${file.color} mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-all duration-300`}
+                                                className={`${file.color} mb-3 drop-shadow-[0_0_8px_rgba(255,255,255,0.1)] group-hover:drop-shadow-[0_0_15px_rgba(6,182,212,0.4)] transition-[filter] duration-150 ease-out`}
                                             />
                                         )}
                                         <span className="text-center text-[13px] text-cyan-100/95 group-hover:text-cyan-200 leading-tight line-clamp-3 w-full break-words px-1 font-mono font-semibold">

@@ -1604,7 +1604,7 @@ export const AchieveoneCode: React.FC = () => {
       className="relative h-full w-full overflow-hidden bg-[#1e1e1e] text-[#cccccc]"
       onPointerDownCapture={event => closeMenusIfOutside(event.target as HTMLElement | null)}
     >
-      <div className={`flex h-full flex-col transition-all duration-300 ${bootPhase !== 'ready' ? 'scale-[1.01] blur-[1px]' : 'scale-100 blur-0'}`}>
+      <div className={`flex h-full flex-col transition-[transform,filter] duration-300 ease-out motion-reduce:transition-none ${bootPhase !== 'ready' ? 'scale-[1.01] blur-[1px]' : 'scale-100 blur-0'}`}>
         <div
           data-os-window-drag-handle="true"
           className="h-9 shrink-0 border-b border-[#2a2d2e] bg-[#181818] px-3"

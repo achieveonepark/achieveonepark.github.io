@@ -15,6 +15,7 @@ import {
   ToyBrick,
   Trees,
 } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { withBasePath } from '../constants';
 
 interface GameEntry {
@@ -155,6 +156,7 @@ const enhanceGameEntry = (game: GameManifestEntry): GameEntry => ({
 export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
   const { apps, launchApp, windows, activeWindowId, focusWindow, minimizeWindow, openFile } = useContext(OSContext);
   const [isGameFolderOpen, setIsGameFolderOpen] = useState(false);
+  const prefersReducedMotion = useReducedMotion();
   const [games, setGames] = useState<GameEntry[]>([]);
 
   useEffect(() => {
@@ -208,7 +210,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
   };
 
   return (
-    <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[1000] w-auto transition-all duration-300 ${isHidden ? 'translate-y-28 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
+    <div className={`fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[1000] w-auto transition-[transform,opacity] duration-300 ease-out motion-reduce:transition-opacity ${isHidden ? 'translate-y-28 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
       <div className="relative">
         <div className="bg-black/40 backdrop-blur-xl border border-white/10 rounded-full px-6 py-3 flex items-end space-x-6 shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
           {visibleApps.map((app) => {
@@ -219,7 +221,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
             return (
               <div
                 key={app.id}
-                className="group relative flex flex-col items-center justify-end transition-all duration-300 hover:-translate-y-3 cursor-pointer"
+                className="group relative flex flex-col items-center justify-end cursor-pointer transition-transform duration-150 ease-out [@media(hover:hover)and(pointer:fine)]:hover:-translate-y-3 active:scale-95 active:duration-100 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100"
                 onClick={() => handleAppClick(app)}
               >
                 <div className="absolute -top-14 bg-black/80 text-cyan-400 text-[10px] uppercase tracking-widest px-3 py-1 border border-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap backdrop-blur-md">
@@ -229,19 +231,18 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
 
                 <div
                   className={`
-                    w-12 h-12 rounded-lg flex items-center justify-center text-white transition-all duration-300
+                    w-12 h-12 rounded-lg flex items-center justify-center text-white transition-[background-color,box-shadow] duration-150 ease-out
                     ${app.color} bg-opacity-80 group-hover:bg-opacity-100 group-hover:shadow-[0_0_15px_currentColor]
                     relative overflow-hidden
                   `}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
-                  <Icon size={24} strokeWidth={1.5} className="z-10" />
+                      <Icon size={24} strokeWidth={1.5} className="z-10" />
                 </div>
 
                 <div
                   className={`
-                    w-8 h-0.5 bg-cyan-400 mt-2 rounded-full shadow-[0_0_8px_#22d3ee] transition-all duration-300
-                    ${isOpen ? 'opacity-100 width-8' : 'opacity-0 w-0'}
+                    w-8 h-0.5 bg-cyan-400 mt-2 rounded-full shadow-[0_0_8px_#22d3ee] transition-[width,opacity] duration-200 ease-out
+                    ${isOpen ? 'opacity-100 w-8' : 'opacity-0 w-0'}
                     ${isActive ? 'bg-cyan-200 shadow-[0_0_12px_#a5f3fc]' : ''}
                   `}
                 />
@@ -249,24 +250,32 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
             );
           })}
 
-          <div className="group relative flex flex-col items-center justify-end transition-all duration-300 hover:-translate-y-3 cursor-pointer">
+          <div className="group relative flex flex-col items-center justify-end cursor-pointer transition-transform duration-150 ease-out [@media(hover:hover)and(pointer:fine)]:hover:-translate-y-3 active:scale-95 active:duration-100 motion-reduce:transition-none motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100">
             <div className="absolute -top-14 bg-black/80 text-cyan-400 text-[10px] uppercase tracking-widest px-3 py-1 border border-cyan-500/30 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap backdrop-blur-md">
               GAME
               <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-2 h-2 bg-black/80 border-r border-b border-cyan-500/30 rotate-45"></div>
             </div>
 
             <div
-              className="w-12 h-12 rounded-lg flex items-center justify-center text-white transition-all duration-300 bg-indigo-600/80 group-hover:bg-indigo-600 group-hover:shadow-[0_0_15px_rgba(129,140,248,0.8)] relative overflow-hidden"
+              className="w-12 h-12 rounded-lg flex items-center justify-center text-white transition-[background-color,box-shadow] duration-150 ease-out bg-indigo-600/80 group-hover:bg-indigo-600 group-hover:shadow-[0_0_15px_rgba(129,140,248,0.8)] relative overflow-hidden"
               onClick={() => setIsGameFolderOpen(prev => !prev)}
             >
-              <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></div>
               <Gamepad2 size={24} strokeWidth={1.5} className="z-10" />
             </div>
 
-            <div className={`w-8 h-0.5 mt-2 rounded-full transition-all duration-300 ${isGameFolderOpen ? 'opacity-100 bg-indigo-200 shadow-[0_0_12px_#c7d2fe]' : 'opacity-0 w-0 bg-indigo-400'}`} />
+            <div className={`w-8 h-0.5 mt-2 rounded-full transition-[width,opacity] duration-200 ease-out ${isGameFolderOpen ? 'opacity-100 bg-indigo-200 shadow-[0_0_12px_#c7d2fe]' : 'opacity-0 w-0 bg-indigo-400'}`} />
 
-            {isGameFolderOpen && (
-              <div className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[min(82vw,34rem)] max-h-[60vh] overflow-y-auto rounded-2xl border border-cyan-500/30 bg-black/90 backdrop-blur-md p-3 z-[1100] shadow-[0_0_24px_rgba(34,211,238,0.16)]">
+            {/* Grows out of the dock icon that opened it, rather than appearing
+                fully formed with no transition while everything else animates. */}
+            <AnimatePresence>
+              {isGameFolderOpen && (
+              <motion.div
+                initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.96, y: prefersReducedMotion ? 0 : 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.96, y: prefersReducedMotion ? 0 : 8 }}
+                transition={{ duration: prefersReducedMotion ? 0.12 : 0.18, ease: [0.23, 1, 0.32, 1] }}
+                style={{ transformOrigin: 'bottom center' }}
+                className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[min(82vw,34rem)] max-h-[60vh] overflow-y-auto custom-scrollbar rounded-2xl border border-cyan-500/30 bg-black/90 backdrop-blur-md p-3 z-[1100] shadow-[0_0_24px_rgba(34,211,238,0.16)]">
                 <div className="px-1 pb-3 text-[10px] uppercase tracking-[0.24em] text-cyan-300">Game Folder</div>
                 <div className="grid grid-cols-3 gap-3 sm:grid-cols-4">
                   {games.map((game) => {
@@ -276,7 +285,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
                       <button
                         key={game.name}
                         type="button"
-                        className="group flex flex-col items-center rounded-xl p-2 text-center transition-all duration-200 hover:bg-cyan-500/10"
+                        className="group flex flex-col items-center rounded-xl p-2 text-center transition-colors duration-150 ease-out hover:bg-cyan-500/10 active:bg-cyan-500/20"
                         onClick={() => {
                           openFile({
                             name: game.name,
@@ -288,7 +297,7 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
                           setIsGameFolderOpen(false);
                         }}
                       >
-                        <div className={`relative mb-2 flex h-16 w-16 items-center justify-center rounded-2xl border transition-transform duration-200 group-hover:-translate-y-1 ${game.tileClassName}`}>
+                        <div className={`relative mb-2 flex h-16 w-16 items-center justify-center rounded-2xl border transition-transform duration-150 ease-out [@media(hover:hover)and(pointer:fine)]:group-hover:-translate-y-1 motion-reduce:transition-none ${game.tileClassName}`}>
                           <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/12 via-transparent to-black/10 opacity-80"></div>
                           <Icon size={26} strokeWidth={1.6} className={`relative z-10 ${game.iconColor}`} />
                         </div>
@@ -299,8 +308,9 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
                     );
                   })}
                 </div>
-              </div>
-            )}
+              </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </div>

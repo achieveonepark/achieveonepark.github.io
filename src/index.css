@@ -13,6 +13,9 @@
     }
 }
 
+/* Caret blink. This animates border-right-color rather than opacity because the
+   caret is a border on the same element as the text — fading the element would
+   fade the line with it. A 2px border repaint is cheap enough to accept. */
 @keyframes tech-type-caret {
     0%, 100% { border-right-color: transparent; }
     15%, 85% { border-right-color: rgb(103 232 249 / 0.95); }
@@ -45,4 +48,45 @@
 
 .tech-code-line-last {
     animation-iteration-count: 1, infinite;
+}
+
+/* Reduced motion: show the finished lines instead of typing them out, and stop
+   the caret looping. Reduced motion means gentler, not invisible. */
+@media (prefers-reduced-motion: reduce) {
+    .tech-code-line {
+        width: var(--line-width);
+        opacity: 1;
+        animation: none;
+        border-right-color: transparent;
+    }
+
+    .tech-code-line-pending {
+        width: var(--line-width);
+        opacity: 1;
+    }
+}
+
+/* Used by DocReader and Terminal. The class was applied in both but never
+   defined anywhere, so those panes fell back to the global scrollbar. */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(6, 182, 212, 0.45) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(6, 182, 212, 0.45);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(6, 182, 212, 0.75);
 }

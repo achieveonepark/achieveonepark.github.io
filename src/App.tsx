@@ -21,7 +21,7 @@ import { Messenger } from './components/apps/Messenger';
 import { AchieveoneCode } from './components/apps/AchieveoneCode';
 import { DesktopSkillsWidget } from './components/DesktopSkillsWidget';
 import { Globe, HardDrive, FileText, Folder } from 'lucide-react';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { OSContext } from './context';
 
 // Helper for generating IDs
@@ -48,6 +48,7 @@ const App: React.FC<AppProps> = ({ onExitOS }) => {
 
     // Ref to track the allowed desktop area (excluding menu bar)
     const desktopAreaRef = useRef<HTMLDivElement>(null);
+    const prefersReducedMotion = useReducedMotion();
 
     // Define the Reader app implicitly (not in dock, but launchable)
     const readerApp: AppDefinition = {
@@ -593,10 +594,17 @@ const App: React.FC<AppProps> = ({ onExitOS }) => {
                     ))}
                 </AnimatePresence>
 
+                {/* Anchored at the click point and scaled from it, so the menu
+                    reads as coming from where the user right-clicked. */}
+                <AnimatePresence>
                 {contextMenu.visible && (
-                    <div
+                    <motion.div
+                        initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
+                        transition={{ duration: prefersReducedMotion ? 0.1 : 0.15, ease: [0.23, 1, 0.32, 1] }}
                         className="fixed z-[1400] min-w-[220px] rounded-xl border border-cyan-500/35 bg-black/85 backdrop-blur-xl shadow-[0_0_18px_rgba(34,211,238,0.25)] p-1 text-cyan-100"
-                        style={{ left: contextMenu.x, top: contextMenu.y }}
+                        style={{ left: contextMenu.x, top: contextMenu.y, transformOrigin: 'top left' }}
                         onClick={(event) => event.stopPropagation()}
                     >
                         <div className="px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-cyan-300/90">Desktop Menu</div>
@@ -610,8 +618,9 @@ const App: React.FC<AppProps> = ({ onExitOS }) => {
                         <button type="button" onClick={() => runContextAction('close-active')} className="w-full text-left px-3 py-2 rounded-md hover:bg-red-500/15 text-xs">Close Active Window</button>
                         <button type="button" onClick={() => runContextAction('minimize-all')} className="w-full text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs">Minimize All</button>
                         <button type="button" onClick={() => runContextAction('restore-all')} className="w-full text-left px-3 py-2 rounded-md hover:bg-cyan-500/15 text-xs">Restore All</button>
-                    </div>
+                    </motion.div>
                 )}
+                </AnimatePresence>
 
                 <Dock isHidden={hasMaximizedWindow} />
             </div>

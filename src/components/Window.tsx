@@ -125,9 +125,6 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       y: winState.y,
       width: winState.width,
       height: winState.height,
-      // Restored explicitly: `maximized` sets an inline 0, and without a value
-      // here the window stayed square-cornered after un-maximizing.
-      borderRadius: 8,
       transition: positionTransition,
     },
     maximized: {
@@ -137,7 +134,6 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       y: topOffset,
       width: viewportSize.width,
       height: maximizedHeight,
-      borderRadius: 0,
       transition: prefersReducedMotion ? INSTANT : MOVE_SPRING,
     },
     minimized: {
@@ -303,7 +299,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
           exit="exit"
           variants={variants}
           // Cyberpunk Style: Dark glass, cyan border, glow
-          className={`absolute flex flex-col overflow-hidden backdrop-blur-xl bg-black/70
+          className={`absolute flex flex-col overflow-hidden backdrop-blur-xl bg-black/70 transition-[border-radius] duration-200 ease-out motion-reduce:transition-none
                  ${winState.isMaximized ? 'rounded-none border-none' : 'rounded-lg border border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.15)]'}`}
           style={{
             top: 0,
@@ -327,7 +323,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
               onDoubleClick={() => maximizeWindow(winState.id)}
           >
             <div className="text-cyan-400 text-xs tracking-widest font-bold uppercase flex items-center">
-              <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2 animate-pulse"></span>
+              <span className="w-2 h-2 bg-cyan-500 rounded-full mr-2"></span>
               {winState.title}
             </div>
 
