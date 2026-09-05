@@ -1426,12 +1426,15 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                         id={section.slug}
                         className="border-t border-white/[0.06] py-20 md:py-32"
                         style={{ scrollMarginTop: CHAPTER_SCROLL_OFFSET }}
-                        initial={prefersReducedMotion ? undefined : 'hidden'}
-                        whileInView={prefersReducedMotion ? undefined : 'visible'}
+                        initial="hidden"
+                        whileInView="visible"
                         viewport={{ once: true, amount: 'some', margin: '0px 0px 100px 0px' }}
                         variants={
+                            // Reduced motion keeps the reveal, minus the movement:
+                            // the transform-free variant is an opacity cross-fade,
+                            // which is the gentler equivalent rather than nothing.
                             prefersReducedMotion
-                                ? undefined
+                                ? SECTION_REVEAL_VARIANTS_NO_TRANSFORM
                                 : section.rel === 'about.md' || section.rel === 'experience.md' || section.rel === 'projects.md'
                                     ? SECTION_REVEAL_VARIANTS_NO_TRANSFORM
                                     : SECTION_REVEAL_VARIANTS

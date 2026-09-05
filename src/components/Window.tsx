@@ -26,6 +26,12 @@ const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 /** Direct manipulation must be 1:1 with the pointer — never a tween. */
 const INSTANT = { duration: 0 } as const;
 
+/**
+ * Reduced motion: no movement, but still a fade. Reduced motion asks for a
+ * gentler equivalent, not for the interface to snap between states.
+ */
+const REDUCED = { default: { duration: 0 }, opacity: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } } as const;
+
 interface ResizeSession {
   edge: string;
   pointerId: number;
@@ -132,7 +138,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
   const positionTransition = isInteracting
     ? INSTANT
     : prefersReducedMotion
-      ? INSTANT
+      ? REDUCED
       : MOVE_SPRING;
 
   /**
@@ -176,7 +182,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       y: topOffset,
       width: viewportSize.width,
       height: maximizedHeight,
-      transition: prefersReducedMotion ? INSTANT : MOVE_SPRING,
+      transition: prefersReducedMotion ? REDUCED : MOVE_SPRING,
     },
     // Minimise retraces the way in, which is the whole point of the genie.
     minimized: {
