@@ -1,3 +1,4 @@
+import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './portfolio/layout';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useMotionValue, useReducedMotion } from 'framer-motion';
@@ -14,7 +15,6 @@ export interface ProjectVideo {
 const thumbnail = (embed: string) => `https://i.ytimg.com/vi/${embed.split('/').pop()}/hqdefault.jpg`;
 const easeOut = (value: number) => 1 - Math.pow(1 - value, 3);
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
-const CHAPTER_OFFSET = 116;
 export const PROJECTS_TRANSITION_SECTION_ID = 'projects-tv-transition';
 
 export const ProjectsTVSection: React.FC<{
@@ -22,7 +22,7 @@ export const ProjectsTVSection: React.FC<{
     projects: ProjectVideo[];
 }> = ({ title, projects }) => {
     const [activeIndex, setActiveIndex] = useState(0);
-    const [isDesktop, setIsDesktop] = useState(false);
+    const isDesktop = useDesktopLayout();
     const [screenVisible, setScreenVisible] = useState(false);
     const [playerInRange, setPlayerInRange] = useState(false);
     const [settled, setSettled] = useState(false);
@@ -43,14 +43,6 @@ export const ProjectsTVSection: React.FC<{
     const listOpacity = useMotionValue(0);
     const listX = useMotionValue(-284);
     const listY = useMotionValue(0);
-
-    useEffect(() => {
-        const mq = window.matchMedia('(min-width: 1024px)');
-        const update = () => setIsDesktop(mq.matches);
-        update();
-        mq.addEventListener('change', update);
-        return () => mq.removeEventListener('change', update);
-    }, []);
 
     useEffect(() => {
         if (!cinematic) return;

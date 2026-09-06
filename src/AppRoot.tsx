@@ -1,6 +1,7 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import App from './App';
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { PortfolioSite } from './components/PortfolioSite';
+
+const App = lazy(() => import('./App'));
 
 type ViewMode = 'web' | 'os';
 
@@ -20,7 +21,11 @@ const AppRoot: React.FC = () => {
     if (mode === 'web') {
         return <PortfolioSite onEnterOS={enterOS} />;
     }
-    return <App onExitOS={exitOS} />;
+    return (
+        <Suspense fallback={<div role="status" className="flex min-h-dvh items-center justify-center bg-neutral-950 text-cyan-200">OS 불러오는 중…</div>}>
+            <App onExitOS={exitOS} />
+        </Suspense>
+    );
 };
 
 export default AppRoot;

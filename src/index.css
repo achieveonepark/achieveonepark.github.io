@@ -90,3 +90,27 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(6, 182, 212, 0.75);
 }
+
+/* Keep long URLs and code inside their content column on narrow screens. */
+.portfolio-site { overflow-wrap: anywhere; }
+.portfolio-site :is(a, button):focus-visible {
+    outline: 2px solid #67e8f9;
+    outline-offset: 3px;
+}
+@media (max-width: 767px) {
+    .career-details h2 { font-size: 1.5rem; line-height: 1.3; }
+    .tech-stack-code .tech-code-line,
+    .tech-stack-code .tech-code-line-pending {
+        display: inline;
+        width: auto;
+        max-width: none;
+        white-space: normal;
+        opacity: 1;
+        animation: none;
+        border: 0;
+    }
+    .tech-stack-code [class*="whitespace-nowrap"] {
+        height: auto;
+        white-space: normal;
+    }
+}

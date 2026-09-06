@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './portfolio/layout';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useReducedMotion } from 'framer-motion';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import profileImage from '../../images/profile.png';
 
 export const PROFILE_TRANSITION_SECTION_ID = 'profile-card-transition';
-const CHAPTER_OFFSET = 116;
 const clamp = (value: number) => Math.min(1, Math.max(0, value));
 const ease = (value: number) => value * value * (3 - 2 * value);
 const CARD_SURFACE = 'border border-cyan-400/20 bg-[linear-gradient(135deg,#10252d,#111827_55%,#10232c)] shadow-[0_24px_70px_rgba(0,0,0,0.3)]';
@@ -19,12 +19,13 @@ export const AboutProfileSection: React.FC<{
     children: React.ReactNode;
 }> = ({ title, name, career, badge, profileContent, children }) => {
     const prefersReducedMotion = useReducedMotion();
-    const cinematic = !prefersReducedMotion;
-    const [expanded, setExpanded] = useState(false);
+    const isDesktop = useDesktopLayout();
+    const cinematic = isDesktop && !prefersReducedMotion;
     const contentRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
     const dockRef = useRef<HTMLDivElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
+    const surfaceRef = useRef<HTMLDivElement>(null);
     const compactRef = useRef<HTMLDivElement>(null);
     const expandedRef = useRef<HTMLDivElement>(null);
     const hintRef = useRef<HTMLDivElement>(null);
@@ -44,8 +45,8 @@ export const AboutProfileSection: React.FC<{
             compactWidth: 420, compactHeight: 210,
         };
         const measure = () => {
-            // The hidden full-size card provides stable document geometry.
-            // Only the floating card changes size while the page is scrolling.
+            // Measure the in-flow destination only on layout changes. The floating
+            // layers retain fixed dimensions; scrolling never reflows their text.
             const rect = dock.getBoundingClientRect();
             const sectionTop = section.getBoundingClientRect().top + window.scrollY;
             const start = transition.getBoundingClientRect().top + window.scrollY - CHAPTER_OFFSET + window.innerHeight * 0.18;
@@ -58,15 +59,33 @@ export const AboutProfileSection: React.FC<{
                 compactWidth: Math.min(420, window.innerWidth - 40),
                 compactHeight: 210,
             };
+            card.style.width = `${target.width}px`;
+            card.style.height = `${target.height}px`;
+            if (hintRef.current) hintRef.current.style.width = `${target.compactWidth}px`;
+            if (compactRef.current) {
+                compactRef.current.style.width = `${target.compactWidth}px`;
+                compactRef.current.style.height = `${target.compactHeight}px`;
+            }
         };
 
         let raf = 0;
-        const apply = () => {
+        let previousTime = 0;
+        let renderedProgress = 0;
+        const readProgress = () => clamp((window.scrollY - target.start) / (target.arrival - target.start));
+        const apply = (time: number) => {
             raf = 0;
             const scroll = window.scrollY;
-            const progress = clamp((scroll - target.start) / (target.arrival - target.start));
+            const desired = readProgress();
+            // Time-based damping fills the gaps between wheel events, independent
+            // of refresh rate. Stop requesting frames once the target is reached.
+            const delta = previousTime ? Math.min(time - previousTime, 64) : 16;
+            previousTime = time;
+            renderedProgress += (desired - renderedProgress) * (1 - Math.exp(-delta / 90));
+            if (Math.abs(desired - renderedProgress) < 0.0001) renderedProgress = desired;
+            const progress = renderedProgress;
             const unfold = ease(progress);
-            const dockProgress = clamp((scroll - target.dockStart) / Math.max(1, target.arrival - target.dockStart));
+            const animatedScroll = target.start + progress * (target.arrival - target.start);
+            const dockProgress = clamp((animatedScroll - target.dockStart) / Math.max(1, target.arrival - target.dockStart));
             const vertical = ease(clamp(dockProgress / 0.75));
             const width = target.compactWidth + (target.width - target.compactWidth) * unfold;
             const height = target.compactHeight + (target.height - target.compactHeight) * unfold;
@@ -77,32 +96,41 @@ export const AboutProfileSection: React.FC<{
             const visible = top + height > CHAPTER_OFFSET && top < window.innerHeight;
             const reveal = ease(clamp((dockProgress - 0.5) / 0.45));
 
-            card.style.width = `${width}px`;
-            card.style.height = `${height}px`;
+            if (surfaceRef.current) {
+                surfaceRef.current.style.transform = `scale(${width / target.width}, ${height / target.height})`;
+            }
             card.style.transform = `translate3d(${left}px, ${top}px, 0)`;
             card.style.visibility = visible ? 'visible' : 'hidden';
             card.style.opacity = visible ? '1' : '0';
             if (compactRef.current) {
-                compactRef.current.style.opacity = String(1 - clamp(progress / 0.4));
+                compactRef.current.style.opacity = String(1 - clamp(progress / 0.22));
                 compactRef.current.inert = progress > 0.15 || !visible;
+                compactRef.current.setAttribute('aria-hidden', String(progress >= 0.3 || !visible));
             }
             if (expandedRef.current) {
-                expandedRef.current.style.opacity = String(clamp((progress - 0.12) / 0.32));
-                expandedRef.current.style.maskImage = progress < 1
-                    ? `linear-gradient(to bottom, #000 ${Math.max(0, height - 48)}px, transparent ${height - 2}px)`
-                    : 'none';
+                expandedRef.current.style.opacity = String(clamp((progress - 0.22) / 0.28));
+                const contentScale = Math.min(width / target.width, height / target.height);
+                expandedRef.current.style.transform = `scale(${contentScale})`;
+                expandedRef.current.setAttribute('aria-hidden', String(progress < 0.3 || !visible));
                 expandedRef.current.inert = progress < 1 || !visible;
             }
-            if (hintRef.current) hintRef.current.style.opacity = String(1 - clamp(progress / 0.2));
-            setExpanded(progress >= 0.3);
+            if (hintRef.current) {
+                hintRef.current.style.opacity = String(1 - clamp(progress / 0.2));
+                hintRef.current.style.transform = `translate3d(${(width - target.compactWidth) / 2}px, ${height - target.height}px, 0)`;
+            }
             content.style.opacity = String(reveal);
             content.inert = reveal < 0.95;
-            if (titleRef.current) titleRef.current.style.transform = `translateY(${(1 - reveal) * 24}px)`;
+            if (titleRef.current) titleRef.current.style.transform = `translate3d(0, ${(1 - reveal) * 24}px, 0)`;
+            if (renderedProgress !== desired) raf = requestAnimationFrame(apply);
+            else previousTime = 0;
         };
         const onScroll = () => { if (!raf) raf = requestAnimationFrame(apply); };
-        const onResize = () => { measure(); apply(); };
-        measure();
-        apply();
+        const onResize = () => {
+            measure();
+            renderedProgress = readProgress();
+            onScroll();
+        };
+        onResize();
         const observer = new ResizeObserver(onResize);
         observer.observe(transition);
         observer.observe(dock);
@@ -148,12 +176,14 @@ export const AboutProfileSection: React.FC<{
                     ref={cardRef}
                     data-profile-card
                     className="fixed left-0 top-0 z-20"
-                    style={{ opacity: 0, visibility: 'hidden', willChange: 'transform, width, height' }}
+                    style={{ opacity: 0, visibility: 'hidden', willChange: 'transform', pointerEvents: 'none' }}
                 >
-                    <div className={`relative h-full overflow-hidden rounded-[28px] ${CARD_SURFACE}`}>
-                        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.12),transparent_65%)]" />
-                        <div ref={expandedRef} data-profile-expanded aria-hidden={!expanded} className="relative opacity-0">{fullProfile}</div>
-                        <div ref={compactRef} data-profile-compact aria-hidden={expanded} className="absolute inset-0 p-6">
+                    <div ref={surfaceRef} aria-hidden="true" className={`absolute inset-0 origin-top-left rounded-[28px] ${CARD_SURFACE}`} style={{ willChange: 'transform' }}>
+                        <div className="absolute inset-0 rounded-[28px] bg-[radial-gradient(ellipse_at_top_right,rgba(34,211,238,0.12),transparent_65%)]" />
+                    </div>
+                    <div className="relative h-full">
+                        <div ref={expandedRef} data-profile-expanded className="relative origin-top-left opacity-0 pointer-events-auto" style={{ willChange: 'transform, opacity' }}>{fullProfile}</div>
+                        <div ref={compactRef} data-profile-compact className="absolute left-0 top-0 p-6 pointer-events-auto" style={{ willChange: 'opacity' }}>
                             <div className="mb-5 flex items-center justify-between text-[9px] font-medium uppercase tracking-[0.2em] text-white/40">
                                 <span className="text-cyan-200/70">{badge}</span><span>Portfolio · 2026</span>
                             </div>
