@@ -114,3 +114,6 @@
         white-space: normal;
     }
 }
+
+.chapter-nav-scroll { scrollbar-width: none; }
+.chapter-nav-scroll::-webkit-scrollbar { display: none; }

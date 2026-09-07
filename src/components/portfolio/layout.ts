@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react';
 
-// Header (64px) and chapter navigation (52px) share this reading offset.
-export const CHAPTER_SCROLL_OFFSET = 116;
+// The single-row header is 64px tall.
+export const CHAPTER_SCROLL_OFFSET = 64;
 const DESKTOP_QUERY = '(min-width: 1024px)';
 const subscribe = (notify: () => void) => {
     const query = window.matchMedia(DESKTOP_QUERY);

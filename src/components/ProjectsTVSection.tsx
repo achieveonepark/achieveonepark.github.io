@@ -166,7 +166,7 @@ export const ProjectsTVSection: React.FC<{
         if (!screen) return;
         const observer = new IntersectionObserver(
             ([entry]) => setScreenVisible(entry.isIntersecting),
-            { rootMargin: '-116px 0px 0px 0px', threshold: 0 },
+            { rootMargin: `-${CHAPTER_OFFSET}px 0px 0px 0px`, threshold: 0 },
         );
         observer.observe(screen);
         return () => observer.disconnect();
@@ -243,7 +243,7 @@ export const ProjectsTVSection: React.FC<{
                 </span>
             </motion.div>
 
-            <div ref={sceneRef} className="relative scroll-mt-[140px]" data-projects-scene>
+            <div ref={sceneRef} className="relative scroll-mt-20" data-projects-scene>
                 <motion.div
                     className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_252px]"
                     style={{ opacity: cinematic ? sceneOpacity : 1 }}

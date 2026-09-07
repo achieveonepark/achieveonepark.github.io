@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
-import { ArrowUpRight, Monitor, Github, Mail, BookOpen, Code } from 'lucide-react';
+import { ArrowUpRight, Monitor } from 'lucide-react';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
 import { ProjectsTVSection, PROJECTS_TRANSITION_SECTION_ID } from './ProjectsTVSection';
 import bundledPortfolioDocuments from 'virtual:portfolio-content';
@@ -73,9 +73,9 @@ const PHONE_APP_SECTIONS: string[] = [
     'experience/snowballs.md',
     'experience/dalcomsoft.md',
 ];
-// Sticky header (h-16 = 64px) + chapter pill nav (~52px) stacked on top of each other.
-const SECTION_SPY_OFFSET_DESKTOP = 152;
-const SECTION_SPY_OFFSET_MOBILE = 124;
+// Single-row header; keep animation destinations clear of the navigation.
+const SECTION_SPY_OFFSET_DESKTOP = CHAPTER_SCROLL_OFFSET + 36;
+const SECTION_SPY_OFFSET_MOBILE = CHAPTER_SCROLL_OFFSET + 8;
 const SECTION_SPY_RATIO_DESKTOP = 0.3;
 const SECTION_SPY_RATIO_MOBILE = 0.22;
 
@@ -316,98 +316,33 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                 }}
             />
 
-            {/* Top bar */}
-            <header className="sticky top-0 z-40 backdrop-blur-xl bg-neutral-950/70 border-b border-white/5">
-                <div className="max-w-5xl mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
-                    <div className="flex flex-col leading-none">
-                        <span className="text-sm font-semibold tracking-wide text-white">Park Achieveone</span>
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-white/40 mt-1">
-                            Unity Game Developer
-                        </span>
-                    </div>
-                    <div className="flex items-center gap-2 md:gap-3">
-                        <a
-                            href="https://github.com/achieveonepark"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/20 transition"
-                            title="GitHub"
-                        >
-                            <Github size={16} />
-                        </a>
-                        <a
-                            href="https://blog.somiri.dev"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/20 transition"
-                            title="Blog"
-                        >
-                            <BookOpen size={16} />
-                        </a>
-                        <a
-                            href="https://docs.somiri.dev"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/20 transition"
-                            title="Docs"
-                        >
-                            <Code size={16} />
-                        </a>
-                        <a
-                            href="mailto:park_achieveone@naver.com"
-                            className="hidden sm:inline-flex items-center justify-center w-9 h-9 rounded-full border border-white/10 bg-white/[0.03] text-white/70 hover:text-white hover:border-white/20 transition"
-                            title="Email"
-                        >
-                            <Mail size={16} />
-                        </a>
-                        <button
-                            type="button"
-                            onClick={onEnterOS}
-                            className="group inline-flex shrink-0 whitespace-nowrap items-center gap-2 h-11 px-3 md:px-4 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-200 hover:bg-cyan-400/15 hover:border-cyan-300/50 transition text-xs md:text-sm font-semibold tracking-wide"
-                        >
-                            <Monitor size={14} />
-                            <span>OS 구경하기</span>
-                            <ArrowUpRight
-                                size={14}
-                                className="opacity-70 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform"
-                            />
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            {/* Chapter nav — Apple-style horizontal jump bar, sticky just below the header */}
-            {visibleSections.length > 0 && (
-                <div className="sticky top-16 z-30 border-b border-white/5 bg-neutral-950/80 backdrop-blur-xl">
-                    <style>{'.chapter-nav-scroll::-webkit-scrollbar{display:none}'}</style>
-                    <div
-                        ref={chapterNavRef}
-                        className="chapter-nav-scroll max-w-5xl mx-auto px-4 md:px-8 overflow-x-auto"
-                        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-                    >
-                        <div className="flex items-center gap-1.5 py-1 whitespace-nowrap">
+            <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-neutral-950/85 backdrop-blur-xl">
+                <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4 md:gap-6 md:px-8">
+                    <span className="hidden shrink-0 text-xs font-semibold tracking-wide text-white/75 lg:block">Park Achieveone</span>
+                    <nav aria-label="포트폴리오 섹션" ref={chapterNavRef} className="chapter-nav-scroll min-w-0 flex-1 overflow-x-auto">
+                        <div className="flex w-max items-center gap-1 sm:gap-2 lg:mx-auto">
                             {visibleSections.map(s => (
                                 <button
                                     key={s.slug}
-                                    ref={node => {
-                                        chapterNavItemRefs.current[s.slug] = node;
-                                    }}
+                                    ref={node => { chapterNavItemRefs.current[s.slug] = node; }}
                                     type="button"
                                     onClick={() => scrollToSection(s.slug)}
                                     aria-current={activeSlug === s.slug ? 'location' : undefined}
-                                    className={`shrink-0 min-h-11 px-3.5 py-1.5 rounded-full text-[13px] font-medium transition ${
-                                        activeSlug === s.slug
-                                            ? 'bg-white text-neutral-950'
-                                            : 'text-white/55 hover:text-white hover:bg-white/[0.06]'
-                                    }`}
+                                    className={`relative h-16 shrink-0 whitespace-nowrap px-2 text-xs font-medium transition-colors sm:px-3 ${activeSlug === s.slug ? 'text-white' : 'text-white/45 hover:text-white/85'}`}
                                 >
-                                    {s.title}
+                                    {s.rel === 'experience.md' ? 'Experience' : s.title}
+                                    {activeSlug === s.slug && <span aria-hidden="true" className="absolute inset-x-3 bottom-0 h-px bg-cyan-200/80" />}
                                 </button>
                             ))}
                         </div>
-                    </div>
+                    </nav>
+                    <button type="button" onClick={onEnterOS} aria-label="OS 구경하기"
+                        className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg px-3 text-xs text-white/50 transition-colors hover:bg-white/5 hover:text-cyan-100">
+                        <Monitor size={15} aria-hidden="true" />
+                        <span className="hidden sm:inline">OS</span>
+                    </button>
                 </div>
-            )}
+            </header>
 
             {/* Main content column — single, full-bleed, chapter by chapter */}
             <main className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 pb-24">
@@ -490,7 +425,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             className={`relative hidden ${prefersReducedMotion ? '' : 'h-[280vh] lg:block'}`}
                             aria-hidden="true"
                         >
-                            <div className="sticky top-[116px] h-[calc(100vh-116px)]" />
+                            <div className="sticky" style={{ top: CHAPTER_SCROLL_OFFSET, height: `calc(100vh - ${CHAPTER_SCROLL_OFFSET}px)` }} />
                         </div>
                     )}
                     </React.Fragment>
