@@ -22,7 +22,7 @@ const AppRoot: React.FC = () => {
         return <PortfolioSite onEnterOS={enterOS} />;
     }
     return (
-        <Suspense fallback={<div role="status" className="flex min-h-dvh items-center justify-center bg-neutral-950 text-cyan-200">OS 불러오는 중…</div>}>
+        <Suspense fallback={<div role="status" className="flex min-h-dvh items-center justify-center bg-neutral-950 text-cyan-200">Loading OS…</div>}>
             <App onExitOS={exitOS} />
         </Suspense>
     );

@@ -297,7 +297,7 @@ export const CareerPhoneSection: React.FC<{
                 )}
 
             <div className={`items-start ${PHONE_GRID_CLASS}`}>
-                <div className="flex flex-wrap gap-2 lg:hidden" aria-label="회사 선택">
+                <div className="flex flex-wrap gap-2 lg:hidden" aria-label="Select a company">
                     {apps.map((app, index) => (
                         <button key={app.slug} type="button" aria-pressed={index === activeIndex}
                             onClick={() => selectCompany(index)}
@@ -314,7 +314,7 @@ export const CareerPhoneSection: React.FC<{
                             <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={selectCompany} />
                         )}
                         <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
-                            탭해서 회사별 이야기 보기
+                            Tap a company to explore my work
                         </p>
                     </div>
                 </div>

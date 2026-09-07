@@ -153,7 +153,7 @@ export const AboutProfileSection: React.FC<{
         block: 'start', behavior: prefersReducedMotion ? 'auto' : 'smooth',
     });
     const portrait = (className: string) => (
-        <img src={profileImage} alt={`${name} 프로필 사진`} className={`shrink-0 rounded-2xl border border-white/10 object-cover object-top ${className}`} loading="eager" />
+        <img src={profileImage} alt={`${name} profile photo`} className={`shrink-0 rounded-2xl border border-white/10 object-cover object-top ${className}`} loading="eager" />
     );
     const fullProfile = (
         <div className="p-6 md:p-8">
@@ -197,13 +197,13 @@ export const AboutProfileSection: React.FC<{
                             <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-3">
                                 <span className="text-[9px] uppercase tracking-[0.16em] text-white/35">Park Achieveone</span>
                                 <button type="button" onClick={expandProfile} className="inline-flex items-center gap-1.5 rounded-sm text-[11px] text-cyan-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">
-                                    소개 펼치기 <ArrowUpRight size={13} />
+                                    Explore my profile <ArrowUpRight size={13} />
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div ref={hintRef} aria-hidden="true" className="absolute inset-x-0 top-full flex items-center justify-center gap-2 pt-6 text-[9px] tracking-[0.12em] text-white/35">
-                        아래로 스크롤해서 펼쳐보기 <ArrowDown size={12} />
+                        Scroll to explore <ArrowDown size={12} />
                     </div>
                 </div>,
                 document.body,

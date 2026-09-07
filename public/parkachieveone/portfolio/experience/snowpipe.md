@@ -1,7 +1,7 @@
-# Snowpipe (스노우파이프)
+# Snowpipe
 
-- 기간: 2023.06 - 2023.10
-- 링크: https://www.snowpipe.co.kr
-- 기술: Unity
+- Period: 2023.06 - 2023.10
+- Website: https://www.snowpipe.co.kr
+- Technologies: Unity
 
-신규 게임 프로젝트 개발
+Developed a new game project.

@@ -2,18 +2,18 @@
 
 ## World of Warcraft (Copy Portfolio)
 
-- 기간: 2018.09 - 2018.11
-- 기술: Unity, UGUI
-- 영상: https://www.youtube.com/embed/4ouEoG2jaqc
+- Period: 2018.09 - 2018.11
+- Technologies: Unity, UGUI
+- Video: https://www.youtube.com/embed/4ouEoG2jaqc
 
 ## Pokemon Tower Defense
 
-- 기간: 2018.08
-- 기술: Unity, NGUI
+- Period: 2018.08
+- Technologies: Unity, NGUI
 - Motif: Cursed Treasure 2
-- 영상: https://www.youtube.com/embed/6KC87N8RTr8
+- Video: https://www.youtube.com/embed/6KC87N8RTr8
 
-## 말달리ZOOAAAAA (GameJam)
+## Maldalli ZOOAAAAA (Game Jam)
 
-- 2017 KOCCA Gamejam 2등상 수상
-- 영상: https://www.youtube.com/embed/9vsGBhge9N0
+- Won second place at the 2017 KOCCA Game Jam.
+- Video: https://www.youtube.com/embed/9vsGBhge9N0

@@ -2,15 +2,15 @@
 
 ## Profile
 
-- 이름: 박성일
-- 경력: 유니티 개발자 8년차
+- Name: Seong-il Park
+- Experience: Unity Developer · 8 Years
 
-안녕하세요. 8년 차 Unity 개발자 박성일입니다. 게임 공용 시스템과 멀티플랫폼 대응, 그리고 팀 생산성을 높이는 툴·파이프라인을 만듭니다.
+Hi, I'm Seong-il Park, a Unity developer with eight years of experience. I build shared game systems, cross-platform infrastructure, and tools and pipelines that help teams work more efficiently.
 
-8년 동안 **PC와 모바일 게임의 개발, 런칭, 운영** 전 과정을 경험하며 기능 구현부터 서비스 안정화까지 폭넓게 담당해왔습니다. 최근에는 **기술 지원 조직**에서 공용 시스템 구축과 개발 환경 개선을 통해 팀이 더 빠르고 안정적으로 개발할 수 있는 기반을 만드는 데 집중하고 있습니다.
+Over the past eight years, I have worked across the full lifecycle of **developing, launching, and operating PC and mobile games**, from feature implementation to service stability. More recently, I have focused on **developer support**, building shared systems and improving development environments to help teams deliver faster and more reliably.
 
-`C#`, `Unity`, `.NET` 환경에 익숙하며, 결제·데이터·저장·리소스 파이프라인처럼 여러 프로젝트에서 재사용할 수 있는 **공통 시스템 설계와 운영**을 강점으로 가지고 있습니다. 특히 반복 작업을 줄이고 동료들의 불편함을 해소하는 **툴 개발과 워크플로우 개선** 과정에서 가장 큰 보람을 느낍니다.
+I work primarily with `C#`, `Unity`, and `.NET`. My strengths lie in **designing and maintaining reusable systems** for payments, data, saving, and resource pipelines across multiple projects. I especially enjoy **building tools and improving workflows** that reduce repetitive work and make my colleagues' jobs easier.
 
-어릴 때부터 좋아했던 RPG 경험이 개발자의 출발점이었고, 지금도 플레이어 관점과 팀 관점을 함께 고려하며 게임을 만듭니다. 단순히 기능을 구현하는 데서 그치지 않고, 프로젝트가 더 건강하게 돌아갈 수 있도록 구조와 흐름을 함께 고민하는 개발자이고자 합니다.
+My love of RPGs first inspired me to become a developer. Today, I build games with both players and teammates in mind. Beyond implementing features, I care about the structure and workflows that keep a project running well.
 
-**긴밀한 소통과 명확한 목표 공유가 좋은 결과를 만든다고 믿습니다.** 함께 일하는 사람들이 신뢰할 수 있는 개발자가 되기 위해 꾸준히 배우고 개선하며 성장하고 있습니다.
+**I believe close communication and clearly shared goals lead to great results.** I keep learning and improving to become a developer my teammates can rely on.

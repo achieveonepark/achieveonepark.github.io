@@ -369,11 +369,11 @@ export const DesktopSkillsWidget: React.FC = () => {
         const lines = markdown.split('\n').map(line => line.trim()).filter(Boolean);
 
         const profileLines = lines.filter(line => line.startsWith('- '));
-        const nameLine = profileLines.find(line => line.startsWith('- 이름:'));
-        const careerLine = profileLines.find(line => line.startsWith('- 경력:'));
+        const nameLine = profileLines.find(line => /^-(?:\s*)(?:Name|이름):/.test(line));
+        const careerLine = profileLines.find(line => /^-(?:\s*)(?:Experience|경력):/.test(line));
 
-        if (nameLine) setAboutName(nameLine.replace('- 이름:', '').trim());
-        if (careerLine) setAboutCareer(careerLine.replace('- 경력:', '').trim());
+        if (nameLine) setAboutName(nameLine.replace(/^-(?:\s*)(?:Name|이름):/, '').trim());
+        if (careerLine) setAboutCareer(careerLine.replace(/^-(?:\s*)(?:Experience|경력):/, '').trim());
 
         const introLines = lines
           .filter(line => !line.startsWith('#') && !line.startsWith('- '))
@@ -381,7 +381,7 @@ export const DesktopSkillsWidget: React.FC = () => {
 
         const highlights = profileLines
           .map(line => line.replace('- ', '').trim())
-          .filter(line => line && !line.startsWith('이름:') && !line.startsWith('경력:'));
+          .filter(line => line && !/^(?:Name|이름):/.test(line) && !/^(?:Experience|경력):/.test(line));
 
         setAboutIntroLines(introLines);
         setAboutHighlights(highlights);
@@ -418,7 +418,7 @@ export const DesktopSkillsWidget: React.FC = () => {
               const markdown = await response.text();
               const lines = markdown.split('\n').map(line => line.trim()).filter(Boolean);
               const title = lines.find(line => line.startsWith('# '))?.replace('# ', '') || filePath.split('/').pop()?.replace('.md', '') || filePath;
-              const period = lines.find(line => line.startsWith('- 기간:'))?.replace('- 기간:', '').trim() || '-';
+              const period = lines.find(line => /^-(?:\s*)(?:Period|기간):/.test(line))?.replace(/^-(?:\s*)(?:Period|기간):/, '').trim() || '-';
 
               return { path: filePath, title, period };
             } catch {

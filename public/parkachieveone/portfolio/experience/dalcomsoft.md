@@ -1,24 +1,24 @@
-# Dalcomsoft (달콤소프트)
+# Dalcomsoft
 
-- 기간: 2018.12 - 2021.08
-- 링크: https://www.dalcomsoft.com
-- 분야: Rhythm Game, SDK Integration
+- Period: 2018.12 - 2021.08
+- Website: https://www.dalcomsoft.com
+- Focus: Rhythm Game, SDK Integration
 
-## 개발 및 런칭 프로젝트
+## Development and Launches
 - SuperStar Starship
 - SuperStar YG
 - SuperStar KangDaniel
 
-## 유지보수 프로젝트
+## Live Service Maintenance
 - SuperStar BTS
 - SuperStar JYP
 
-## SDK 연동
+## SDK Integration
 - Google AdManager
 - Tapjoy
-- AudienceNetwork 광고 SDK
-- Firebase 연동
+- Audience Network advertising SDK
+- Firebase integration
 
 ## Contents
-- 업데이트 피쳐 제작
-- 인게임 UI 폴리싱 및 컨텐츠 구현 (Native Java/Obj-C 활용)
+- Developed features for game updates.
+- Polished in-game UI and implemented content using native Java and Objective-C.

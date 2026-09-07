@@ -1,10 +1,10 @@
-# Snowballs (스노우볼스)
+# Snowballs
 
-- 기간: 2021.09 - 2022.04
+- Period: 2021.09 - 2022.04
 
 
 https://www.youtube.com/watch?v=qKEeqTkbvn0
 
-- '기사 키우기 : 데미갓' 런칭 및 라이브 서비스
-- 퍼즐 게임 신규 개발 및 인게임 스테이지 제작 툴(Level Editor) 개발
-- 전체 프로젝트 Android/iOS 빌드 파이프라인 관리
+- Launched and maintained the live service for 'Demigod'.
+- Developed a new puzzle game and an in-game level editor.
+- Managed Android and iOS build pipelines across all projects.

@@ -19,7 +19,7 @@ export const LinksSection: React.FC<{ title: string; markdown: string }> = ({ ti
         <ScrollDock stageId={LINKS_TRANSITION_SECTION_ID} heading={
             <div className="mb-10 md:mb-14">
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">{title}</h2>
-                <p className="mt-5 text-sm text-white/50">코드와 기록, 그리고 새로운 대화.</p>
+                <p className="mt-5 text-sm text-white/50">Code, writing, and new conversations.</p>
             </div>
         }>
             <div className="relative overflow-hidden rounded-[28px] border border-cyan-200/20 bg-[#101923] shadow-[0_32px_100px_rgba(0,0,0,0.4)]">
