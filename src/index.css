@@ -97,6 +97,14 @@
     outline: 2px solid #67e8f9;
     outline-offset: 3px;
 }
+/* Career details use a quieter type scale than the chapter heading. */
+.career-details h2 { font-size: 2rem; line-height: 1.25; }
+.career-details h3 { font-size: 1.375rem; line-height: 1.4; }
+.career-details h4 { font-size: 1.125rem; line-height: 1.5; }
+.career-details h5 { font-size: 1rem; line-height: 1.5; }
+.career-details :is(p, ul, ol) { font-size: 1rem; line-height: 1.75; }
+.career-details li { line-height: 1.75; }
+
 @media (max-width: 767px) {
     .career-details h2 { font-size: 1.5rem; line-height: 1.3; }
     .tech-stack-code .tech-code-line,

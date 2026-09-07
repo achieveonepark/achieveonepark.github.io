@@ -281,7 +281,7 @@ export const CareerPhoneSection: React.FC<{
 
     return (
         <div ref={sectionContentRef} data-career-content style={{ opacity: showBgPhone ? 0 : 1 }}>
-            <h2 ref={titleRef} className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-10 md:mb-14 tracking-tight leading-[1.05]">
+            <h2 ref={titleRef} className="text-3xl md:text-5xl font-black text-white mb-8 md:mb-10 tracking-tight leading-[1.15]">
                 {title}
             </h2>
 
