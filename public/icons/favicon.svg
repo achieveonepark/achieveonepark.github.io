@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <title>Achieveone</title>
+  <rect width="512" height="512" rx="112" fill="#101923"/>
+  <path d="M144 368L244 150Q256 124 268 150L368 368" stroke="#F4F8FA" stroke-width="56" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M210 294H302" stroke="#67E8F9" stroke-width="44" stroke-linecap="round"/>
+</svg>
