@@ -1,4 +1,4 @@
-# Snowpipe (스노우파이프)
+# Snowpipe
 
 - 기간: 2023.06 - 2023.10
 - 링크: https://www.snowpipe.co.kr

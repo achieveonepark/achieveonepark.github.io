@@ -1,4 +1,4 @@
-# Dalcomsoft (달콤소프트)
+# Dalcomsoft
 
 - 기간: 2018.12 - 2021.08
 - 링크: https://www.dalcomsoft.com

@@ -1,4 +1,4 @@
-# Gridinc (그리드)
+# Gridinc
 
 - 기간: 2022.05 - 2023.06
 - 링크: https://www.gridinc.com
