@@ -193,7 +193,7 @@ export const CareerPhoneSection: React.FC<{
             const sectionTopDocY = sectionEl.getBoundingClientRect().top + window.scrollY;
             const fadeStartY = transitionTopDocY - CHAPTER_SCROLL_OFFSET;
             const fadeEndY = fadeStartY + window.innerHeight * 0.6;
-            const moveStartY = Math.max(fadeEndY, sectionTopDocY - window.innerHeight * 1.05);
+            const moveStartY = Math.max(fadeEndY, sectionTopDocY - window.innerHeight * 1.65);
             // Slide left over a longer distance, then align below the title
             // only when Experience approaches its original handoff position.
             const dockStartY = Math.max(moveStartY, sectionTopDocY - window.innerHeight * 0.55);
@@ -227,9 +227,10 @@ export const CareerPhoneSection: React.FC<{
             const moveProgress = clamp((window.scrollY - target.moveStartY) / moveSpan);
             const dockSpan = Math.max(1, target.dockArrivalY - target.dockStartY);
             const dockProgress = clamp((window.scrollY - target.dockStartY) / dockSpan);
-            const progress = ease(moveProgress);
+            // Ease into the return instead of covering most of the distance on the first wheel tick.
+            const progress = moveProgress * moveProgress * (3 - 2 * moveProgress);
             // Clear the title's row before revealing it, including mid-scroll.
-            const topProgress = ease(clamp(dockProgress / 0.65));
+            const topProgress = ease(clamp(dockProgress / 0.85));
             const reveal = ease(clamp((dockProgress - 0.45) / 0.5));
             const scale = target.bigScale + (1 - target.bigScale) * progress;
             // Follow the slot below the title before becoming sticky. Jumping

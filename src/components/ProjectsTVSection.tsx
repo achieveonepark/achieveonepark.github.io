@@ -67,7 +67,7 @@ export const ProjectsTVSection: React.FC<{
             const sectionTop = section.getBoundingClientRect().top + window.scrollY;
             const fadeStart = transition.getBoundingClientRect().top + window.scrollY - CHAPTER_OFFSET;
             const fadeEnd = fadeStart + window.innerHeight * 0.5;
-            const moveStart = Math.max(fadeEnd, sectionTop - window.innerHeight * 1.25);
+            const moveStart = Math.max(fadeEnd, sectionTop - window.innerHeight * 1.95);
             const largeScale = Math.min(
                 1.5,
                 (window.innerWidth - 96) / rect.width,
@@ -96,8 +96,9 @@ export const ProjectsTVSection: React.FC<{
             const fade = easeOut(clamp((scroll - target.fadeStart) / (target.fadeEnd - target.fadeStart)));
             const move = clamp((scroll - target.moveStart) / (target.arrival - target.moveStart));
             const dockProgress = clamp((scroll - target.dockStart) / Math.max(1, target.arrival - target.dockStart));
-            const slide = easeOut(move);
-            const vertical = easeOut(clamp(dockProgress / 0.7));
+            // Use the longer return interval without the abrupt ease-out start.
+            const slide = move * move * (3 - 2 * move);
+            const vertical = easeOut(clamp(dockProgress / 0.9));
             const scale = target.largeScale + (1 - target.largeScale) * slide;
             const left = target.centerLeft + (target.left - target.centerLeft) * slide;
             const top = target.centerTop + (target.top - scroll - target.centerTop) * vertical;
