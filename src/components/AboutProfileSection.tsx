@@ -1,3 +1,4 @@
+import { useLanguage } from '../i18n/LanguageContext';
 import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './portfolio/layout';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
@@ -18,6 +19,7 @@ export const AboutProfileSection: React.FC<{
     profileContent: React.ReactNode;
     children: React.ReactNode;
 }> = ({ title, name, career, badge, profileContent, children }) => {
+    const { t } = useLanguage();
     const prefersReducedMotion = useReducedMotion();
     const isDesktop = useDesktopLayout();
     const cinematic = isDesktop && !prefersReducedMotion;
@@ -153,7 +155,7 @@ export const AboutProfileSection: React.FC<{
         block: 'start', behavior: prefersReducedMotion ? 'auto' : 'smooth',
     });
     const portrait = (className: string) => (
-        <img src={profileImage} alt={`${name} profile photo`} className={`shrink-0 rounded-2xl border border-white/10 object-cover object-top ${className}`} loading="eager" />
+        <img src={profileImage} alt={`${name} ${t('photo')}`} className={`shrink-0 rounded-2xl border border-white/10 object-cover object-top ${className}`} loading="eager" />
     );
     const fullProfile = (
         <div className="p-6 md:p-8">
@@ -197,13 +199,13 @@ export const AboutProfileSection: React.FC<{
                             <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-3">
                                 <span className="text-[9px] uppercase tracking-[0.16em] text-white/35">Park Achieveone</span>
                                 <button type="button" onClick={expandProfile} className="inline-flex items-center gap-1.5 rounded-sm text-[11px] text-cyan-100/80 transition hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300">
-                                    Explore my profile <ArrowUpRight size={13} />
+                                    {t('exploreProfile')} <ArrowUpRight size={13} />
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div ref={hintRef} aria-hidden="true" className="absolute inset-x-0 top-full flex items-center justify-center gap-2 pt-6 text-[9px] tracking-[0.12em] text-white/35">
-                        Scroll to explore <ArrowDown size={12} />
+                        {t('scrollExplore')} <ArrowDown size={12} />
                     </div>
                 </div>,
                 document.body,

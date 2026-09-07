@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import AppRoot from './AppRoot';
+import { LanguageProvider } from './i18n/LanguageContext';
 import './index.css';
 
 const rootElement = document.getElementById('root');
@@ -11,6 +12,6 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <AppRoot />
+    <LanguageProvider><AppRoot /></LanguageProvider>
   </React.StrictMode>
 );

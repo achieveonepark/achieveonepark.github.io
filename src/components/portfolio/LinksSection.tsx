@@ -1,3 +1,4 @@
+import { useLanguage } from '../../i18n/LanguageContext';
 import React from 'react';
 import { ArrowUpRight, BookOpen, Code, Github, Globe, Mail } from 'lucide-react';
 import { ScrollDock } from './ScrollDock';
@@ -6,6 +7,7 @@ export const LINKS_TRANSITION_SECTION_ID = 'links-card-transition';
 const ICONS = { GitHub: Github, Blog: BookOpen, Docs: Code, Email: Mail };
 
 export const LinksSection: React.FC<{ title: string; markdown: string }> = ({ title, markdown }) => {
+    const { t } = useLanguage();
     const links = markdown.split('\n').flatMap(line => {
         const match = line.match(/^\s*-\s+([^:]+):\s*(.+)\s*$/);
         if (!match) return [];
@@ -19,7 +21,7 @@ export const LinksSection: React.FC<{ title: string; markdown: string }> = ({ ti
         <ScrollDock stageId={LINKS_TRANSITION_SECTION_ID} heading={
             <div className="mb-10 md:mb-14">
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">{title}</h2>
-                <p className="mt-5 text-sm text-white/50">Code, writing, and new conversations.</p>
+                <p className="mt-5 text-sm text-white/50">{t('linksTagline')}</p>
             </div>
         }>
             <div className="relative overflow-hidden rounded-[28px] border border-cyan-200/20 bg-[#101923] shadow-[0_32px_100px_rgba(0,0,0,0.4)]">

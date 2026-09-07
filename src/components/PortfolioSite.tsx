@@ -1,3 +1,4 @@
+import { useLanguage } from '../i18n/LanguageContext';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { ArrowUpRight, Monitor } from 'lucide-react';
 import { motion, useReducedMotion, type Variants } from 'framer-motion';
@@ -112,6 +113,7 @@ const extractFirstHeading = (md: string): string | null => {
 // ============================================================================
 
 export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
+    const { language, selectLanguage, t } = useLanguage();
     const [activeSlug, setActiveSlug] = useState<string | null>(null);
     const chapterNavRef = useRef<HTMLDivElement | null>(null);
     const chapterNavItemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -123,12 +125,15 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
             .filter(file => file.path.startsWith('portfolio/') && file.path.endsWith('.md'))
             .map(file => {
                 const rel = file.path.replace(/^portfolio\//, '');
+                const markdown = language === 'ko'
+                    ? bundledPortfolioDocuments.find(doc => doc.path === `translations/ko/${file.path}`)?.markdown ?? file.markdown
+                    : file.markdown;
                 return {
                     path: file.path,
                     rel,
                     slug: `section-${slugify(file.path)}`,
-                    title: extractFirstHeading(file.markdown) || titleCaseFromRel(rel),
-                    markdown: file.markdown,
+                    title: extractFirstHeading(markdown) || titleCaseFromRel(rel),
+                    markdown,
                 };
             })
             .filter(file => !EXCLUDED_SECTIONS.includes(file.rel));
@@ -143,7 +148,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
         });
 
         return loaded;
-    }, []);
+    }, [language]);
 
     // Build path -> slug map for internal md link resolution
     const pathToSlug = useMemo(() => {
@@ -319,7 +324,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
             <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-neutral-950/85 backdrop-blur-xl">
                 <div className="mx-auto flex h-16 max-w-5xl items-center gap-3 px-4 md:gap-6 md:px-8">
                     <span className="hidden shrink-0 text-xs font-semibold tracking-wide text-white/75 lg:block">Park Achieveone</span>
-                    <nav aria-label="Portfolio sections" ref={chapterNavRef} className="chapter-nav-scroll min-w-0 flex-1 overflow-x-auto">
+                    <nav aria-label={t('sections')} ref={chapterNavRef} className="chapter-nav-scroll min-w-0 flex-1 overflow-x-auto">
                         <div className="flex w-max items-center gap-1 sm:gap-2 lg:mx-auto">
                             {visibleSections.map(s => (
                                 <button
@@ -336,7 +341,16 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             ))}
                         </div>
                     </nav>
-                    <button type="button" onClick={onEnterOS} aria-label="Explore OS"
+                    <div role="group" aria-label="Language / 언어" className="flex shrink-0 items-center text-[11px]">
+                        {(['en', 'ko'] as const).map(option => (
+                            <button key={option} type="button" lang={option} aria-label={option === 'en' ? 'English' : '한국어'}
+                                aria-pressed={language === option} onClick={() => selectLanguage(option)}
+                                className={`h-11 px-2 transition-colors ${language === option ? 'text-cyan-200' : 'text-white/35 hover:text-white/80'}`}>
+                                {option.toUpperCase()}
+                            </button>
+                        ))}
+                    </div>
+                    <button type="button" onClick={onEnterOS} aria-label={t('exploreOS')}
                         className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg px-3 text-xs text-white/50 transition-colors hover:bg-white/5 hover:text-cyan-100">
                         <Monitor size={15} aria-hidden="true" />
                         <span className="hidden sm:inline">OS</span>
@@ -439,7 +453,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                         className="inline-flex items-center gap-2 h-11 px-5 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-200 hover:bg-cyan-400/15 hover:border-cyan-300/50 transition text-sm font-semibold tracking-wide"
                     >
                         <Monitor size={16} />
-                        Explore OS mode
+                        {t('exploreOSMode')}
                         <ArrowUpRight size={14} />
                     </button>
                     <div className="mt-6 text-[11px] text-white/30 tracking-wider">

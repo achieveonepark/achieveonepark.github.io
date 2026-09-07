@@ -1,3 +1,4 @@
+import { useLanguage } from '../i18n/LanguageContext';
 import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './portfolio/layout';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -21,6 +22,7 @@ export const ProjectsTVSection: React.FC<{
     title: string;
     projects: ProjectVideo[];
 }> = ({ title, projects }) => {
+    const { t } = useLanguage();
     const [activeIndex, setActiveIndex] = useState(0);
     const isDesktop = useDesktopLayout();
     const [screenVisible, setScreenVisible] = useState(false);
@@ -202,7 +204,7 @@ export const ProjectsTVSection: React.FC<{
                         <iframe
                             key={active.id}
                             src={`${active.embed}?rel=0`}
-                            title={`${active.title} — project video`}
+                            title={`${active.title} — ${t('video')}`}
                             className="absolute inset-0 h-full w-full"
                             style={{ pointerEvents: interactive ? 'auto' : 'none' }}
                             tabIndex={interactive ? 0 : -1}
@@ -268,7 +270,7 @@ export const ProjectsTVSection: React.FC<{
                             <div className="mb-2 flex items-center justify-between gap-4">
                                 <span className="text-[9px] font-semibold uppercase tracking-[0.24em] text-cyan-200/65">On screen · {String(activeIndex + 1).padStart(2, '0')}</span>
                                 <a href={active.embed.replace('/embed/', '/watch?v=')} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 text-[10px] text-white/40 transition hover:text-cyan-200">
-                                    Watch on YouTube <ArrowUpRight size={12} />
+                                    {t('youtube')} <ArrowUpRight size={12} />
                                 </a>
                             </div>
                             <h3 className="mb-3 text-xl font-bold leading-tight tracking-tight text-white sm:text-2xl">{active.title}</h3>
@@ -279,7 +281,7 @@ export const ProjectsTVSection: React.FC<{
                     </div>
 
                     <motion.aside
-                        aria-label="Select a project"
+                        aria-label={t('project')}
                         className="relative z-0 min-w-0"
                         style={cinematic ? { opacity: listOpacity, x: listX, y: listY, pointerEvents: interactive ? 'auto' : 'none' } : { opacity: 1, x: 0, y: 0 }}
                     >
@@ -312,7 +314,7 @@ export const ProjectsTVSection: React.FC<{
                                 );
                             })}
                         </div>
-                        <p className="mt-5 text-[10px] leading-relaxed text-white/30">Select a project and play its video on the TV.</p>
+                        <p className="mt-5 text-[10px] leading-relaxed text-white/30">{t('projectHint')}</p>
                     </motion.aside>
                 </motion.div>
             </div>

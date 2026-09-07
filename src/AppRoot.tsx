@@ -1,3 +1,4 @@
+import { useLanguage } from './i18n/LanguageContext';
 import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { PortfolioSite } from './components/PortfolioSite';
 
@@ -6,6 +7,7 @@ const App = lazy(() => import('./App'));
 type ViewMode = 'web' | 'os';
 
 const AppRoot: React.FC = () => {
+    const { t } = useLanguage();
     const [mode, setMode] = useState<ViewMode>('web');
 
     useEffect(() => {
@@ -22,7 +24,7 @@ const AppRoot: React.FC = () => {
         return <PortfolioSite onEnterOS={enterOS} />;
     }
     return (
-        <Suspense fallback={<div role="status" className="flex min-h-dvh items-center justify-center bg-neutral-950 text-cyan-200">Loading OS…</div>}>
+        <Suspense fallback={<div role="status" className="flex min-h-dvh items-center justify-center bg-neutral-950 text-cyan-200">{t('loadingOS')}</div>}>
             <App onExitOS={exitOS} />
         </Suspense>
     );

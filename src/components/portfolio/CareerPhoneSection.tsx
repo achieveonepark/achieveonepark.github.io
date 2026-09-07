@@ -1,3 +1,4 @@
+import { useLanguage } from '../../i18n/LanguageContext';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -132,6 +133,7 @@ export const CareerPhoneSection: React.FC<{
     apps: LoadedSection[];
     pathToSlug: Map<string, string>;
 }> = ({ title, apps, pathToSlug }) => {
+    const { t } = useLanguage();
     const [activeIndex, setActiveIndex] = useState(0);
     const active = apps[activeIndex];
     const sectionContentRef = useRef<HTMLDivElement>(null);
@@ -297,7 +299,7 @@ export const CareerPhoneSection: React.FC<{
                 )}
 
             <div className={`items-start ${PHONE_GRID_CLASS}`}>
-                <div className="flex flex-wrap gap-2 lg:hidden" aria-label="Select a company">
+                <div className="flex flex-wrap gap-2 lg:hidden" aria-label={t('company')}>
                     {apps.map((app, index) => (
                         <button key={app.slug} type="button" aria-pressed={index === activeIndex}
                             onClick={() => selectCompany(index)}
@@ -314,7 +316,7 @@ export const CareerPhoneSection: React.FC<{
                             <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={selectCompany} />
                         )}
                         <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
-                            Tap a company to explore my work
+                            {t('companyHint')}
                         </p>
                     </div>
                 </div>

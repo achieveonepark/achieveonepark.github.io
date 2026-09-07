@@ -37,6 +37,41 @@
     },
     {
       "path": "portfolio/skills.md"
+    },
+    {
+      "path": "translations/ko/portfolio/about.md"
+    },
+    {
+      "path": "translations/ko/portfolio/experience.md"
+    },
+    {
+      "path": "translations/ko/portfolio/experience/111percent.md",
+      "thumbnail": "/images/111percent.png"
+    },
+    {
+      "path": "translations/ko/portfolio/experience/dalcomsoft.md",
+      "thumbnail": "/images/dalcomsoft.png"
+    },
+    {
+      "path": "translations/ko/portfolio/experience/gridinc.md",
+      "thumbnail": "/images/gridinc.png"
+    },
+    {
+      "path": "translations/ko/portfolio/experience/snowballs.md",
+      "thumbnail": "/images/snowballs.png"
+    },
+    {
+      "path": "translations/ko/portfolio/experience/snowpipe.md",
+      "thumbnail": "/images/snowpipe.png"
+    },
+    {
+      "path": "translations/ko/portfolio/links.md"
+    },
+    {
+      "path": "translations/ko/portfolio/projects.md"
+    },
+    {
+      "path": "translations/ko/portfolio/skills.md"
     }
   ]
 }
