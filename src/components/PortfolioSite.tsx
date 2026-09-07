@@ -7,7 +7,8 @@ import { PROFILE_TRANSITION_SECTION_ID } from './AboutProfileSection';
 import { renderMarkdown, renderAboutSection, extractYoutubeListItem } from './portfolio/markdown';
 import type { LoadedSection } from './portfolio/types';
 import { CareerPhoneSection, PHONE_TRANSITION_SECTION_ID } from './portfolio/CareerPhoneSection';
-import { TechStackSection } from './portfolio/TechStackSection';
+import { TechStackSection, TECH_TRANSITION_SECTION_ID } from './portfolio/TechStackSection';
+import { LinksSection, LINKS_TRANSITION_SECTION_ID } from './portfolio/LinksSection';
 import { CHAPTER_SCROLL_OFFSET, useDesktopLayout } from './portfolio/layout';
 
 // Cinematic chapter reveal: each chapter zooms + un-blurs into place as it
@@ -422,6 +423,13 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                 {/* Chapters */}
                 {visibleSections.map(section => (
                     <React.Fragment key={section.slug}>
+                    {(section.rel === 'skills.md' || section.rel === 'links.md') && (
+                        <div
+                            id={section.rel === 'skills.md' ? TECH_TRANSITION_SECTION_ID : LINKS_TRANSITION_SECTION_ID}
+                            className={prefersReducedMotion ? 'hidden' : 'hidden lg:block lg:h-[170vh]'}
+                            aria-hidden="true"
+                        />
+                    )}
                     {section.rel === 'projects.md' && projectVideos.length > 0 && (
                         <div
                             id={PROJECTS_TRANSITION_SECTION_ID}
@@ -442,7 +450,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             // which is the gentler equivalent rather than nothing.
                             prefersReducedMotion || !isDesktop
                                 ? SECTION_REVEAL_VARIANTS_NO_TRANSFORM
-                                : section.rel === 'about.md' || section.rel === 'experience.md' || section.rel === 'projects.md'
+                                : ['about.md', 'skills.md', 'experience.md', 'projects.md', 'links.md'].includes(section.rel)
                                     ? SECTION_REVEAL_VARIANTS_NO_TRANSFORM
                                     : SECTION_REVEAL_VARIANTS
                         }
@@ -458,6 +466,8 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                                 })
                             ) : section.rel === 'skills.md' ? (
                                 <TechStackSection title={section.title} />
+                            ) : section.rel === 'links.md' ? (
+                                <LinksSection title={section.title} markdown={section.markdown} />
                             ) : section.rel === 'experience.md' && phoneApps.length > 0 ? (
                                 <CareerPhoneSection
                                     title={section.title}

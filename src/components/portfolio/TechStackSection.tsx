@@ -1,8 +1,8 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Braces } from 'lucide-react';
-import { motion, useReducedMotion } from 'framer-motion';
+import { ScrollDock } from './ScrollDock';
 
-import { useDesktopLayout } from './layout';
+export const TECH_TRANSITION_SECTION_ID = 'tech-stack-transition';
 
 const TECH_STACK_GROUPS = [
     { key: 'engine', values: ['Unity'] },
@@ -12,28 +12,8 @@ const TECH_STACK_GROUPS = [
 ];
 
 export const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
-    const isDesktop = useDesktopLayout();
-    const prefersReducedMotion = useReducedMotion();
-    const animate = isDesktop && !prefersReducedMotion;
-    const sectionRef = useRef<HTMLDivElement>(null);
     const [typingStarted, setTypingStarted] = useState(false);
     const [typingRun, setTypingRun] = useState(0);
-
-    useEffect(() => {
-        const section = sectionRef.current;
-        if (!section) return;
-
-        const observer = new IntersectionObserver(
-            entries => {
-                if (!entries.some(entry => entry.isIntersecting)) return;
-                setTypingStarted(true);
-                observer.disconnect();
-            },
-            { threshold: 0.28 },
-        );
-        observer.observe(section);
-        return () => observer.disconnect();
-    }, []);
 
     const makeTypingStyle = (characters: number, lineIndex: number) => ({
         '--line-width': `${characters}ch`,
@@ -48,7 +28,7 @@ export const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
     };
 
     return (
-        <div ref={sectionRef}>
+        <ScrollDock stageId={TECH_TRANSITION_SECTION_ID} onReveal={() => setTypingStarted(true)} heading={
             <div className="mb-10 flex items-end justify-between gap-6 md:mb-14">
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
                     {title}
@@ -68,12 +48,9 @@ export const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
                 </div>
             </div>
 
-            <motion.div
+            }>
+            <div
                 className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#101826]/95 shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
-                initial={animate ? { opacity: 0, y: 28, scale: 0.98 } : false}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true, amount: 0.25 }}
-                transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             >
                 <div className="flex h-11 items-center gap-2 border-b border-white/[0.07] bg-white/[0.025] px-5">
                     <span className="h-2.5 w-2.5 rounded-full bg-[#ff5f57]" />
@@ -83,7 +60,7 @@ export const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
                 </div>
 
                 <div className="pointer-events-none absolute right-[-10%] top-[-20%] h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
-                <div className="tech-stack-code relative min-h-0 md:min-h-[440px] overflow-x-auto px-5 py-8 font-mono text-[14px] leading-8 sm:px-9 sm:py-10 md:text-[17px] md:leading-9">
+                <div className="tech-stack-code relative min-h-0 md:min-h-[340px] overflow-x-auto px-5 py-8 font-mono text-[14px] leading-8 sm:px-9 sm:py-10 md:text-[17px] md:leading-9">
                     <div key={`typing-${typingRun}`} aria-label="Technology stack source code">
                         <div className="h-8 whitespace-nowrap md:h-9">
                             <span className={typingStarted ? 'tech-code-line' : 'tech-code-line-pending'} style={makeTypingStyle(15, 0)}>
@@ -122,8 +99,8 @@ export const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
                         </div>
                     </div>
                 </div>
-            </motion.div>
-        </div>
+            </div>
+        </ScrollDock>
     );
 };
 
