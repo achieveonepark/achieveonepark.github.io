@@ -1,7 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useReducedMotionPreference } from '../../animation/MotionPreferences';
-import { CHAPTER_SCROLL_OFFSET, useDesktopLayout } from './layout';
+import { CHAPTER_SCROLL_OFFSET } from './layout';
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
 const ease = (value: number) => value * value * (3 - 2 * value);
@@ -13,9 +12,6 @@ export const ScrollDock: React.FC<{
     children: React.ReactNode;
     onReveal?: () => void;
 }> = ({ stageId, heading, children, onReveal }) => {
-    const desktop = useDesktopLayout();
-    const reduced = useReducedMotionPreference();
-    const cinematic = desktop && !reduced;
     const dockRef = useRef<HTMLDivElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
     const headingRef = useRef<HTMLDivElement>(null);
@@ -23,10 +19,6 @@ export const ScrollDock: React.FC<{
     revealRef.current = onReveal;
 
     useEffect(() => {
-        if (!cinematic) {
-            revealRef.current?.();
-            return;
-        }
         const dock = dockRef.current;
         const card = cardRef.current;
         const headingEl = headingRef.current;
@@ -99,15 +91,15 @@ export const ScrollDock: React.FC<{
             headingEl.style.opacity = '';
             headingEl.inert = false;
         };
-    }, [cinematic, stageId]);
+    }, [stageId]);
 
     return (
         <div>
-            <div ref={headingRef} style={{ opacity: cinematic ? 0 : 1 }}>{heading}</div>
-            <div ref={dockRef} data-scroll-dock={stageId} className={cinematic ? 'invisible' : ''} aria-hidden={cinematic || undefined}>
-                {cinematic ? <div ref={element => { if (element) element.inert = true; }}>{children}</div> : children}
+            <div ref={headingRef} style={{ opacity: 0 }}>{heading}</div>
+            <div ref={dockRef} data-scroll-dock={stageId} className="invisible" aria-hidden="true">
+                <div ref={element => { if (element) element.inert = true; }}>{children}</div>
             </div>
-            {cinematic && createPortal(
+            {createPortal(
                 <div ref={cardRef} data-scroll-surface={stageId} className="portfolio-site fixed left-0 top-0 z-20 text-white/90 font-sans"
                     style={{ opacity: 0, visibility: 'hidden', transformOrigin: 'top left', willChange: 'transform, opacity', pointerEvents: 'none' }}>
                     {children}

@@ -2,10 +2,9 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useReducedMotionPreference } from '../../animation/MotionPreferences';
 import type { LoadedSection } from './types';
 import { renderMarkdown } from './markdown';
-import { CHAPTER_SCROLL_OFFSET, useDesktopLayout } from './layout';
+import { CHAPTER_SCROLL_OFFSET } from './layout';
 
 import logo111percent from '../../../images/111percent.png';
 import logoSnowpipe from '../../../images/snowpipe.png';
@@ -143,9 +142,6 @@ export const CareerPhoneSection: React.FC<{
     const dockSlotRef = useRef<HTMLDivElement>(null);
     const dockRef = useRef<HTMLDivElement>(null);
     const bgPhoneRef = useRef<HTMLDivElement>(null);
-    const isDesktop = useDesktopLayout();
-    const prefersReducedMotion = useReducedMotionPreference();
-    const showBgPhone = isDesktop && !prefersReducedMotion;
 
     const selectCompany = useCallback((index: number) => {
         setActiveIndex(index);
@@ -155,12 +151,11 @@ export const CareerPhoneSection: React.FC<{
         const sectionTop = section.getBoundingClientRect().top + window.scrollY;
         window.scrollTo({
             top: Math.max(0, sectionTop - CHAPTER_SCROLL_OFFSET),
-            behavior: prefersReducedMotion ? 'auto' : 'smooth',
+            behavior: 'smooth',
         });
-    }, [prefersReducedMotion]);
+    }, []);
 
     useEffect(() => {
-        if (!showBgPhone) return;
         const transitionEl = document.getElementById(PHONE_TRANSITION_SECTION_ID);
         const contentEl = sectionContentRef.current;
         const sectionEl = contentEl?.closest('section');
@@ -279,16 +274,15 @@ export const CareerPhoneSection: React.FC<{
             if (titleRef.current) titleRef.current.style.transform = '';
             if (detailsRef.current) detailsRef.current.style.transform = '';
         };
-    }, [showBgPhone]);
+    }, []);
 
     return (
-        <div ref={sectionContentRef} data-career-content style={{ opacity: showBgPhone ? 0 : 1 }}>
+        <div ref={sectionContentRef} data-career-content style={{ opacity: 0 }}>
             <h2 ref={titleRef} className="text-3xl md:text-5xl font-black text-white mb-8 md:mb-10 tracking-tight leading-[1.15]">
                 {title}
             </h2>
 
-            {showBgPhone &&
-                createPortal(
+            {createPortal(
                     <div
                         ref={bgPhoneRef}
                         data-scroll-phone
@@ -301,22 +295,9 @@ export const CareerPhoneSection: React.FC<{
                 )}
 
             <div className={`items-start ${PHONE_GRID_CLASS}`}>
-                <div className="flex flex-wrap gap-2 lg:hidden" aria-label={t('company')}>
-                    {apps.map((app, index) => (
-                        <button key={app.slug} type="button" aria-pressed={index === activeIndex}
-                            onClick={() => selectCompany(index)}
-                            className={`min-h-11 rounded-xl border px-3 py-2 text-sm font-semibold transition ${index === activeIndex ? 'border-cyan-300/50 bg-cyan-300/10 text-cyan-100' : 'border-white/15 text-white/70'}`}>
-                            {app.title}
-                        </button>
-                    ))}
-                </div>
-                <div ref={dockSlotRef} className="hidden self-stretch lg:block">
+                <div ref={dockSlotRef} className="self-stretch">
                     <div ref={dockRef} className="mx-auto w-fit lg:mx-0 lg:sticky shrink-0" style={{ top: CHAPTER_SCROLL_OFFSET + 36 }}>
-                        {showBgPhone ? (
-                            <div className="h-[544px] w-[260px]" aria-hidden="true" />
-                        ) : (
-                            <PhoneFrame apps={apps} activeIndex={activeIndex} onSelect={selectCompany} />
-                        )}
+                        <div className="h-[544px] w-[260px]" aria-hidden="true" />
                         <p className="mt-5 text-center text-[11px] uppercase tracking-[0.2em] text-white/35">
                             {t('companyHint')}
                         </p>
@@ -328,9 +309,9 @@ export const CareerPhoneSection: React.FC<{
                         {active && (
                             <motion.div
                                 key={active.slug}
-                                initial={{ opacity: 0, x: isDesktop && !prefersReducedMotion ? 20 : 0 }}
+                                initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: isDesktop && !prefersReducedMotion ? -20 : 0 }}
+                                exit={{ opacity: 0, x: -20 }}
                                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                             >
                                 {renderMarkdown(active.markdown, { sectionRel: active.rel, pathToSlug })}

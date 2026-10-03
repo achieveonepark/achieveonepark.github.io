@@ -3,7 +3,6 @@ import { X, Minus, Maximize2, Square } from 'lucide-react';
 import { OSContext } from '../context';
 import type { WindowState } from '../types';
 import { motion, useDragControls, type Variants } from 'framer-motion';
-import { useReducedMotionPreference } from '../animation/MotionPreferences';
 
 interface WindowProps {
   window: WindowState;
@@ -27,12 +26,6 @@ const EASE_OUT = [0.23, 1, 0.32, 1] as const;
 /** Direct manipulation must be 1:1 with the pointer — never a tween. */
 const INSTANT = { duration: 0 } as const;
 
-/**
- * Reduced motion: no movement, but still a fade. Reduced motion asks for a
- * gentler equivalent, not for the interface to snap between states.
- */
-const REDUCED = { default: { duration: 0 }, opacity: { duration: 0.15, ease: [0.23, 1, 0.32, 1] } } as const;
-
 interface ResizeSession {
   edge: string;
   pointerId: number;
@@ -49,7 +42,6 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
   const dragControls = useDragControls();
   const windowRef = useRef<HTMLDivElement>(null);
   const resizeSessionRef = useRef<ResizeSession | null>(null);
-  const prefersReducedMotion = useReducedMotionPreference();
 
   // True while the user is dragging or resizing. Position/size updates during a
   // gesture must land on the frame the pointer moved, with no animation between.
@@ -134,13 +126,11 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
     setDockOrigin(readDockOrigin());
   }, [readDockOrigin, viewportSize.width, viewportSize.height]);
 
-  const dismissDuration = prefersReducedMotion ? 0.12 : 0.18;
+  const dismissDuration = 0.18;
 
   const positionTransition = isInteracting
     ? INSTANT
-    : prefersReducedMotion
-      ? REDUCED
-      : MOVE_SPRING;
+    : MOVE_SPRING;
 
   /**
    * Collapsed-at-the-dock pose. `scale` works about the element's centre, so
@@ -149,9 +139,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
    * (the dock hides behind a maximised window, and files opened from Finder
    * have no icon of their own).
    */
-  const collapsedPose = prefersReducedMotion
-    ? { opacity: 0, scale: 1, x: winState.x, y: winState.y }
-    : dockOrigin
+  const collapsedPose = dockOrigin
       ? {
           opacity: 0,
           scale: 0.16,
@@ -183,7 +171,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
       y: topOffset,
       width: viewportSize.width,
       height: maximizedHeight,
-      transition: prefersReducedMotion ? REDUCED : MOVE_SPRING,
+      transition: MOVE_SPRING,
     },
     // Minimise retraces the way in, which is the whole point of the genie.
     minimized: {
@@ -192,7 +180,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
     },
     exit: {
       opacity: 0,
-      scale: prefersReducedMotion ? 1 : 0.96,
+      scale: 0.96,
       transition: { duration: dismissDuration, ease: EASE_OUT },
     },
   };
@@ -373,7 +361,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
           // reads as "responsive, but there is nothing more here". Kept small —
           // this is a window being dragged, not a sheet being flicked. The
           // overshoot is clamped out of state in handleDragEnd.
-          dragElastic={prefersReducedMotion ? 0 : 0.06}
+          dragElastic={0.06}
           onDragEnd={handleDragEnd}
       >
         {showHeader && (

@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import type { Plugin } from 'vite'
+import postcssConfig from './postcss.config'
 
 const PARK_ROOT_DIR = 'public/parkachieveone'
 const PARK_MANIFEST_FILE = 'files.json'
@@ -138,6 +139,7 @@ const createParkManifestPlugin = (): Plugin => {
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
   plugins: [react(), createParkManifestPlugin()],
+  css: { postcss: postcssConfig },
   // Custom domain deploy uses root path.
   base: command === 'serve' ? '/' : '/',
 }))

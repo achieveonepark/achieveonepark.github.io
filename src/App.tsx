@@ -22,7 +22,6 @@ import { AchieveoneCode } from './components/apps/AchieveoneCode';
 import { DesktopSkillsWidget } from './components/DesktopSkillsWidget';
 import { Globe, HardDrive, FileText, Folder } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useReducedMotionPreference } from './animation/MotionPreferences';
 import { OSContext } from './context';
 
 // Helper for generating IDs
@@ -49,7 +48,6 @@ const App: React.FC<AppProps> = ({ onExitOS }) => {
 
     // Ref to track the allowed desktop area (excluding menu bar)
     const desktopAreaRef = useRef<HTMLDivElement>(null);
-    const prefersReducedMotion = useReducedMotionPreference();
 
     // Define the Reader app implicitly (not in dock, but launchable)
     const readerApp: AppDefinition = {
@@ -600,10 +598,10 @@ const App: React.FC<AppProps> = ({ onExitOS }) => {
                 <AnimatePresence>
                 {contextMenu.visible && (
                     <motion.div
-                        initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
+                        initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.95 }}
-                        transition={{ duration: prefersReducedMotion ? 0.1 : 0.15, ease: [0.23, 1, 0.32, 1] }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ duration: 0.15, ease: [0.23, 1, 0.32, 1] }}
                         className="fixed z-[1400] min-w-[220px] rounded-xl border border-cyan-500/35 bg-black/85 backdrop-blur-xl shadow-[0_0_18px_rgba(34,211,238,0.25)] p-1 text-cyan-100"
                         style={{ left: contextMenu.x, top: contextMenu.y, transformOrigin: 'top left' }}
                         onClick={(event) => event.stopPropagation()}

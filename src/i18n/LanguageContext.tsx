@@ -3,10 +3,6 @@ import { detectLanguage, LANGUAGE_KEY, readSavedLanguage, type Language } from '
 
 const messages = {
     sections: ['Portfolio sections', '포트폴리오 섹션'],
-    animations: ['Animations', '애니메이션'],
-    motionSystem: ['Motion: System', '시스템 설정'],
-    motionFull: ['Motion: On', '애니메이션 켜기'],
-    motionReduced: ['Motion: Reduced', '애니메이션 줄이기'],
     exploreOS: ['Explore OS', 'OS 구경하기'],
     exploreOSMode: ['Explore OS mode', 'OS 모드로 구경하기'],
     loadingOS: ['Loading OS…', 'OS 불러오는 중…'],

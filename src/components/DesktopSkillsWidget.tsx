@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import {
   ChevronDown,
   ChevronRight,
@@ -79,13 +78,12 @@ const DesktopWidget: React.FC<WidgetProps> = ({
   emphasized,
   children,
 }) => {
-  const prefersReducedMotion = useReducedMotionPreference();
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, x, y }}
-      transition={{ duration: prefersReducedMotion ? 0.12 : 0.2, ease: [0.23, 1, 0.32, 1] }}
+      transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
       style={{ width, maxWidth: 'calc(100vw - 28px)' }}
       className={`absolute rounded-xl border bg-black/65 backdrop-blur-md shadow-[0_0_24px_rgba(6,182,212,0.14)] pointer-events-auto ${
         emphasized ? 'border-cyan-300/70' : 'border-cyan-500/30'
@@ -107,7 +105,7 @@ const DesktopWidget: React.FC<WidgetProps> = ({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0.12 : 0.2, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             className="overflow-hidden"
           >
             <div className="p-4 overflow-y-auto" style={{ maxHeight: contentMaxHeight }}>
@@ -121,7 +119,6 @@ const DesktopWidget: React.FC<WidgetProps> = ({
 };
 
 const IOSWidgetCard: React.FC<IOSWidgetCardProps> = ({ title, expanded, onToggle, emphasized, children }) => {
-  const prefersReducedMotion = useReducedMotionPreference();
 
   return (
     <div
@@ -147,7 +144,7 @@ const IOSWidgetCard: React.FC<IOSWidgetCardProps> = ({ title, expanded, onToggle
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0.12 : 0.2, ease: [0.23, 1, 0.32, 1] }}
+            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
             className="overflow-hidden"
           >
             <div className="px-4 pb-4 max-h-[38vh] overflow-y-auto">{children}</div>

@@ -16,7 +16,6 @@ import {
   Trees,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import { withBasePath } from '../constants';
 
 interface GameEntry {
@@ -157,7 +156,6 @@ const enhanceGameEntry = (game: GameManifestEntry): GameEntry => ({
 export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
   const { apps, launchApp, windows, activeWindowId, focusWindow, minimizeWindow, openFile } = useContext(OSContext);
   const [isGameFolderOpen, setIsGameFolderOpen] = useState(false);
-  const prefersReducedMotion = useReducedMotionPreference();
   const [games, setGames] = useState<GameEntry[]>([]);
 
   useEffect(() => {
@@ -272,10 +270,10 @@ export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
             <AnimatePresence>
               {isGameFolderOpen && (
               <motion.div
-                initial={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.96, y: prefersReducedMotion ? 0 : 8 }}
+                initial={{ opacity: 0, scale: 0.96, y: 8 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: prefersReducedMotion ? 1 : 0.96, y: prefersReducedMotion ? 0 : 8 }}
-                transition={{ duration: prefersReducedMotion ? 0.12 : 0.18, ease: [0.23, 1, 0.32, 1] }}
+                exit={{ opacity: 0, scale: 0.96, y: 8 }}
+                transition={{ duration: 0.18, ease: [0.23, 1, 0.32, 1] }}
                 style={{ transformOrigin: 'bottom center' }}
                 className="absolute bottom-16 left-1/2 -translate-x-1/2 w-[min(82vw,34rem)] max-h-[60vh] overflow-y-auto custom-scrollbar rounded-2xl border border-cyan-500/30 bg-black/90 backdrop-blur-md p-3 z-[1100] shadow-[0_0_24px_rgba(34,211,238,0.16)]">
                 <div className="px-1 pb-3 text-[10px] uppercase tracking-[0.24em] text-cyan-300">Game Folder</div>

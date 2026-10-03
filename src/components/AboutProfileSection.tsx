@@ -1,8 +1,7 @@
 import { useLanguage } from '../i18n/LanguageContext';
-import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './portfolio/layout';
+import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET } from './portfolio/layout';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import profileImage from '../../images/profile.png';
 
@@ -20,9 +19,6 @@ export const AboutProfileSection: React.FC<{
     children: React.ReactNode;
 }> = ({ title, name, career, badge, profileContent, children }) => {
     const { t } = useLanguage();
-    const prefersReducedMotion = useReducedMotionPreference();
-    const isDesktop = useDesktopLayout();
-    const cinematic = isDesktop && !prefersReducedMotion;
     const contentRef = useRef<HTMLDivElement>(null);
     const titleRef = useRef<HTMLHeadingElement>(null);
     const dockRef = useRef<HTMLDivElement>(null);
@@ -33,7 +29,6 @@ export const AboutProfileSection: React.FC<{
     const hintRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!cinematic) return;
         const transition = document.getElementById(PROFILE_TRANSITION_SECTION_ID);
         const content = contentRef.current;
         const section = content?.closest('section');
@@ -149,10 +144,10 @@ export const AboutProfileSection: React.FC<{
             content.inert = false;
             if (titleRef.current) titleRef.current.style.transform = '';
         };
-    }, [cinematic]);
+    }, []);
 
     const expandProfile = () => contentRef.current?.closest('section')?.scrollIntoView({
-        block: 'start', behavior: prefersReducedMotion ? 'auto' : 'smooth',
+        block: 'start', behavior: 'smooth',
     });
     const portrait = (className: string) => (
         <img src={profileImage} alt={`${name} ${t('photo')}`} className={`shrink-0 rounded-2xl border border-white/10 object-cover object-top ${className}`} loading="eager" />
@@ -172,8 +167,8 @@ export const AboutProfileSection: React.FC<{
     );
 
     return (
-        <div ref={contentRef} data-about-content style={{ opacity: cinematic ? 0 : 1 }}>
-            {cinematic && createPortal(
+        <div ref={contentRef} data-about-content style={{ opacity: 0 }}>
+            {createPortal(
                 <div
                     ref={cardRef}
                     data-profile-card
@@ -212,7 +207,7 @@ export const AboutProfileSection: React.FC<{
             )}
 
             <h2 ref={titleRef} className="text-4xl md:text-6xl lg:text-7xl font-black text-white mt-0 mb-8 tracking-tight leading-[1.05]">{title}</h2>
-            <div ref={dockRef} data-profile-dock aria-hidden={cinematic || undefined} className={`mb-8 overflow-hidden rounded-[28px] ${CARD_SURFACE} ${cinematic ? 'invisible' : ''}`}>
+            <div ref={dockRef} data-profile-dock aria-hidden="true" className={`invisible mb-8 overflow-hidden rounded-[28px] ${CARD_SURFACE}`}>
                 {fullProfile}
             </div>
             {children}

@@ -3,7 +3,6 @@ import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './por
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, useMotionValue } from 'framer-motion';
-import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import { ArrowUpRight, Play, Radio } from 'lucide-react';
 
 export interface ProjectVideo {
@@ -34,8 +33,6 @@ export const ProjectsTVSection: React.FC<{
     const televisionRef = useRef<HTMLDivElement>(null);
     const screenRef = useRef<HTMLDivElement>(null);
     const flashRef = useRef<HTMLDivElement>(null);
-    const prefersReducedMotion = useReducedMotionPreference();
-    const cinematic = isDesktop && !prefersReducedMotion;
     const active = projects[activeIndex] ?? projects[0];
 
     const sceneOpacity = useMotionValue(0);
@@ -48,7 +45,6 @@ export const ProjectsTVSection: React.FC<{
     const listY = useMotionValue(0);
 
     useEffect(() => {
-        if (!cinematic) return;
         const transition = document.getElementById(PROJECTS_TRANSITION_SECTION_ID);
         const scene = sceneRef.current;
         const section = scene?.closest('section');
@@ -163,7 +159,7 @@ export const ProjectsTVSection: React.FC<{
             flashAnimation?.cancel();
             scene.inert = false;
         };
-    }, [cinematic, sceneOpacity, detailsOpacity, detailsY, titleOpacity, titleY, listOpacity, listX, listY]);
+    }, [sceneOpacity, detailsOpacity, detailsY, titleOpacity, titleY, listOpacity, listX, listY]);
 
     useEffect(() => {
         const screen = screenRef.current;
@@ -174,21 +170,21 @@ export const ProjectsTVSection: React.FC<{
         );
         observer.observe(screen);
         return () => observer.disconnect();
-    }, [cinematic]);
+    }, []);
 
-    const playerMounted = screenVisible && (!cinematic || playerInRange);
-    const interactive = !cinematic || settled;
+    const playerMounted = screenVisible && playerInRange;
+    const interactive = settled;
     const selectProject = (index: number) => {
         setActiveIndex(index);
-        if (!isDesktop) sceneRef.current?.scrollIntoView({ block: 'start', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+        if (!isDesktop) sceneRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
     };
 
     const television = (
         <div
             ref={televisionRef}
             data-projects-tv
-            className={cinematic ? 'fixed left-0 top-0 z-20 pb-7' : 'relative z-10 pb-7'}
-            style={cinematic ? { opacity: 0, visibility: 'hidden', pointerEvents: 'none', transformOrigin: 'top left', willChange: 'transform, opacity' } : undefined}
+            className="fixed left-0 top-0 z-20 pb-7"
+            style={{ opacity: 0, visibility: 'hidden', pointerEvents: 'none', transformOrigin: 'top left', willChange: 'transform, opacity' }}
         >
             <div className="pointer-events-none absolute inset-x-10 inset-y-4 rounded-full bg-cyan-400/[0.07] blur-3xl" />
             {/* Metal feet and a thin, dark TV bezel. */}
@@ -233,10 +229,10 @@ export const ProjectsTVSection: React.FC<{
 
     return (
         <div>
-            {cinematic && createPortal(television, document.body)}
+            {createPortal(television, document.body)}
             <motion.div
                 className="mb-10 flex items-end justify-between gap-6 md:mb-14"
-                style={cinematic ? { opacity: titleOpacity, y: titleY } : { opacity: 1, y: 0 }}
+                style={{ opacity: titleOpacity, y: titleY }}
             >
                 <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
                     {title}
@@ -250,21 +246,19 @@ export const ProjectsTVSection: React.FC<{
             <div ref={sceneRef} className="relative scroll-mt-20" data-projects-scene>
                 <motion.div
                     className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_252px]"
-                    style={{ opacity: cinematic ? sceneOpacity : 1 }}
+                    style={{ opacity: sceneOpacity }}
                 >
                     <div className="min-w-0">
-                        {cinematic ? (
-                            <div ref={dockRef} className="invisible pb-7" aria-hidden="true" data-projects-dock>
-                                <div className="border p-[5px]">
-                                    <div className="aspect-video" />
-                                    <div className="h-5" />
-                                </div>
+                        <div ref={dockRef} className="invisible pb-7" aria-hidden="true" data-projects-dock>
+                            <div className="border p-[5px]">
+                                <div className="aspect-video" />
+                                <div className="h-5" />
                             </div>
-                        ) : television}
+                        </div>
 
                         <motion.div
                             className="mt-4 rounded-2xl border border-white/[0.08] bg-white/[0.025] px-5 py-4 sm:px-6"
-                            style={cinematic ? { opacity: detailsOpacity, y: detailsY } : { opacity: 1, y: 0 }}
+                            style={{ opacity: detailsOpacity, y: detailsY }}
                             aria-live="polite"
                             aria-atomic="true"
                             data-project-description
@@ -285,7 +279,7 @@ export const ProjectsTVSection: React.FC<{
                     <motion.aside
                         aria-label={t('project')}
                         className="relative z-0 min-w-0"
-                        style={cinematic ? { opacity: listOpacity, x: listX, y: listY, pointerEvents: interactive ? 'auto' : 'none' } : { opacity: 1, x: 0, y: 0 }}
+                        style={{ opacity: listOpacity, x: listX, y: listY, pointerEvents: interactive ? 'auto' : 'none' }}
                     >
                         <div className="mb-4 flex items-center justify-between border-b border-white/10 pb-4">
                             <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/60">Project channels</span>

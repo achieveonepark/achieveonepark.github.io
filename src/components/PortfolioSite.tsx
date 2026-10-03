@@ -2,7 +2,6 @@ import { useLanguage } from '../i18n/LanguageContext';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { ArrowUpRight, Monitor } from 'lucide-react';
 import { motion, type Variants } from 'framer-motion';
-import { useMotionPreferences, type MotionPreference } from '../animation/MotionPreferences';
 import { ProjectsTVSection, PROJECTS_TRANSITION_SECTION_ID } from './ProjectsTVSection';
 import bundledPortfolioDocuments from 'virtual:portfolio-content';
 import { PROFILE_TRANSITION_SECTION_ID } from './AboutProfileSection';
@@ -115,7 +114,6 @@ const extractFirstHeading = (md: string): string | null => {
 
 export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
     const { language, selectLanguage, t } = useLanguage();
-    const { preference, selectPreference, reducedMotion: prefersReducedMotion } = useMotionPreferences();
     const [activeSlug, setActiveSlug] = useState<string | null>(null);
     const chapterNavRef = useRef<HTMLDivElement | null>(null);
     const chapterNavItemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -278,9 +276,9 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
         const el = document.getElementById(slug);
         if (el) {
             setActiveSlug(slug);
-            el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
+            el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
-    }, [prefersReducedMotion]);
+    }, []);
 
     const visibleSections = sections.filter(
         s => !DEFAULT_COLLAPSED.includes(s.rel) && !PHONE_APP_SECTIONS.includes(s.rel),
@@ -342,16 +340,6 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             ))}
                         </div>
                     </nav>
-                    <select
-                        aria-label={t('animations')}
-                        value={preference}
-                        onChange={event => selectPreference(event.target.value as MotionPreference)}
-                        className="h-11 max-w-[120px] shrink-0 rounded-lg border border-white/10 bg-neutral-950 px-2 text-[11px] text-white/65"
-                    >
-                        <option value="system">{t('motionSystem')}</option>
-                        <option value="full">{t('motionFull')}</option>
-                        <option value="reduced">{t('motionReduced')}</option>
-                    </select>
                     <div role="group" aria-label="Language / 언어" className="flex shrink-0 items-center text-[11px]">
                         {(['en', 'ko'] as const).map(option => (
                             <button key={option} type="button" lang={option} aria-label={option === 'en' ? 'English' : '한국어'}
@@ -375,7 +363,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                 {visibleSections.some(section => section.rel === 'about.md') && (
                     <div
                         id={PROFILE_TRANSITION_SECTION_ID}
-                        className={prefersReducedMotion ? 'hidden' : 'hidden lg:block lg:h-[170vh]'}
+                        className="h-[170vh]"
                         aria-hidden="true"
                     />
                 )}
@@ -386,14 +374,14 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                     {(section.rel === 'skills.md' || section.rel === 'links.md') && (
                         <div
                             id={section.rel === 'skills.md' ? TECH_TRANSITION_SECTION_ID : LINKS_TRANSITION_SECTION_ID}
-                            className={prefersReducedMotion ? 'hidden' : 'hidden lg:block lg:h-[170vh]'}
+                            className="h-[170vh]"
                             aria-hidden="true"
                         />
                     )}
                     {section.rel === 'projects.md' && projectVideos.length > 0 && (
                         <div
                             id={PROJECTS_TRANSITION_SECTION_ID}
-                            className={`relative hidden ${prefersReducedMotion ? '' : 'h-[220vh] lg:block'}`}
+                            className="relative h-[220vh]"
                             aria-hidden="true"
                         />
                     )}
@@ -405,10 +393,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                         whileInView="visible"
                         viewport={{ once: true, amount: 'some', margin: '0px 0px 100px 0px' }}
                         variants={
-                            // Reduced motion keeps the reveal, minus the movement:
-                            // the transform-free variant is an opacity cross-fade,
-                            // which is the gentler equivalent rather than nothing.
-                            prefersReducedMotion || !isDesktop
+                            !isDesktop
                                 ? SECTION_REVEAL_VARIANTS_NO_TRANSFORM
                                 : ['about.md', 'skills.md', 'experience.md', 'projects.md', 'links.md'].includes(section.rel)
                                     ? SECTION_REVEAL_VARIANTS_NO_TRANSFORM
@@ -447,7 +432,7 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                     {section.rel === 'skills.md' && (
                         <div
                             id={PHONE_TRANSITION_SECTION_ID}
-                            className={`relative hidden ${prefersReducedMotion ? '' : 'h-[280vh] lg:block'}`}
+                            className="relative h-[280vh]"
                             aria-hidden="true"
                         >
                             <div className="sticky" style={{ top: CHAPTER_SCROLL_OFFSET, height: `calc(100vh - ${CHAPTER_SCROLL_OFFSET}px)` }} />
