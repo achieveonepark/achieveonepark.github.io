@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { OSContext } from '../../context';
-import { Plus, Globe, Layout, Type } from 'lucide-react';
+import { Plus, Globe, Type } from 'lucide-react';
 
 export const AppStore: React.FC = () => {
   const { installApp } = useContext(OSContext);

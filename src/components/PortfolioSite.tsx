@@ -1,7 +1,8 @@
 import { useLanguage } from '../i18n/LanguageContext';
 import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { ArrowUpRight, Monitor } from 'lucide-react';
-import { motion, useReducedMotion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
+import { useMotionPreferences, type MotionPreference } from '../animation/MotionPreferences';
 import { ProjectsTVSection, PROJECTS_TRANSITION_SECTION_ID } from './ProjectsTVSection';
 import bundledPortfolioDocuments from 'virtual:portfolio-content';
 import { PROFILE_TRANSITION_SECTION_ID } from './AboutProfileSection';
@@ -100,7 +101,7 @@ const titleCaseFromRel = (rel: string): string => {
 };
 
 const extractFirstHeading = (md: string): string | null => {
-    const lines = md.split('\n');
+    const lines = md.split(/\r\n?|\n/);
     for (const line of lines) {
         const m = line.match(/^\s*#\s+(.+?)\s*$/);
         if (m) return m[1].trim();
@@ -114,6 +115,7 @@ const extractFirstHeading = (md: string): string | null => {
 
 export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
     const { language, selectLanguage, t } = useLanguage();
+    const { preference, selectPreference, reducedMotion: prefersReducedMotion } = useMotionPreferences();
     const [activeSlug, setActiveSlug] = useState<string | null>(null);
     const chapterNavRef = useRef<HTMLDivElement | null>(null);
     const chapterNavItemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
@@ -276,15 +278,14 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
         const el = document.getElementById(slug);
         if (el) {
             setActiveSlug(slug);
-            el.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+            el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'start' });
         }
-    }, []);
+    }, [prefersReducedMotion]);
 
     const visibleSections = sections.filter(
         s => !DEFAULT_COLLAPSED.includes(s.rel) && !PHONE_APP_SECTIONS.includes(s.rel),
     );
     const phoneApps = sections.filter(s => PHONE_APP_SECTIONS.includes(s.rel));
-    const prefersReducedMotion = useReducedMotion();
     const isDesktop = useDesktopLayout();
 
     return (
@@ -341,6 +342,16 @@ export const PortfolioSite: React.FC<PortfolioSiteProps> = ({ onEnterOS }) => {
                             ))}
                         </div>
                     </nav>
+                    <select
+                        aria-label={t('animations')}
+                        value={preference}
+                        onChange={event => selectPreference(event.target.value as MotionPreference)}
+                        className="h-11 max-w-[120px] shrink-0 rounded-lg border border-white/10 bg-neutral-950 px-2 text-[11px] text-white/65"
+                    >
+                        <option value="system">{t('motionSystem')}</option>
+                        <option value="full">{t('motionFull')}</option>
+                        <option value="reduced">{t('motionReduced')}</option>
+                    </select>
                     <div role="group" aria-label="Language / 언어" className="flex shrink-0 items-center text-[11px]">
                         {(['en', 'ko'] as const).map(option => (
                             <button key={option} type="button" lang={option} aria-label={option === 'en' ? 'English' : '한국어'}

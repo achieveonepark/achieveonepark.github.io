@@ -52,18 +52,16 @@
 
 /* Reduced motion: show the finished lines instead of typing them out, and stop
    the caret looping. Reduced motion means gentler, not invisible. */
-@media (prefers-reduced-motion: reduce) {
-    .tech-code-line {
-        width: var(--line-width);
-        opacity: 1;
-        animation: none;
-        border-right-color: transparent;
-    }
+[data-motion='reduced'] .tech-code-line {
+    width: var(--line-width);
+    opacity: 1;
+    animation: none;
+    border-right-color: transparent;
+}
 
-    .tech-code-line-pending {
-        width: var(--line-width);
-        opacity: 1;
-    }
+[data-motion='reduced'] .tech-code-line-pending {
+    width: var(--line-width);
+    opacity: 1;
 }
 
 /* Used by DocReader and Terminal. The class was applied in both but never

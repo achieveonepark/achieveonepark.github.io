@@ -21,7 +21,8 @@ import { Messenger } from './components/apps/Messenger';
 import { AchieveoneCode } from './components/apps/AchieveoneCode';
 import { DesktopSkillsWidget } from './components/DesktopSkillsWidget';
 import { Globe, HardDrive, FileText, Folder } from 'lucide-react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useReducedMotionPreference } from './animation/MotionPreferences';
 import { OSContext } from './context';
 
 // Helper for generating IDs
@@ -48,7 +49,7 @@ const App: React.FC<AppProps> = ({ onExitOS }) => {
 
     // Ref to track the allowed desktop area (excluding menu bar)
     const desktopAreaRef = useRef<HTMLDivElement>(null);
-    const prefersReducedMotion = useReducedMotion();
+    const prefersReducedMotion = useReducedMotionPreference();
 
     // Define the Reader app implicitly (not in dock, but launchable)
     const readerApp: AppDefinition = {

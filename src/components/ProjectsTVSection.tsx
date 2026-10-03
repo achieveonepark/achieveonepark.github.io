@@ -2,7 +2,8 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './portfolio/layout';
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, useMotionValue, useReducedMotion } from 'framer-motion';
+import { motion, useMotionValue } from 'framer-motion';
+import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import { ArrowUpRight, Play, Radio } from 'lucide-react';
 
 export interface ProjectVideo {
@@ -33,7 +34,7 @@ export const ProjectsTVSection: React.FC<{
     const televisionRef = useRef<HTMLDivElement>(null);
     const screenRef = useRef<HTMLDivElement>(null);
     const flashRef = useRef<HTMLDivElement>(null);
-    const prefersReducedMotion = useReducedMotion();
+    const prefersReducedMotion = useReducedMotionPreference();
     const cinematic = isDesktop && !prefersReducedMotion;
     const active = projects[activeIndex] ?? projects[0];
 

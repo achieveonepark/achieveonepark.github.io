@@ -15,7 +15,8 @@ import {
   ToyBrick,
   Trees,
 } from 'lucide-react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import { withBasePath } from '../constants';
 
 interface GameEntry {
@@ -156,7 +157,7 @@ const enhanceGameEntry = (game: GameManifestEntry): GameEntry => ({
 export const Dock: React.FC<DockProps> = ({ isHidden = false }) => {
   const { apps, launchApp, windows, activeWindowId, focusWindow, minimizeWindow, openFile } = useContext(OSContext);
   const [isGameFolderOpen, setIsGameFolderOpen] = useState(false);
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotionPreference();
   const [games, setGames] = useState<GameEntry[]>([]);
 
   useEffect(() => {

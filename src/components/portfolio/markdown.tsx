@@ -301,7 +301,9 @@ export const renderAboutSection = (md: string, ctx: RenderContext): React.ReactN
 };
 
 export const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode => {
-    const lines = md.split('\n');
+    // Windows checkouts use CRLF. Leaving CR on a bullet makes the anchored
+    // item pattern fail, so the parser cannot advance to the next line.
+    const lines = md.split(/\r\n?|\n/);
     const out: React.ReactNode[] = [];
     let i = 0;
     let key = 0;
@@ -457,8 +459,11 @@ export const renderMarkdown = (md: string, ctx: RenderContext): React.ReactNode 
         if (/^\s*-\s+/.test(line)) {
             const items: { depth: number; text: string }[] = [];
             while (i < lines.length && /^\s*-\s+/.test(lines[i])) {
-                const m = lines[i].match(/^(\s*)-\s+(.*)$/);
-                if (!m) break;
+                const m = lines[i].match(/^(\s*)-\s+([\s\S]*)$/);
+                if (!m) {
+                    i++;
+                    continue;
+                }
                 // If this list item is actually a table header, stop and let the table handler take over
                 if (m[2].startsWith('|') && i + 1 < lines.length && /^\s*\|?[\s:|-]+\|[\s:|-]+/.test(lines[i + 1])) break;
                 const depth = Math.floor(m[1].length / 2);

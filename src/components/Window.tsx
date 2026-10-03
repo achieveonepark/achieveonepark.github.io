@@ -2,7 +2,8 @@ import React, { useContext, useEffect, useRef } from 'react';
 import { X, Minus, Maximize2, Square } from 'lucide-react';
 import { OSContext } from '../context';
 import type { WindowState } from '../types';
-import { motion, useDragControls, useReducedMotion, type Variants } from 'framer-motion';
+import { motion, useDragControls, type Variants } from 'framer-motion';
+import { useReducedMotionPreference } from '../animation/MotionPreferences';
 
 interface WindowProps {
   window: WindowState;
@@ -48,7 +49,7 @@ export const Window: React.FC<WindowProps> = ({ window: winState, children, cons
   const dragControls = useDragControls();
   const windowRef = useRef<HTMLDivElement>(null);
   const resizeSessionRef = useRef<ResizeSession | null>(null);
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotionPreference();
 
   // True while the user is dragging or resizing. Position/size updates during a
   // gesture must land on the frame the pointer moved, with no animation between.

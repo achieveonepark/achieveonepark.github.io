@@ -2,7 +2,7 @@ import { useLanguage } from '../i18n/LanguageContext';
 import { CHAPTER_SCROLL_OFFSET as CHAPTER_OFFSET, useDesktopLayout } from './portfolio/layout';
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useReducedMotion } from 'framer-motion';
+import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import { ArrowDown, ArrowUpRight } from 'lucide-react';
 import profileImage from '../../images/profile.png';
 
@@ -20,7 +20,7 @@ export const AboutProfileSection: React.FC<{
     children: React.ReactNode;
 }> = ({ title, name, career, badge, profileContent, children }) => {
     const { t } = useLanguage();
-    const prefersReducedMotion = useReducedMotion();
+    const prefersReducedMotion = useReducedMotionPreference();
     const isDesktop = useDesktopLayout();
     const cinematic = isDesktop && !prefersReducedMotion;
     const contentRef = useRef<HTMLDivElement>(null);

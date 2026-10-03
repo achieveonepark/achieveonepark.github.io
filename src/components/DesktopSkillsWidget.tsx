@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useMemo, useRef, useState } from 'react';
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useReducedMotionPreference } from '../animation/MotionPreferences';
 import {
   ChevronDown,
   ChevronRight,
@@ -78,7 +79,7 @@ const DesktopWidget: React.FC<WidgetProps> = ({
   emphasized,
   children,
 }) => {
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotionPreference();
 
   return (
     <motion.div
@@ -120,7 +121,7 @@ const DesktopWidget: React.FC<WidgetProps> = ({
 };
 
 const IOSWidgetCard: React.FC<IOSWidgetCardProps> = ({ title, expanded, onToggle, emphasized, children }) => {
-  const prefersReducedMotion = useReducedMotion();
+  const prefersReducedMotion = useReducedMotionPreference();
 
   return (
     <div

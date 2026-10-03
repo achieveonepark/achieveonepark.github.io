@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useReducedMotion } from 'framer-motion';
+import { useReducedMotionPreference } from '../../animation/MotionPreferences';
 import { CHAPTER_SCROLL_OFFSET, useDesktopLayout } from './layout';
 
 const clamp = (value: number) => Math.max(0, Math.min(1, value));
@@ -14,7 +14,7 @@ export const ScrollDock: React.FC<{
     onReveal?: () => void;
 }> = ({ stageId, heading, children, onReveal }) => {
     const desktop = useDesktopLayout();
-    const reduced = useReducedMotion();
+    const reduced = useReducedMotionPreference();
     const cinematic = desktop && !reduced;
     const dockRef = useRef<HTMLDivElement>(null);
     const cardRef = useRef<HTMLDivElement>(null);
@@ -105,7 +105,7 @@ export const ScrollDock: React.FC<{
         <div>
             <div ref={headingRef} style={{ opacity: cinematic ? 0 : 1 }}>{heading}</div>
             <div ref={dockRef} data-scroll-dock={stageId} className={cinematic ? 'invisible' : ''} aria-hidden={cinematic || undefined}>
-                {cinematic ? <div inert="">{children}</div> : children}
+                {cinematic ? <div ref={element => { if (element) element.inert = true; }}>{children}</div> : children}
             </div>
             {cinematic && createPortal(
                 <div ref={cardRef} data-scroll-surface={stageId} className="portfolio-site fixed left-0 top-0 z-20 text-white/90 font-sans"

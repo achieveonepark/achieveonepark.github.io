@@ -1,7 +1,8 @@
 import { useLanguage } from '../../i18n/LanguageContext';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useReducedMotionPreference } from '../../animation/MotionPreferences';
 import type { LoadedSection } from './types';
 import { renderMarkdown } from './markdown';
 import { CHAPTER_SCROLL_OFFSET, useDesktopLayout } from './layout';
@@ -143,7 +144,7 @@ export const CareerPhoneSection: React.FC<{
     const dockRef = useRef<HTMLDivElement>(null);
     const bgPhoneRef = useRef<HTMLDivElement>(null);
     const isDesktop = useDesktopLayout();
-    const prefersReducedMotion = useReducedMotion();
+    const prefersReducedMotion = useReducedMotionPreference();
     const showBgPhone = isDesktop && !prefersReducedMotion;
 
     const selectCompany = useCallback((index: number) => {
