@@ -1,0 +1,53 @@
+{
+  "name": "achieveone-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "GitHub-connected portfolio content editor",
+  "author": { "name": "achieveonepark", "email": "park_achieveone@naver.com" },
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "tsc --noEmit && tsx scripts/build.ts",
+    "start": "npm run build && electron .",
+    "test": "tsx --test tests/*.test.ts",
+    "package": "npm run build && electron-builder --win nsis --x64 --publish never"
+  },
+  "dependencies": {
+    "@tiptap/react": "^3.0.0",
+    "@tiptap/starter-kit": "^3.0.0",
+    "@tiptap/markdown": "^3.0.0",
+    "@tiptap/extension-image": "^3.0.0",
+    "@tiptap/extension-table": "^3.0.0",
+    "lucide-react": "^0.344.0",
+    "marked": "^17.0.6",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "electron": "^44.5.1",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.25.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.0"
+  },
+  "build": {
+    "appId": "dev.somiri.achieveone.studio",
+    "productName": "Achieveone Studio",
+    "directories": { "output": "release" },
+    "files": ["dist/**/*", "package.json"],
+    "asar": true,
+    "win": { "target": "nsis", "icon": "assets/icon.ico", "signExecutable": false },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "Achieveone-Studio-Setup-${version}.exe"
+    }
+  }
+}

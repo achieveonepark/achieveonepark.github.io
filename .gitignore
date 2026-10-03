@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .private-resume/
+launcher/release/
+tmp/pdfs/
+output/pdf/

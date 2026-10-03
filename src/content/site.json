@@ -1,0 +1,9 @@
+{
+  "branding": { "name": "Park Achieveone", "role": "Unity Game Developer" },
+  "techStack": [
+    { "key": "engine", "values": ["Unity"] },
+    { "key": "language", "values": ["C#", ".NET"] },
+    { "key": "platforms", "values": ["Steam", "WebGL", "Android", "iOS"] },
+    { "key": "services", "values": ["Firebase"] }
+  ]
+}

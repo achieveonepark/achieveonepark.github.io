@@ -140,6 +140,7 @@ const createParkManifestPlugin = (): Plugin => {
 export default defineConfig(({ command }) => ({
   plugins: [react(), createParkManifestPlugin()],
   css: { postcss: postcssConfig },
+  server: { watch: { ignored: ['**/launcher/**', '**/tmp/**', '**/output/**'] } },
   // Custom domain deploy uses root path.
   base: command === 'serve' ? '/' : '/',
 }))

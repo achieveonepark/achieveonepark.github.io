@@ -2,6 +2,7 @@ import { useLanguage } from '../../i18n/LanguageContext';
 import React from 'react';
 import { ArrowUpRight, BookOpen, Code, Github, Globe, Mail } from 'lucide-react';
 import { ScrollDock } from './ScrollDock';
+import siteContent from '../../content/site.json';
 
 export const LINKS_TRANSITION_SECTION_ID = 'links-card-transition';
 const ICONS = { GitHub: Github, Blog: BookOpen, Docs: Code, Email: Mail };
@@ -31,8 +32,8 @@ export const LinksSection: React.FC<{ title: string; markdown: string }> = ({ ti
                     <Globe size={20} className="text-cyan-200/60" aria-hidden="true" />
                 </div>
                 <div className="relative p-6 md:p-9">
-                    <p className="text-2xl font-bold tracking-tight text-white md:text-4xl">Park Achieveone<span className="text-cyan-300">.</span></p>
-                    <p className="mt-2 text-sm text-white/45">Unity Game Developer</p>
+                    <p className="text-2xl font-bold tracking-tight text-white md:text-4xl">{siteContent.branding.name}<span className="text-cyan-300">.</span></p>
+                    <p className="mt-2 text-sm text-white/45">{siteContent.branding.role}</p>
                     <div className="mt-8 grid gap-3 sm:grid-cols-2">
                         {links.map(link => {
                             const Icon = ICONS[link.label as keyof typeof ICONS] ?? Globe;

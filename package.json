@@ -8,6 +8,9 @@
     "test": "tsx --test tests/markdown.test.ts",
     "build": "tsc --build && vite build",
     "preview": "vite preview",
+    "studio": "npm --prefix launcher start",
+    "studio:build": "npm --prefix launcher run build",
+    "studio:package": "npm --prefix launcher run package",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },

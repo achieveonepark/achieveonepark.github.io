@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { Braces } from 'lucide-react';
 import { ScrollDock } from './ScrollDock';
+import siteContent from '../../content/site.json';
 
 export const TECH_TRANSITION_SECTION_ID = 'tech-stack-transition';
 
-const TECH_STACK_GROUPS = [
-    { key: 'engine', values: ['Unity'] },
-    { key: 'language', values: ['C#', '.NET'] },
-    { key: 'platforms', values: ['Steam', 'WebGL', 'Android', 'iOS'] },
-    { key: 'services', values: ['Firebase'] },
-];
+const TECH_STACK_GROUPS = siteContent.techStack;
 
 export const TechStackSection: React.FC<{ title: string }> = ({ title }) => {
     const [typingStarted, setTypingStarted] = useState(false);
