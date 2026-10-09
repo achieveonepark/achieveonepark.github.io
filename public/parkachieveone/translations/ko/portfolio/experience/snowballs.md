@@ -2,8 +2,7 @@
 
 - 기간: 2021.09 - 2022.04
 
-
-https://www.youtube.com/watch?v=qKEeqTkbvn0
+[https://www.youtube.com/watch?v=qKEeqTkbvn0](https://www.youtube.com/watch?v=qKEeqTkbvn0)
 
 - '기사 키우기 : 데미갓' 런칭 및 라이브 서비스
 - 퍼즐 게임 신규 개발 및 인게임 스테이지 제작 툴(Level Editor) 개발
